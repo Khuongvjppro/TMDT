@@ -22,26 +22,41 @@ export default function AuthNav() {
 
   return (
     <nav className="flex flex-wrap items-center justify-end gap-2 text-sm font-medium">
-      <Link className="rounded-full bg-white/70 px-4 py-2 text-slate-700 hover:bg-white" href="/">
+      <Link
+        className="rounded-full bg-white/70 px-4 py-2 text-slate-700 hover:bg-white"
+        href="/"
+      >
         Jobs
       </Link>
-      <Link className="rounded-full bg-brand-600 px-4 py-2 text-white hover:bg-brand-700" href="/employer/jobs/new">
+      <Link
+        className="rounded-full bg-brand-600 px-4 py-2 text-white hover:bg-brand-700"
+        href="/employer/jobs/new"
+      >
         Post a Job
       </Link>
-      <Link className="rounded-full bg-white/70 px-4 py-2 text-slate-700 hover:bg-white" href="/admin/users">
+      <Link
+        className="rounded-full bg-white/70 px-4 py-2 text-slate-700 hover:bg-white"
+        href="/admin/users"
+      >
         Admin Users
       </Link>
 
       {!isReady ? (
-        <span className="rounded-full bg-white/70 px-4 py-2 text-slate-600">Loading...</span>
+        <span className="rounded-full bg-white/70 px-4 py-2 text-slate-600">
+          Loading...
+        </span>
       ) : null}
 
       {isReady && auth ? (
         <>
-          <span className={`rounded-full px-3 py-1 text-xs font-bold ${roleClassName(auth.user.role)}`}>
+          <span
+            className={`rounded-full px-3 py-1 text-xs font-bold ${roleClassName(auth.user.role)}`}
+          >
             {auth.user.role}
           </span>
-          <span className="rounded-full bg-white/70 px-3 py-1 text-xs text-slate-700">{auth.user.email}</span>
+          <span className="rounded-full bg-white/70 px-3 py-1 text-xs text-slate-700">
+            {auth.user.email}
+          </span>
           <button
             type="button"
             onClick={onLogout}
@@ -53,7 +68,10 @@ export default function AuthNav() {
       ) : null}
 
       {isReady && !auth ? (
-        <Link className="rounded-full bg-slate-900 px-4 py-2 text-white hover:bg-slate-700" href="/login">
+        <Link
+          className="rounded-full bg-slate-900 px-4 py-2 text-white hover:bg-slate-700"
+          href="/login"
+        >
           Login
         </Link>
       ) : null}

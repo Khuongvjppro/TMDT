@@ -1,17 +1,33 @@
-import { AdminUser, AuthResponse, AuthUser, Job, JobListResponse, UserRole } from "../types";
+import {
+  AdminUser,
+  AuthResponse,
+  AuthUser,
+  Job,
+  JobListResponse,
+  UserRole,
+} from "../types";
 
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000/api";
+export const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000/api";
 
-export async function fetchJobs(query: { q?: string; location?: string; type?: string; page?: string }) {
+export async function fetchJobs(query: {
+  q?: string;
+  location?: string;
+  type?: string;
+  page?: string;
+}) {
   const searchParams = new URLSearchParams();
   if (query.q) searchParams.set("q", query.q);
   if (query.location) searchParams.set("location", query.location);
   if (query.type) searchParams.set("type", query.type);
   if (query.page) searchParams.set("page", query.page);
 
-  const response = await fetch(`${API_BASE_URL}/jobs?${searchParams.toString()}`, {
-    cache: "no-store"
-  });
+  const response = await fetch(
+    `${API_BASE_URL}/jobs?${searchParams.toString()}`,
+    {
+      cache: "no-store",
+    },
+  );
 
   if (!response.ok) {
     throw new Error("Failed to fetch jobs");
@@ -21,7 +37,9 @@ export async function fetchJobs(query: { q?: string; location?: string; type?: s
 }
 
 export async function fetchJobDetail(id: number) {
-  const response = await fetch(`${API_BASE_URL}/jobs/${id}`, { cache: "no-store" });
+  const response = await fetch(`${API_BASE_URL}/jobs/${id}`, {
+    cache: "no-store",
+  });
   if (!response.ok) {
     throw new Error("Failed to fetch job detail");
   }
@@ -41,7 +59,7 @@ export async function login(email: string, password: string) {
   const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password })
+    body: JSON.stringify({ email, password }),
   });
 
   if (!response.ok) {
@@ -55,7 +73,7 @@ export async function login(email: string, password: string) {
 export async function fetchMe(token: string) {
   const response = await fetch(`${API_BASE_URL}/auth/me`, {
     cache: "no-store",
-    headers: { Authorization: `Bearer ${token}` }
+    headers: { Authorization: `Bearer ${token}` },
   });
 
   if (!response.ok) {
@@ -66,21 +84,24 @@ export async function fetchMe(token: string) {
   return parseJsonResponse<{ user: AuthUser }>(response);
 }
 
-export async function createJob(token: string, payload: {
-  title: string;
-  companyName: string;
-  location: string;
-  type: string;
-  description: string;
-  requirements: string;
-}) {
+export async function createJob(
+  token: string,
+  payload: {
+    title: string;
+    companyName: string;
+    location: string;
+    type: string;
+    description: string;
+    requirements: string;
+  },
+) {
   const response = await fetch(`${API_BASE_URL}/jobs`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
@@ -91,17 +112,21 @@ export async function createJob(token: string, payload: {
   return parseJsonResponse<{ item: Job }>(response);
 }
 
-export async function applyToJob(token: string, jobId: number, payload: {
-  coverLetter?: string;
-  cvLink?: string;
-}) {
+export async function applyToJob(
+  token: string,
+  jobId: number,
+  payload: {
+    coverLetter?: string;
+    cvLink?: string;
+  },
+) {
   const response = await fetch(`${API_BASE_URL}/applications/jobs/${jobId}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
@@ -115,7 +140,7 @@ export async function applyToJob(token: string, jobId: number, payload: {
 export async function listUsers(token: string) {
   const response = await fetch(`${API_BASE_URL}/admin/users`, {
     cache: "no-store",
-    headers: { Authorization: `Bearer ${token}` }
+    headers: { Authorization: `Bearer ${token}` },
   });
 
   if (!response.ok) {
@@ -126,14 +151,18 @@ export async function listUsers(token: string) {
   return parseJsonResponse<{ items: AdminUser[] }>(response);
 }
 
-export async function updateUserRole(token: string, userId: number, role: UserRole) {
+export async function updateUserRole(
+  token: string,
+  userId: number,
+  role: UserRole,
+) {
   const response = await fetch(`${API_BASE_URL}/admin/users/${userId}/role`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ role })
+    body: JSON.stringify({ role }),
   });
 
   if (!response.ok) {

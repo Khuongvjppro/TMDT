@@ -38,7 +38,8 @@ export default function JobApplyPanel({ jobId }: Props) {
       setMessage("Apply success.");
       event.currentTarget.reset();
     } catch (error) {
-      const nextMessage = error instanceof Error ? error.message : "Apply failed";
+      const nextMessage =
+        error instanceof Error ? error.message : "Apply failed";
       setMessage(nextMessage);
     } finally {
       setIsSubmitting(false);
@@ -46,14 +47,25 @@ export default function JobApplyPanel({ jobId }: Props) {
   }
 
   return (
-    <form className="rounded-3xl bg-slate-900 p-6 text-white shadow-xl" onSubmit={onSubmit}>
+    <form
+      className="rounded-3xl bg-slate-900 p-6 text-white shadow-xl"
+      onSubmit={onSubmit}
+    >
       <h2 className="text-lg font-bold">Quick Apply</h2>
-      <p className="mt-1 text-sm text-slate-300">Role allowed: CANDIDATE or ADMIN</p>
+      <p className="mt-1 text-sm text-slate-300">
+        Role allowed: CANDIDATE or ADMIN
+      </p>
 
-      {!isReady ? <p className="mt-2 text-sm text-slate-300">Loading session...</p> : null}
-      {isReady && !auth ? <p className="mt-2 text-sm text-amber-300">Please login to apply.</p> : null}
+      {!isReady ? (
+        <p className="mt-2 text-sm text-slate-300">Loading session...</p>
+      ) : null}
+      {isReady && !auth ? (
+        <p className="mt-2 text-sm text-amber-300">Please login to apply.</p>
+      ) : null}
       {isReady && auth && !canApply ? (
-        <p className="mt-2 text-sm text-rose-300">Current role {auth.user.role} is not allowed to apply.</p>
+        <p className="mt-2 text-sm text-rose-300">
+          Current role {auth.user.role} is not allowed to apply.
+        </p>
       ) : null}
 
       <textarea
@@ -76,7 +88,9 @@ export default function JobApplyPanel({ jobId }: Props) {
         {isSubmitting ? "Submitting..." : "Apply Now"}
       </button>
 
-      {message ? <p className="mt-3 text-sm text-slate-100">{message}</p> : null}
+      {message ? (
+        <p className="mt-3 text-sm text-slate-100">{message}</p>
+      ) : null}
     </form>
   );
 }

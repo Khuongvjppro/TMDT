@@ -1,4 +1,9 @@
-export type JobType = "FULL_TIME" | "PART_TIME" | "INTERN" | "FREELANCE" | "REMOTE";
+export type JobType =
+  | "FULL_TIME"
+  | "PART_TIME"
+  | "INTERN"
+  | "FREELANCE"
+  | "REMOTE";
 export type UserRole = "GUEST" | "CANDIDATE" | "EMPLOYER" | "ADMIN";
 
 export type AuthUser = {

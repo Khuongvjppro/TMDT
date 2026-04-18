@@ -29,6 +29,12 @@ enum ApplicationStatus {
   REJECTED
 }
 
+enum InterviewMode {
+  ONLINE
+  ONSITE
+  PHONE
+}
+
 model User {
   id           Int           @id @default(autoincrement())
   fullName     String
@@ -115,9 +121,25 @@ model Application {
   candidateId Int
   jobId       Int
 
-  candidate   User @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  job         Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  candidate         User               @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  job               Job                @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  interviewSchedule InterviewSchedule?
 
   @@unique([candidateId, jobId])
   @@index([jobId])
+}
+
+model InterviewSchedule {
+  id          Int           @id @default(autoincrement())
+  applicationId Int         @unique
+  mode        InterviewMode @default(ONLINE)
+  startsAt    DateTime
+  endsAt      DateTime
+  meetingLink String?
+  location    String?
+  note        String?       @db.Text
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  application Application   @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 }

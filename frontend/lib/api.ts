@@ -1,7 +1,12 @@
 import {
   AdminUser,
+  ApplicationStatus,
   AuthResponse,
   AuthUser,
+  EmployerCandidateListResponse,
+  EmployerJobApplication,
+  EmployerProfile,
+  InterviewMode,
   Job,
   JobListResponse,
   UserRole,
@@ -110,6 +115,258 @@ export async function createJob(
   }
 
   return parseJsonResponse<{ item: Job }>(response);
+}
+
+export async function updateJob(
+  token: string,
+  jobId: number,
+  payload: {
+    title: string;
+    companyName: string;
+    location: string;
+    type: string;
+    description: string;
+    requirements: string;
+  },
+) {
+  const response = await fetch(`${API_BASE_URL}/jobs/${jobId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Update job failed");
+  }
+
+  return parseJsonResponse<{ item: Job }>(response);
+}
+
+export async function deleteJob(token: string, jobId: number) {
+  const response = await fetch(`${API_BASE_URL}/jobs/${jobId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Delete job failed");
+  }
+}
+
+export async function setJobActive(
+  token: string,
+  jobId: number,
+  isActive: boolean,
+) {
+  const response = await fetch(`${API_BASE_URL}/jobs/${jobId}/active`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ isActive }),
+  });
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Update job status failed");
+  }
+
+  return parseJsonResponse<{ item: Job }>(response);
+}
+
+export async function getEmployerProfile(token: string) {
+  const response = await fetch(`${API_BASE_URL}/employer/profile`, {
+    cache: "no-store",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Cannot load employer profile");
+  }
+
+  return parseJsonResponse<{ item: EmployerProfile }>(response);
+}
+
+export async function updateEmployerProfile(
+  token: string,
+  payload: {
+    companyName: string;
+    companyWebsite?: string;
+    companyLocation?: string;
+    description?: string;
+  },
+) {
+  const response = await fetch(`${API_BASE_URL}/employer/profile`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Cannot update employer profile");
+  }
+
+  return parseJsonResponse<{ item: EmployerProfile }>(response);
+}
+
+export async function listEmployerJobs(token: string) {
+  const response = await fetch(`${API_BASE_URL}/employer/jobs`, {
+    cache: "no-store",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Cannot load employer jobs");
+  }
+
+  return parseJsonResponse<{ items: Job[] }>(response);
+}
+
+export async function listEmployerCandidates(
+  token: string,
+  query?: {
+    q?: string;
+    page?: number;
+    pageSize?: number;
+  },
+) {
+  const searchParams = new URLSearchParams();
+  if (query?.q) searchParams.set("q", query.q);
+  if (query?.page) searchParams.set("page", String(query.page));
+  if (query?.pageSize) searchParams.set("pageSize", String(query.pageSize));
+
+  const response = await fetch(
+    `${API_BASE_URL}/employer/candidates?${searchParams.toString()}`,
+    {
+      cache: "no-store",
+      headers: { Authorization: `Bearer ${token}` },
+    },
+  );
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Cannot load candidates");
+  }
+
+  return parseJsonResponse<EmployerCandidateListResponse>(response);
+}
+
+export async function listEmployerJobApplications(token: string, jobId: number) {
+  const response = await fetch(`${API_BASE_URL}/employer/jobs/${jobId}/applications`, {
+    cache: "no-store",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Cannot load job applications");
+  }
+
+  return parseJsonResponse<{ items: EmployerJobApplication[] }>(response);
+}
+
+export async function updateEmployerApplicationStatus(
+  token: string,
+  applicationId: number,
+  status: ApplicationStatus,
+) {
+  const response = await fetch(
+    `${API_BASE_URL}/employer/applications/${applicationId}/status`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ status }),
+    },
+  );
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Cannot update application status");
+  }
+
+  return parseJsonResponse<{ item: EmployerJobApplication }>(response);
+}
+
+export async function upsertEmployerInterviewSchedule(
+  token: string,
+  applicationId: number,
+  payload: {
+    mode: InterviewMode;
+    startsAt: string;
+    endsAt: string;
+    meetingLink?: string;
+    location?: string;
+    note?: string;
+  },
+) {
+  const response = await fetch(
+    `${API_BASE_URL}/employer/applications/${applicationId}/interview`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    },
+  );
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Cannot save interview schedule");
+  }
+
+  return parseJsonResponse<{
+    item: {
+      id: number;
+      applicationId: number;
+      mode: InterviewMode;
+      startsAt: string;
+      endsAt: string;
+      meetingLink?: string | null;
+      location?: string | null;
+      note?: string | null;
+      createdAt: string;
+      updatedAt: string;
+    };
+  }>(response);
+}
+
+export async function deleteEmployerInterviewSchedule(
+  token: string,
+  applicationId: number,
+) {
+  const response = await fetch(
+    `${API_BASE_URL}/employer/applications/${applicationId}/interview`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Cannot delete interview schedule");
+  }
 }
 
 export async function applyToJob(

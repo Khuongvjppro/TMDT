@@ -1,15 +1,45 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { mapZodErrors, registerSchema } from "../../lib/validation";
+
+type RegisterField = "fullName" | "email" | "password" | "confirmPassword";
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [message, setMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<RegisterField, string>>
+  >({});
 
-  function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    setMessage("");
+    setFieldErrors({});
+
+    const formData = new FormData(event.currentTarget);
+    const fullName = String(formData.get("fullName") || "").trim();
+    const email = String(formData.get("email") || "").trim();
+    const password = String(formData.get("password") || "");
+    const confirmPassword = String(formData.get("confirmPassword") || "");
+
+    const parsed = registerSchema.safeParse({
+      fullName,
+      email,
+      password,
+      confirmPassword,
+    });
+
+    if (!parsed.success) {
+      setFieldErrors(mapZodErrors<RegisterField>(parsed.error.issues));
+      return;
+    }
+
+    setMessage("Thông tin hợp lệ. Bạn có thể gọi API đăng ký ở bước tiếp theo.");
   }
 
   return (
@@ -26,7 +56,7 @@ export default function RegisterPage() {
               </p>
             </div>
 
-            <form className="space-y-4" onSubmit={onSubmit}>
+            <form noValidate className="space-y-4" onSubmit={onSubmit}>
               <div className="space-y-2">
                 <label
                   className="block text-sm font-semibold text-[#191c21]"
@@ -42,6 +72,9 @@ export default function RegisterPage() {
                   placeholder="Họ và tên"
                   className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-[#191c21] outline-none transition focus:border-[#0a66c2] focus:ring-2 focus:ring-[#0a66c2]/20"
                 />
+                {fieldErrors.fullName ? (
+                  <p className="text-xs font-medium text-red-600">{fieldErrors.fullName}</p>
+                ) : null}
               </div>
 
               <div className="space-y-2">
@@ -59,6 +92,9 @@ export default function RegisterPage() {
                   placeholder="Email"
                   className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-[#191c21] outline-none transition focus:border-[#0a66c2] focus:ring-2 focus:ring-[#0a66c2]/20"
                 />
+                {fieldErrors.email ? (
+                  <p className="text-xs font-medium text-red-600">{fieldErrors.email}</p>
+                ) : null}
               </div>
 
               <div className="space-y-2">
@@ -87,6 +123,9 @@ export default function RegisterPage() {
                     {showPassword ? <Eye /> : <EyeOff />}
                   </button>
                 </div>
+                {fieldErrors.password ? (
+                  <p className="text-xs font-medium text-red-600">{fieldErrors.password}</p>
+                ) : null}
               </div>
 
               <div className="space-y-2">
@@ -119,6 +158,9 @@ export default function RegisterPage() {
                     {showConfirmPassword ? <Eye /> : <EyeOff />}
                   </button>
                 </div>
+                {fieldErrors.confirmPassword ? (
+                  <p className="text-xs font-medium text-red-600">{fieldErrors.confirmPassword}</p>
+                ) : null}
               </div>
 
               <button
@@ -189,6 +231,12 @@ export default function RegisterPage() {
                 Đăng nhập ngay
               </Link>
             </p>
+
+            {message ? (
+              <p className="mt-4 text-center text-sm font-medium text-slate-700">
+                {message}
+              </p>
+            ) : null}
 
             <div className="mt-4 text-center text-xs text-slate-500">
               <Link href="/" className="hover:text-[#0a66c2] hover:underline">

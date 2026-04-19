@@ -6,6 +6,9 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { login } from "../../lib/api";
 import { useAuth } from "../../components/auth-provider";
+import { loginSchema, mapZodErrors } from "../../lib/validation";
+
+type LoginField = "email" | "password";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,6 +16,9 @@ export default function LoginPage() {
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<LoginField, string>>
+  >({});
 
   async function submitCredentials(email: string, password: string) {
     setIsSubmitting(true);
@@ -34,10 +40,20 @@ export default function LoginPage() {
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setMessage("");
+    setFieldErrors({});
+
     const formData = new FormData(event.currentTarget);
     const email = String(formData.get("email") || "").trim();
     const password = String(formData.get("password") || "");
-    await submitCredentials(email, password);
+
+    const parsed = loginSchema.safeParse({ email, password });
+    if (!parsed.success) {
+      setFieldErrors(mapZodErrors<LoginField>(parsed.error.issues));
+      return;
+    }
+
+    await submitCredentials(parsed.data.email, parsed.data.password);
   }
 
   return (
@@ -52,7 +68,7 @@ export default function LoginPage() {
         </p>
       </div>
 
-      <form className="space-y-4" onSubmit={onSubmit}>
+      <form noValidate className="space-y-4" onSubmit={onSubmit}>
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-[#191c21]" htmlFor="email">
             Email
@@ -61,11 +77,14 @@ export default function LoginPage() {
             id="email"
             name="email"
             type="email"
-            placeholder="name@company.com"
+            placeholder="Email"
             className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-[#191c21] outline-none transition focus:border-[#0a66c2] focus:ring-2 focus:ring-[#0a66c2]/20"
             required
             disabled={isSubmitting}
           />
+          {fieldErrors.email ? (
+            <p className="text-xs font-medium text-red-600">{fieldErrors.email}</p>
+          ) : null}
         </div>
 
         <div className="space-y-2">
@@ -85,7 +104,7 @@ export default function LoginPage() {
               id="password"
               name="password"
               type={showPassword ? "text" : "password"}
-              placeholder="••••••••"
+              placeholder="Mật khẩu"
               className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 pr-12 text-sm text-[#191c21] outline-none transition focus:border-[#0a66c2] focus:ring-2 focus:ring-[#0a66c2]/20"
               required
               disabled={isSubmitting}
@@ -100,6 +119,9 @@ export default function LoginPage() {
               {showPassword ? <Eye /> : <EyeOff />}
             </button>
           </div>
+          {fieldErrors.password ? (
+            <p className="text-xs font-medium text-red-600">{fieldErrors.password}</p>
+          ) : null}
         </div>
 
         <button

@@ -25,7 +25,10 @@ export default function LoginPage() {
     setMessage("");
     try {
       const data = await login(email, password);
-      setAuthState({ token: data.token, user: data.user });
+      setAuthState({
+        token: data.accessToken,
+        user: data.user,
+      });
       setMessage(`Đăng nhập thành công với vai trò ${data.user.role}`);
       router.push("/");
       router.refresh();

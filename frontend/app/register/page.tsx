@@ -53,7 +53,10 @@ export default function RegisterPage() {
         password: parsed.data.password,
       });
 
-      setAuthState({ token: data.token, user: data.user });
+      setAuthState({
+        token: data.accessToken,
+        user: data.user,
+      });
       setMessage("Đăng ký thành công");
       router.push("/");
       router.refresh();

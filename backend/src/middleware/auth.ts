@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { verifyToken } from "../lib/jwt";
+import { verifyAccessToken } from "../lib/jwt";
 import { UserRole } from "../constants/enums";
 
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
@@ -10,7 +10,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
 
   try {
     const token = authHeader.replace("Bearer ", "");
-    req.user = verifyToken(token);
+    req.user = verifyAccessToken(token);
     next();
   } catch {
     return res.status(401).json({ message: "Invalid token" });

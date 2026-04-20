@@ -14,7 +14,7 @@ export type AuthUser = {
 };
 
 export type AuthResponse = {
-  token: string;
+  accessToken: string;
   user: AuthUser;
 };
 

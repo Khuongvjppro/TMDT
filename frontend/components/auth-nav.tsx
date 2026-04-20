@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "./auth-provider";
+import { logout } from "../lib/api";
 
 function roleClassName(role: string) {
   if (role === "ADMIN") return "bg-rose-100 text-rose-700";
@@ -15,7 +16,12 @@ export default function AuthNav() {
   const { auth, isReady, clearAuthState } = useAuth();
   const router = useRouter();
 
-  function onLogout() {
+  async function onLogout() {
+    try {
+      await logout();
+    } catch {
+      // Still clear local state even if network logout fails.
+    }
     clearAuthState();
     router.push("/");
   }

@@ -2,9 +2,16 @@ import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
-import { signToken } from "../lib/jwt";
-import { REGISTER_ROLES } from "../constants/enums";
+import {
+  signAccessToken,
+  signRefreshToken,
+  verifyRefreshToken,
+} from "../lib/jwt";
+import { REGISTER_ROLES, UserRole } from "../constants/enums";
 import { ensureRoleProfile } from "../services/role-profile.service";
+
+const REFRESH_TOKEN_COOKIE = "refreshToken";
+const IS_PROD = process.env.NODE_ENV === "production";
 
 const registerSchema = z.object({
   fullName: z.string().min(2),
@@ -22,7 +29,7 @@ function toUserResponse(user: {
   id: number;
   fullName: string;
   email: string;
-  role: string;
+  role: UserRole;
 }) {
   return {
     id: user.id,
@@ -30,6 +37,45 @@ function toUserResponse(user: {
     email: user.email,
     role: user.role,
   };
+}
+
+function buildAuthResponse(user: {
+  id: number;
+  fullName: string;
+  email: string;
+  role: UserRole;
+}) {
+  const accessToken = signAccessToken({
+    userId: user.id,
+    role: user.role,
+    email: user.email,
+  });
+
+  return {
+    accessToken,
+    user: toUserResponse(user),
+  };
+}
+
+function issueRefreshTokenCookie(res: Response, userId: number) {
+  const refreshToken = signRefreshToken({ userId });
+
+  res.cookie(REFRESH_TOKEN_COOKIE, refreshToken, {
+    httpOnly: true,
+    secure: IS_PROD,
+    sameSite: "lax",
+    path: "/api/auth",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+}
+
+function clearRefreshTokenCookie(res: Response) {
+  res.clearCookie(REFRESH_TOKEN_COOKIE, {
+    httpOnly: true,
+    secure: IS_PROD,
+    sameSite: "lax",
+    path: "/api/auth",
+  });
 }
 
 export async function register(req: Request, res: Response) {
@@ -63,15 +109,8 @@ export async function register(req: Request, res: Response) {
     fullName: user.fullName,
   });
 
-  const token = signToken({
-    userId: user.id,
-    role: user.role,
-    email: user.email,
-  });
-  return res.status(201).json({
-    token,
-    user: toUserResponse(user),
-  });
+  issueRefreshTokenCookie(res, user.id);
+  return res.status(201).json(buildAuthResponse(user));
 }
 
 export async function login(req: Request, res: Response) {
@@ -94,15 +133,44 @@ export async function login(req: Request, res: Response) {
     return res.status(401).json({ message: "Invalid email or password" });
   }
 
-  const token = signToken({
-    userId: user.id,
-    role: user.role,
-    email: user.email,
-  });
-  return res.status(200).json({
-    token,
-    user: toUserResponse(user),
-  });
+  issueRefreshTokenCookie(res, user.id);
+  return res.status(200).json(buildAuthResponse(user));
+}
+
+export async function refresh(req: Request, res: Response) {
+  const refreshToken = req.cookies?.[REFRESH_TOKEN_COOKIE];
+  if (!refreshToken) {
+    return res.status(401).json({ message: "Missing refresh token" });
+  }
+
+  try {
+    const payload = verifyRefreshToken(refreshToken);
+
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        role: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(401).json({ message: "Invalid refresh token" });
+    }
+
+    issueRefreshTokenCookie(res, user.id);
+    return res.status(200).json(buildAuthResponse(user));
+  } catch {
+    clearRefreshTokenCookie(res);
+    return res.status(401).json({ message: "Invalid refresh token" });
+  }
+}
+
+export async function logout(_req: Request, res: Response) {
+  clearRefreshTokenCookie(res);
+  return res.status(200).json({ message: "Logged out" });
 }
 
 export async function me(req: Request, res: Response) {

@@ -3,9 +3,11 @@ import {
   ApplicationStatus,
   AuthResponse,
   AuthUser,
+  BillingPackage,
   EmployerCandidateListResponse,
   EmployerJobApplication,
   EmployerProfile,
+  EmployerTransaction,
   InterviewMode,
   Job,
   JobListResponse,
@@ -265,11 +267,87 @@ export async function listEmployerCandidates(
   return parseJsonResponse<EmployerCandidateListResponse>(response);
 }
 
-export async function listEmployerJobApplications(token: string, jobId: number) {
-  const response = await fetch(`${API_BASE_URL}/employer/jobs/${jobId}/applications`, {
+export async function listEmployerBillingPackages(token: string) {
+  const response = await fetch(`${API_BASE_URL}/employer/billing/packages`, {
     cache: "no-store",
     headers: { Authorization: `Bearer ${token}` },
   });
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Cannot load billing packages");
+  }
+
+  return parseJsonResponse<{ items: BillingPackage[] }>(response);
+}
+
+export async function purchaseEmployerBillingPackage(
+  token: string,
+  packageId: number,
+) {
+  const response = await fetch(`${API_BASE_URL}/employer/billing/purchase`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ packageId }),
+  });
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Purchase package failed");
+  }
+
+  return parseJsonResponse<{ item: EmployerTransaction }>(response);
+}
+
+export async function listEmployerTransactions(
+  token: string,
+  query?: {
+    page?: number;
+    pageSize?: number;
+  },
+) {
+  const searchParams = new URLSearchParams();
+  if (query?.page) searchParams.set("page", String(query.page));
+  if (query?.pageSize) searchParams.set("pageSize", String(query.pageSize));
+
+  const response = await fetch(
+    `${API_BASE_URL}/employer/transactions?${searchParams.toString()}`,
+    {
+      cache: "no-store",
+      headers: { Authorization: `Bearer ${token}` },
+    },
+  );
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Cannot load transactions");
+  }
+
+  return parseJsonResponse<{
+    items: EmployerTransaction[];
+    pagination: {
+      page: number;
+      pageSize: number;
+      total: number;
+      totalPages: number;
+    };
+  }>(response);
+}
+
+export async function listEmployerJobApplications(
+  token: string,
+  jobId: number,
+) {
+  const response = await fetch(
+    `${API_BASE_URL}/employer/jobs/${jobId}/applications`,
+    {
+      cache: "no-store",
+      headers: { Authorization: `Bearer ${token}` },
+    },
+  );
 
   if (!response.ok) {
     const data = await parseJsonResponse<{ message?: string }>(response);

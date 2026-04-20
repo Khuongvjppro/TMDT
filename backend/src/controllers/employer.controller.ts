@@ -28,6 +28,15 @@ const listCandidatesQuerySchema = z.object({
   q: z.string().trim().default(""),
 });
 
+const listTransactionsQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(PAGE_SIZE_MAX).default(10),
+});
+
+const purchasePackageSchema = z.object({
+  packageId: z.coerce.number().int().positive(),
+});
+
 const interviewModeSchema = z.enum(["ONLINE", "ONSITE", "PHONE"]);
 
 const upsertInterviewScheduleSchema = z
@@ -223,6 +232,102 @@ export async function listCandidates(req: Request, res: Response) {
       take: pageSize,
     }),
     prisma.user.count({ where }),
+  ]);
+
+  return res.status(200).json({
+    items,
+    pagination: {
+      page,
+      pageSize,
+      total,
+      totalPages: Math.ceil(total / pageSize),
+    },
+  });
+}
+
+export async function listBillingPackages(_req: Request, res: Response) {
+  const items = await prisma.billingPackage.findMany({
+    where: { isActive: true },
+    orderBy: [{ credits: "asc" }, { id: "asc" }],
+  });
+
+  return res.status(200).json({ items });
+}
+
+export async function purchaseBillingPackage(req: Request, res: Response) {
+  const authUser = getAuthUser(req, res);
+  if (!authUser) return;
+
+  const parsedBody = purchasePackageSchema.safeParse(req.body);
+  if (!parsedBody.success) {
+    return res
+      .status(400)
+      .json({ message: "Invalid payload", errors: parsedBody.error.flatten() });
+  }
+
+  const selectedPackage = await prisma.billingPackage.findFirst({
+    where: { id: parsedBody.data.packageId, isActive: true },
+  });
+
+  if (!selectedPackage) {
+    return res.status(404).json({ message: "Billing package not found" });
+  }
+
+  const item = await prisma.employerTransaction.create({
+    data: {
+      transactionCode: `TXN-${Date.now()}-${authUser.userId}`,
+      employerId: authUser.userId,
+      packageId: selectedPackage.id,
+      amountCents: selectedPackage.priceCents,
+      credits: selectedPackage.credits,
+      status: "SUCCESS",
+    },
+    include: {
+      package: {
+        select: {
+          id: true,
+          name: true,
+          credits: true,
+          priceCents: true,
+        },
+      },
+    },
+  });
+
+  return res.status(201).json({ item });
+}
+
+export async function listMyTransactions(req: Request, res: Response) {
+  const authUser = getAuthUser(req, res);
+  if (!authUser) return;
+
+  const parsedQuery = listTransactionsQuerySchema.safeParse(req.query);
+  if (!parsedQuery.success) {
+    return res
+      .status(400)
+      .json({ message: "Invalid query", errors: parsedQuery.error.flatten() });
+  }
+
+  const { page, pageSize } = parsedQuery.data;
+
+  const [items, total] = await Promise.all([
+    prisma.employerTransaction.findMany({
+      where: { employerId: authUser.userId },
+      include: {
+        package: {
+          select: {
+            id: true,
+            name: true,
+            credits: true,
+            priceCents: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+    prisma.employerTransaction.count({ where: { employerId: authUser.userId } }),
   ]);
 
   return res.status(200).json({

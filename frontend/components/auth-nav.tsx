@@ -98,7 +98,7 @@ export default function AuthNav() {
   const { auth, isReady, clearAuthState } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const navItems = getRoleNavItems(auth?.user.role);
   const userShortName = useMemo(() => {
     const source = auth?.user.fullName || auth?.user.email || "U";
@@ -106,29 +106,15 @@ export default function AuthNav() {
   }, [auth?.user.fullName, auth?.user.email]);
 
   function onLogout() {
-    setIsUserMenuOpen(false);
+    setIsSidebarOpen(false);
     clearAuthState();
     router.push("/");
   }
 
   return (
-    <nav className="flex flex-wrap items-center justify-end gap-2 text-sm font-medium">
-      {navItems.map((item) => (
-        <Link
-          key={item.href}
-          className={
-            isActivePath(pathname, item.matchers)
-              ? "rounded-full bg-brand-600 px-4 py-2 text-white hover:bg-brand-700"
-              : "rounded-full bg-white/70 px-4 py-2 text-slate-700 hover:bg-white"
-          }
-          href={item.href}
-        >
-          {item.label}
-        </Link>
-      ))}
-
+    <nav className="flex items-center gap-3 text-sm font-medium">
       {!isReady ? (
-        <span className="rounded-full bg-white/70 px-4 py-2 text-slate-600">
+        <span className="rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm">
           Loading...
         </span>
       ) : null}
@@ -137,31 +123,12 @@ export default function AuthNav() {
         <div className="relative">
           <button
             type="button"
-            onClick={() => setIsUserMenuOpen((prev) => !prev)}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-sm font-bold text-white hover:bg-slate-700"
-            aria-label="User menu"
+            onClick={() => setIsSidebarOpen(true)}
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-900 text-sm font-bold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-slate-700"
+            aria-label="Open sidebar menu"
           >
             {userShortName}
           </button>
-
-          {isUserMenuOpen ? (
-            <div className="absolute right-0 mt-2 w-60 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl">
-              <p className="text-xs font-semibold text-slate-500">Signed in as</p>
-              <p className="mt-1 text-sm font-bold text-slate-900">{auth.user.fullName}</p>
-              <p className="mt-1 text-xs text-slate-600">{auth.user.email}</p>
-              <p className={`mt-2 inline-block rounded-full px-2 py-1 text-xs font-bold ${roleClassName(auth.user.role)}`}>
-                {auth.user.role}
-              </p>
-
-              <button
-                type="button"
-                onClick={onLogout}
-                className="mt-3 w-full rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-700"
-              >
-                Logout
-              </button>
-            </div>
-          ) : null}
         </div>
       ) : null}
 
@@ -169,13 +136,81 @@ export default function AuthNav() {
         <Link
           className={
             pathname === "/login"
-              ? "rounded-full bg-brand-600 px-4 py-2 text-white hover:bg-brand-700"
-              : "rounded-full bg-slate-900 px-4 py-2 text-white hover:bg-slate-700"
+              ? "rounded-full bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-brand-700"
+              : "rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-slate-700"
           }
           href="/login"
         >
           Login
         </Link>
+      ) : null}
+
+      {isReady && auth ? (
+        <>
+          <button
+            type="button"
+            onClick={() => setIsSidebarOpen(false)}
+            className={`fixed inset-0 z-40 bg-slate-900/45 backdrop-blur-[1px] transition-opacity duration-300 ${
+              isSidebarOpen
+                ? "pointer-events-auto opacity-100"
+                : "pointer-events-none opacity-0"
+            }`}
+            aria-label="Close sidebar overlay"
+          />
+
+          <aside
+            className={`fixed left-0 top-0 z-50 h-full w-[78vw] max-w-[300px] overflow-y-auto border-r border-slate-200 bg-white p-6 shadow-2xl transition-transform duration-300 ease-out ${
+              isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            }`}
+          >
+            <div>
+              <p className="mt-1 text-lg font-black text-slate-900">{auth.user.fullName}</p>
+              <p className="mt-1 text-sm text-slate-600">{auth.user.email}</p>
+              <p
+                className={`mt-3 inline-block rounded-full px-2.5 py-1 text-xs font-bold ${roleClassName(auth.user.role)}`}
+              >
+                {auth.user.role}
+              </p>
+            </div>
+
+            <div className="mt-6 space-y-2">
+              <Link
+                href="/"
+                onClick={() => setIsSidebarOpen(false)}
+                className={
+                  pathname === "/"
+                    ? "block rounded-2xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white shadow-sm"
+                    : "block rounded-2xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
+                }
+              >
+                Home
+              </Link>
+
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setIsSidebarOpen(false)}
+                  className={
+                    isActivePath(pathname, item.matchers)
+                      ? "block rounded-2xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white shadow-sm"
+                      : "block rounded-2xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
+                  }
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={onLogout}
+              className="mt-8 w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-slate-700"
+            >
+              Logout
+            </button>
+          </aside>
+        </>
       ) : null}
     </nav>
   );

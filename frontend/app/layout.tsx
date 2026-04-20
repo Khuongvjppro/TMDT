@@ -18,14 +18,14 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <AuthProvider>
-          <header className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-6">
+          <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-5 md:py-6">
+            <AuthNav />
             <Link
               href="/"
-              className="text-2xl font-black tracking-tight text-slate-900"
+              className="text-2xl font-black tracking-tight text-slate-900 md:text-4xl"
             >
               JobFinder
             </Link>
-            <AuthNav />
           </header>
           <main className="mx-auto w-full max-w-6xl px-4 pb-10">
             {children}

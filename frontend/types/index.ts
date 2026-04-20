@@ -128,3 +128,33 @@ export type EmployerCandidateListResponse = {
     totalPages: number;
   };
 };
+
+export type BillingPackage = {
+  id: number;
+  name: string;
+  credits: number;
+  priceCents: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type EmployerTransactionStatus = "PENDING" | "SUCCESS" | "FAILED";
+
+export type EmployerTransaction = {
+  id: number;
+  transactionCode: string;
+  employerId: number;
+  packageId: number;
+  amountCents: number;
+  credits: number;
+  status: EmployerTransactionStatus;
+  createdAt: string;
+  updatedAt: string;
+  package: {
+    id: number;
+    name: string;
+    credits: number;
+    priceCents: number;
+  };
+};

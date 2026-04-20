@@ -2,20 +2,26 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { mapZodErrors, registerSchema } from "../../lib/validation";
+import { register } from "../../lib/api";
+import { useAuth } from "../../components/auth-provider";
 
 type RegisterField = "fullName" | "email" | "password" | "confirmPassword";
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const { setAuthState } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<
     Partial<Record<RegisterField, string>>
   >({});
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     setMessage("");
@@ -39,7 +45,25 @@ export default function RegisterPage() {
       return;
     }
 
-    setMessage("Thông tin hợp lệ. Bạn có thể gọi API đăng ký ở bước tiếp theo.");
+    setIsSubmitting(true);
+    try {
+      const data = await register({
+        fullName: parsed.data.fullName,
+        email: parsed.data.email,
+        password: parsed.data.password,
+      });
+
+      setAuthState({ token: data.token, user: data.user });
+      setMessage("Đăng ký thành công");
+      router.push("/");
+      router.refresh();
+    } catch (error) {
+      const nextMessage =
+        error instanceof Error ? error.message : "Đăng ký thất bại";
+      setMessage(nextMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -71,6 +95,7 @@ export default function RegisterPage() {
                   required
                   placeholder="Họ và tên"
                   className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-[#191c21] outline-none transition focus:border-[#0a66c2] focus:ring-2 focus:ring-[#0a66c2]/20"
+                  disabled={isSubmitting}
                 />
                 {fieldErrors.fullName ? (
                   <p className="text-xs font-medium text-red-600">{fieldErrors.fullName}</p>
@@ -91,6 +116,7 @@ export default function RegisterPage() {
                   required
                   placeholder="Email"
                   className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-[#191c21] outline-none transition focus:border-[#0a66c2] focus:ring-2 focus:ring-[#0a66c2]/20"
+                  disabled={isSubmitting}
                 />
                 {fieldErrors.email ? (
                   <p className="text-xs font-medium text-red-600">{fieldErrors.email}</p>
@@ -112,6 +138,7 @@ export default function RegisterPage() {
                     required
                     placeholder="Mật khẩu"
                     className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 pr-12 text-sm text-[#191c21] outline-none transition focus:border-[#0a66c2] focus:ring-2 focus:ring-[#0a66c2]/20"
+                    disabled={isSubmitting}
                   />
                   <button
                     type="button"
@@ -143,6 +170,7 @@ export default function RegisterPage() {
                     required
                     placeholder="Nhập lại mật khẩu"
                     className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 pr-12 text-sm text-[#191c21] outline-none transition focus:border-[#0a66c2] focus:ring-2 focus:ring-[#0a66c2]/20"
+                    disabled={isSubmitting}
                   />
                   <button
                     type="button"
@@ -165,9 +193,10 @@ export default function RegisterPage() {
 
               <button
                 type="submit"
-                className="w-full rounded-xl bg-gradient-to-r from-[#004e99] to-[#0a66c2] py-3.5 text-sm font-bold text-white transition active:scale-[0.99]"
+                disabled={isSubmitting}
+                className="w-full rounded-xl bg-gradient-to-r from-[#004e99] to-[#0a66c2] py-3.5 text-sm font-bold text-white transition active:scale-[0.99] disabled:opacity-60"
               >
-                Tạo tài khoản
+                {isSubmitting ? "Đang tạo tài khoản..." : "Tạo tài khoản"}
               </button>
             </form>
 

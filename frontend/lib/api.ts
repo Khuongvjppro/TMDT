@@ -70,6 +70,26 @@ export async function login(email: string, password: string) {
   return parseJsonResponse<AuthResponse>(response);
 }
 
+export async function register(payload: {
+  fullName: string;
+  email: string;
+  password: string;
+  role?: "CANDIDATE" | "EMPLOYER";
+}) {
+  const response = await fetch(`${API_BASE_URL}/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Register failed");
+  }
+
+  return parseJsonResponse<AuthResponse>(response);
+}
+
 export async function fetchMe(token: string) {
   const response = await fetch(`${API_BASE_URL}/auth/me`, {
     cache: "no-store",

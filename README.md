@@ -20,16 +20,35 @@ TMDT/
          lib/
          middleware/
          routes/
+        roles/
+          guest.routes.ts
+          candidate.routes.ts
+          employer.routes.ts
+          admin.routes.ts
          services/
          types/
    frontend/
       app/
+      admin/
+      candidate/
+      employer/
+      jobs/
+      login/
       components/
       lib/
       types/
    database/
       docker-compose.yml
 ```
+
+### Role-first organization (4 roles)
+
+- `GUEST`: public pages + `auth` + public job browsing.
+- `CANDIDATE`: candidate-only features (`/applications/me`, candidate frontend pages).
+- `EMPLOYER`: employer-only features (`/employer/*`, employer frontend pages).
+- `ADMIN`: admin-only features (`/admin/*`, admin frontend pages).
+
+Backend keeps one API prefix (`/api`) and composes role routers inside `backend/src/routes/index.ts`.
 
 ## 3) Features included in this starter
 

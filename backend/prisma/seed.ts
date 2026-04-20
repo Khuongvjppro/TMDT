@@ -86,6 +86,39 @@ async function main() {
     },
   });
 
+  await prisma.billingPackage.upsert({
+    where: { name: "Starter" },
+    update: { credits: 30, priceCents: 1900, isActive: true },
+    create: {
+      name: "Starter",
+      credits: 30,
+      priceCents: 1900,
+      isActive: true,
+    },
+  });
+
+  await prisma.billingPackage.upsert({
+    where: { name: "Growth" },
+    update: { credits: 80, priceCents: 4500, isActive: true },
+    create: {
+      name: "Growth",
+      credits: 80,
+      priceCents: 4500,
+      isActive: true,
+    },
+  });
+
+  await prisma.billingPackage.upsert({
+    where: { name: "Scale" },
+    update: { credits: 180, priceCents: 8900, isActive: true },
+    create: {
+      name: "Scale",
+      credits: 180,
+      priceCents: 8900,
+      isActive: true,
+    },
+  });
+
   const count = await prisma.job.count();
   if (count === 0) {
     await prisma.job.createMany({

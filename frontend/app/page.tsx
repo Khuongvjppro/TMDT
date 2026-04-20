@@ -12,7 +12,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     q: params.q,
     location: params.location,
     type: params.type,
-    page: params.page
+    page: params.page,
+    salaryMin: params.salaryMin,
+    salaryMax: params.salaryMax,
+    maxExperienceYears: params.maxExperienceYears,
+    sortBy: params.sortBy,
   });
 
   return (

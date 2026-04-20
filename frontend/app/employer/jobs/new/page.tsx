@@ -31,6 +31,15 @@ export default function NewJobPage() {
       type: String(formData.get("type") || "FULL_TIME"),
       description: String(formData.get("description") || ""),
       requirements: String(formData.get("requirements") || ""),
+      salaryMin: formData.get("salaryMin")
+        ? Number(formData.get("salaryMin"))
+        : undefined,
+      salaryMax: formData.get("salaryMax")
+        ? Number(formData.get("salaryMax"))
+        : undefined,
+      minExperienceYears: formData.get("minExperienceYears")
+        ? Number(formData.get("minExperienceYears"))
+        : undefined,
     };
 
     try {
@@ -86,6 +95,33 @@ export default function NewJobPage() {
           required
           disabled={!canCreate || isSubmitting}
         />
+        <div className="grid gap-3 md:grid-cols-3">
+          <input
+            name="salaryMin"
+            type="number"
+            min={1}
+            placeholder="Salary min"
+            className="w-full rounded-xl border px-3 py-2 text-sm"
+            disabled={!canCreate || isSubmitting}
+          />
+          <input
+            name="salaryMax"
+            type="number"
+            min={1}
+            placeholder="Salary max"
+            className="w-full rounded-xl border px-3 py-2 text-sm"
+            disabled={!canCreate || isSubmitting}
+          />
+          <input
+            name="minExperienceYears"
+            type="number"
+            min={0}
+            max={50}
+            placeholder="Min experience years"
+            className="w-full rounded-xl border px-3 py-2 text-sm"
+            disabled={!canCreate || isSubmitting}
+          />
+        </div>
         <select
           name="type"
           className="w-full rounded-xl border px-3 py-2 text-sm"

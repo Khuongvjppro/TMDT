@@ -29,6 +29,36 @@ export default function AuthNav() {
         Jobs
       </Link>
       <Link
+        className="rounded-full bg-white/70 px-4 py-2 text-slate-700 hover:bg-white"
+        href="/candidate/profile"
+      >
+        Candidate Profile
+      </Link>
+      <Link
+        className="rounded-full bg-white/70 px-4 py-2 text-slate-700 hover:bg-white"
+        href="/candidate/saved-jobs"
+      >
+        Saved Jobs
+      </Link>
+      <Link
+        className="rounded-full bg-white/70 px-4 py-2 text-slate-700 hover:bg-white"
+        href="/candidate/applications"
+      >
+        My Applications
+      </Link>
+      <Link
+        className="rounded-full bg-white/70 px-4 py-2 text-slate-700 hover:bg-white"
+        href="/candidate/alerts"
+      >
+        Job Alerts
+      </Link>
+      <Link
+        className="rounded-full bg-white/70 px-4 py-2 text-slate-700 hover:bg-white"
+        href="/chat"
+      >
+        Chat
+      </Link>
+      <Link
         className="rounded-full bg-brand-600 px-4 py-2 text-white hover:bg-brand-700"
         href="/employer/jobs/new"
       >

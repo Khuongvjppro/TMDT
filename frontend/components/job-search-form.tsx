@@ -14,11 +14,19 @@ export default function JobSearchForm() {
     const q = String(formData.get("q") || "");
     const location = String(formData.get("location") || "");
     const type = String(formData.get("type") || "");
+    const salaryMin = String(formData.get("salaryMin") || "").trim();
+    const salaryMax = String(formData.get("salaryMax") || "").trim();
+    const maxExperienceYears = String(formData.get("maxExperienceYears") || "").trim();
+    const sortBy = String(formData.get("sortBy") || "newest");
 
     const params = new URLSearchParams();
     if (q) params.set("q", q);
     if (location) params.set("location", location);
     if (type) params.set("type", type);
+    if (salaryMin) params.set("salaryMin", salaryMin);
+    if (salaryMax) params.set("salaryMax", salaryMax);
+    if (maxExperienceYears) params.set("maxExperienceYears", maxExperienceYears);
+    if (sortBy && sortBy !== "newest") params.set("sortBy", sortBy);
 
     router.push(`/?${params.toString()}`);
   }
@@ -48,6 +56,41 @@ export default function JobSearchForm() {
         <option value="INTERN">Intern</option>
         <option value="FREELANCE">Freelance</option>
         <option value="REMOTE">Remote</option>
+      </select>
+      <input
+        name="salaryMin"
+        type="number"
+        min={1}
+        defaultValue={searchParams.get("salaryMin") || ""}
+        placeholder="Min salary"
+        className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none ring-brand-500 focus:ring"
+      />
+      <input
+        name="salaryMax"
+        type="number"
+        min={1}
+        defaultValue={searchParams.get("salaryMax") || ""}
+        placeholder="Max salary"
+        className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none ring-brand-500 focus:ring"
+      />
+      <input
+        name="maxExperienceYears"
+        type="number"
+        min={0}
+        max={50}
+        defaultValue={searchParams.get("maxExperienceYears") || ""}
+        placeholder="Max required experience (years)"
+        className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none ring-brand-500 focus:ring"
+      />
+      <select
+        name="sortBy"
+        defaultValue={searchParams.get("sortBy") || "newest"}
+        className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none ring-brand-500 focus:ring"
+      >
+        <option value="newest">Sort: Newest</option>
+        <option value="oldest">Sort: Oldest</option>
+        <option value="salary_asc">Sort: Salary Low to High</option>
+        <option value="salary_desc">Sort: Salary High to Low</option>
       </select>
       <button type="submit" className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90">
         Search Jobs

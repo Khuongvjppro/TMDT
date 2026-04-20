@@ -1,7 +1,8 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { applyToJob } from "../lib/api";
+import { FormEvent, useEffect, useState } from "react";
+import { applyToJob, listCandidateCvs } from "../lib/api";
+import { CandidateCv } from "../types";
 import { useAuth } from "./auth-provider";
 
 type Props = {
@@ -12,9 +13,47 @@ export default function JobApplyPanel({ jobId }: Props) {
   const { auth, isReady } = useAuth();
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [cvs, setCvs] = useState<CandidateCv[]>([]);
+  const [isLoadingCvs, setIsLoadingCvs] = useState(false);
+  const [selectedCvId, setSelectedCvId] = useState("");
 
   const currentRole = auth?.user.role;
   const canApply = currentRole === "CANDIDATE" || currentRole === "ADMIN";
+  const isCandidate = currentRole === "CANDIDATE";
+
+  useEffect(() => {
+    const token = auth?.token;
+    if (!token || !isCandidate) {
+      setCvs([]);
+      setSelectedCvId("");
+      return;
+    }
+    const candidateToken: string = token;
+
+    let ignore = false;
+
+    async function loadCvs() {
+      setIsLoadingCvs(true);
+      try {
+        const response = await listCandidateCvs(candidateToken);
+        if (ignore) return;
+        setCvs(response.items);
+      } catch {
+        if (ignore) return;
+        setCvs([]);
+      } finally {
+        if (!ignore) {
+          setIsLoadingCvs(false);
+        }
+      }
+    }
+
+    loadCvs();
+
+    return () => {
+      ignore = true;
+    };
+  }, [auth?.token, isCandidate]);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -29,14 +68,18 @@ export default function JobApplyPanel({ jobId }: Props) {
 
     const coverLetter = String(formData.get("coverLetter") || "").trim();
     const cvLink = String(formData.get("cvLink") || "").trim();
+    const parsedCvId = Number(selectedCvId);
+    const cvId = Number.isFinite(parsedCvId) && parsedCvId > 0 ? parsedCvId : undefined;
 
     try {
       await applyToJob(auth.token, jobId, {
         coverLetter: coverLetter || undefined,
-        cvLink: cvLink || undefined,
+        cvLink: cvId ? undefined : cvLink || undefined,
+        cvId,
       });
       setMessage("Apply success.");
       event.currentTarget.reset();
+      setSelectedCvId("");
     } catch (error) {
       const nextMessage =
         error instanceof Error ? error.message : "Apply failed";
@@ -74,11 +117,34 @@ export default function JobApplyPanel({ jobId }: Props) {
         className="mt-4 h-28 w-full rounded-xl bg-white/10 p-3 text-sm outline-none ring-brand-500 focus:ring"
         disabled={!canApply || isSubmitting}
       />
+      {isCandidate ? (
+        <div className="mt-3 space-y-2">
+          <label className="text-xs font-semibold uppercase tracking-wide text-slate-300">
+            Select saved CV (optional)
+          </label>
+          <select
+            value={selectedCvId}
+            onChange={(event) => setSelectedCvId(event.target.value)}
+            disabled={!canApply || isSubmitting || isLoadingCvs}
+            className="w-full rounded-xl bg-white/10 p-3 text-sm outline-none ring-brand-500 focus:ring"
+          >
+            <option value="">Use default CV / Custom link</option>
+            {cvs.map((cv) => (
+              <option key={cv.id} value={String(cv.id)}>
+                {cv.title}{cv.isDefault ? " (Default)" : ""}
+              </option>
+            ))}
+          </select>
+          {isLoadingCvs ? (
+            <p className="text-xs text-slate-300">Loading CV list...</p>
+          ) : null}
+        </div>
+      ) : null}
       <input
         name="cvLink"
         placeholder="CV Link (Google Drive, portfolio...)"
         className="mt-3 w-full rounded-xl bg-white/10 p-3 text-sm outline-none ring-brand-500 focus:ring"
-        disabled={!canApply || isSubmitting}
+        disabled={!canApply || isSubmitting || Boolean(selectedCvId)}
       />
       <button
         type="submit"

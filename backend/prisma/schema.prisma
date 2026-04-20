@@ -39,8 +39,17 @@ model User {
   updatedAt    DateTime      @updatedAt
 
   jobs         Job[]
+  savedJobs    SavedJob[]
   applications Application[]
+  jobAlerts    JobAlert[]
+  notifications AlertNotification[]
+  candidateConversations Conversation[] @relation("CandidateConversation")
+  employerConversations  Conversation[] @relation("EmployerConversation")
+  sentMessages           Message[]
+  candidateReviews       CompanyReview[] @relation("CandidateCompanyReview")
+  employerReviews        CompanyReview[] @relation("EmployerCompanyReview")
   candidateProfile CandidateProfile?
+  candidateCvs     CandidateCv[]
   employerProfile  EmployerProfile?
   adminProfile     AdminProfile?
 }
@@ -55,6 +64,23 @@ model CandidateProfile {
   updatedAt DateTime @updatedAt
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CandidateCv {
+  id          Int      @id @default(autoincrement())
+  candidateId Int
+  title       String
+  cvUrl       String
+  summary     String?  @db.Text
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  candidate   User     @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@unique([candidateId, title])
+  @@index([candidateId])
+  @@index([candidateId, isDefault])
 }
 
 model EmployerProfile {
@@ -88,6 +114,7 @@ model Job {
   location        String
   salaryMin       Int?
   salaryMax       Int?
+  minExperienceYears Int?
   description     String        @db.Text
   requirements    String        @db.Text
   type            JobType
@@ -98,10 +125,118 @@ model Job {
   employerId      Int
   employer        User          @relation(fields: [employerId], references: [id], onDelete: Cascade)
   applications    Application[]
+  savedBy         SavedJob[]
+  notifications   AlertNotification[]
+  reviews         CompanyReview[]
 
   @@index([title])
   @@index([companyName])
   @@index([location])
+}
+
+model JobAlert {
+  id                 Int      @id @default(autoincrement())
+  candidateId        Int
+  keyword            String?
+  location           String?
+  type               JobType?
+  minSalary          Int?
+  maxExperienceYears Int?
+  isActive           Boolean  @default(true)
+  lastCheckedAt      DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  candidate          User                @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  notifications      AlertNotification[]
+
+  @@index([candidateId])
+  @@index([candidateId, isActive])
+}
+
+model AlertNotification {
+  id          Int      @id @default(autoincrement())
+  alertId     Int
+  candidateId Int
+  jobId       Int
+  message     String   @db.VarChar(500)
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  alert       JobAlert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  candidate   User     @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([alertId, jobId])
+  @@index([candidateId])
+  @@index([candidateId, isRead])
+  @@index([jobId])
+}
+
+model Conversation {
+  id          Int      @id @default(autoincrement())
+  candidateId Int
+  employerId  Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  candidate   User     @relation("CandidateConversation", fields: [candidateId], references: [id], onDelete: Cascade)
+  employer    User     @relation("EmployerConversation", fields: [employerId], references: [id], onDelete: Cascade)
+  messages    Message[]
+
+  @@unique([candidateId, employerId])
+  @@index([candidateId])
+  @@index([employerId])
+}
+
+model Message {
+  id             Int          @id @default(autoincrement())
+  conversationId Int
+  senderId       Int
+  content        String       @db.Text
+  isRead         Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+  @@index([conversationId, isRead])
+}
+
+model CompanyReview {
+  id          Int      @id @default(autoincrement())
+  candidateId Int
+  employerId  Int
+  jobId       Int
+  rating      Int
+  comment     String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  candidate   User     @relation("CandidateCompanyReview", fields: [candidateId], references: [id], onDelete: Cascade)
+  employer    User     @relation("EmployerCompanyReview", fields: [employerId], references: [id], onDelete: Cascade)
+  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([candidateId, jobId])
+  @@index([candidateId])
+  @@index([employerId])
+  @@index([jobId])
+}
+
+model SavedJob {
+  id          Int      @id @default(autoincrement())
+  candidateId Int
+  jobId       Int
+  createdAt   DateTime @default(now())
+
+  candidate   User @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  job         Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([candidateId, jobId])
+  @@index([candidateId])
+  @@index([jobId])
 }
 
 model Application {

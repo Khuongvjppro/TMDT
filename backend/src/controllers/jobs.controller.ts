@@ -48,6 +48,10 @@ const updateJobSchema = jobPayloadSchema
     path: ["salaryMin"],
   });
 
+const setJobActiveSchema = z.object({
+  isActive: z.boolean(),
+});
+
 const employerSelect = {
   id: true,
   fullName: true,
@@ -224,4 +228,42 @@ export async function deleteJob(req: Request, res: Response) {
 
   await prisma.job.delete({ where: { id: jobId } });
   return res.status(204).send();
+}
+
+export async function setJobActive(req: Request, res: Response) {
+  const authUser = getAuthUser(req, res);
+  if (!authUser) return;
+
+  const jobIdParsed = parseJobId(req.params.id);
+  if (!jobIdParsed.success) {
+    return res.status(400).json({ message: "Invalid job id" });
+  }
+
+  const parsed = setJobActiveSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res
+      .status(400)
+      .json({ message: "Invalid payload", errors: parsed.error.flatten() });
+  }
+
+  const jobId = jobIdParsed.data;
+  const existing = await prisma.job.findUnique({ where: { id: jobId } });
+
+  if (!existing) {
+    return res.status(404).json({ message: "Job not found" });
+  }
+
+  const isAdmin = authUser.role === "ADMIN";
+  if (!isAdmin && existing.employerId !== authUser.userId) {
+    return res
+      .status(403)
+      .json({ message: "You can only update your own job status" });
+  }
+
+  const updated = await prisma.job.update({
+    where: { id: jobId },
+    data: { isActive: parsed.data.isActive },
+  });
+
+  return res.status(200).json({ item: updated });
 }

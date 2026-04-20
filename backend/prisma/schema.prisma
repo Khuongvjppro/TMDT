@@ -29,6 +29,18 @@ enum ApplicationStatus {
   REJECTED
 }
 
+enum InterviewMode {
+  ONLINE
+  ONSITE
+  PHONE
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
 model User {
   id           Int           @id @default(autoincrement())
   fullName     String
@@ -40,9 +52,22 @@ model User {
 
   jobs         Job[]
   applications Application[]
+  transactions EmployerTransaction[]
   candidateProfile CandidateProfile?
   employerProfile  EmployerProfile?
   adminProfile     AdminProfile?
+}
+
+model BillingPackage {
+  id         Int       @id @default(autoincrement())
+  name       String    @unique
+  credits    Int
+  priceCents Int
+  isActive   Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  transactions EmployerTransaction[]
 }
 
 model CandidateProfile {
@@ -115,9 +140,43 @@ model Application {
   candidateId Int
   jobId       Int
 
-  candidate   User @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  job         Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  candidate         User               @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  job               Job                @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  interviewSchedule InterviewSchedule?
 
   @@unique([candidateId, jobId])
   @@index([jobId])
+}
+
+model InterviewSchedule {
+  id          Int           @id @default(autoincrement())
+  applicationId Int         @unique
+  mode        InterviewMode @default(ONLINE)
+  startsAt    DateTime
+  endsAt      DateTime
+  meetingLink String?
+  location    String?
+  note        String?       @db.Text
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  application Application   @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+}
+
+model EmployerTransaction {
+  id          Int               @id @default(autoincrement())
+  transactionCode String        @unique
+  employerId  Int
+  packageId   Int
+  amountCents Int
+  credits     Int
+  status      TransactionStatus @default(SUCCESS)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  employer User @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  package  BillingPackage @relation(fields: [packageId], references: [id], onDelete: Restrict)
+
+  @@index([employerId, createdAt])
+  @@index([packageId])
 }

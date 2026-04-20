@@ -13,12 +13,18 @@ import { ensureRoleProfile } from "../services/role-profile.service";
 const REFRESH_TOKEN_COOKIE = "refreshToken";
 const IS_PROD = process.env.NODE_ENV === "production";
 
-const registerSchema = z.object({
-  fullName: z.string().min(2),
-  email: z.string().email(),
-  password: z.string().min(6),
-  role: z.enum(REGISTER_ROLES).optional(),
-});
+const registerSchema = z
+  .object({
+    fullName: z.string().min(2),
+    email: z.string().email(),
+    password: z.string().min(6),
+    confirmPassword: z.string().min(6),
+    role: z.enum(REGISTER_ROLES).optional(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Password confirmation does not match",
+    path: ["confirmPassword"],
+  });
 
 const loginSchema = z.object({
   email: z.string().email(),

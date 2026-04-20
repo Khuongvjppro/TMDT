@@ -9,11 +9,13 @@ import { useAuth } from "../../components/auth-provider";
 import { loginSchema, mapZodErrors } from "../../lib/validation";
 
 type LoginField = "email" | "password";
+type MessageType = "error" | "success";
 
 export default function LoginPage() {
   const router = useRouter();
   const { setAuthState } = useAuth();
   const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState<MessageType | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<
@@ -23,6 +25,7 @@ export default function LoginPage() {
   async function submitCredentials(email: string, password: string) {
     setIsSubmitting(true);
     setMessage("");
+    setMessageType(null);
     try {
       const data = await login(email, password);
       setAuthState({
@@ -30,12 +33,17 @@ export default function LoginPage() {
         user: data.user,
       });
       setMessage(`Đăng nhập thành công với vai trò ${data.user.role}`);
+      setMessageType("success");
       router.push("/");
       router.refresh();
     } catch (error) {
+      const rawMessage = error instanceof Error ? error.message : "Đăng nhập thất bại";
       const nextMessage =
-        error instanceof Error ? error.message : "Đăng nhập thất bại";
+        rawMessage === "Invalid email or password"
+          ? "Email hoặc mật khẩu không đúng"
+          : rawMessage;
       setMessage(nextMessage);
+      setMessageType("error");
     } finally {
       setIsSubmitting(false);
     }
@@ -44,6 +52,7 @@ export default function LoginPage() {
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage("");
+    setMessageType(null);
     setFieldErrors({});
 
     const formData = new FormData(event.currentTarget);
@@ -191,7 +200,13 @@ export default function LoginPage() {
       </p>
 
       {message ? (
-        <p className="mt-4 text-sm font-medium text-slate-700">{message}</p>
+        <p
+          className={`mt-4 text-sm font-medium ${
+            messageType === "error" ? "text-red-600" : "text-slate-700"
+          }`}
+        >
+          {message}
+        </p>
       ) : null}
     </section>
   );

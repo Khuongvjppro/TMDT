@@ -75,6 +75,7 @@ export async function register(payload: {
   fullName: string;
   email: string;
   password: string;
+  confirmPassword: string;
   role?: "CANDIDATE" | "EMPLOYER";
 }) {
   const response = await fetch(`${API_BASE_URL}/auth/register`, {

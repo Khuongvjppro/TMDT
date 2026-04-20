@@ -51,6 +51,7 @@ export default function RegisterPage() {
         fullName: parsed.data.fullName,
         email: parsed.data.email,
         password: parsed.data.password,
+        confirmPassword: parsed.data.confirmPassword,
       });
 
       setAuthState({

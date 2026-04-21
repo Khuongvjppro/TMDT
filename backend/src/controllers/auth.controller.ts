@@ -4,14 +4,18 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import {
   signAccessToken,
+  signEmailVerifyToken,
   signRefreshToken,
+  verifyEmailVerifyToken,
   verifyRefreshToken,
 } from "../lib/jwt";
 import { REGISTER_ROLES, UserRole } from "../constants/enums";
+import { sendVerificationEmailReal } from "../services/email.service";
 import { ensureRoleProfile } from "../services/role-profile.service";
 
 const REFRESH_TOKEN_COOKIE = "refreshToken";
 const IS_PROD = process.env.NODE_ENV === "production";
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:3000";
 
 const registerSchema = z
   .object({
@@ -31,17 +35,27 @@ const loginSchema = z.object({
   password: z.string().min(6),
 });
 
+const verifyEmailSchema = z.object({
+  token: z.string().min(1),
+});
+
+const resendVerificationSchema = z.object({
+  email: z.string().email(),
+});
+
 function toUserResponse(user: {
   id: number;
   fullName: string;
   email: string;
   role: UserRole;
+  emailVerifiedAt?: Date | null;
 }) {
   return {
     id: user.id,
     fullName: user.fullName,
     email: user.email,
     role: user.role,
+    isEmailVerified: Boolean(user.emailVerifiedAt),
   };
 }
 
@@ -50,6 +64,7 @@ function buildAuthResponse(user: {
   fullName: string;
   email: string;
   role: UserRole;
+  emailVerifiedAt?: Date | null;
 }) {
   const accessToken = signAccessToken({
     userId: user.id,
@@ -61,6 +76,50 @@ function buildAuthResponse(user: {
     accessToken,
     user: toUserResponse(user),
   };
+}
+
+function buildVerificationLink(token: string) {
+  return `${FRONTEND_ORIGIN}/verify-email?token=${encodeURIComponent(token)}`;
+}
+
+async function sendVerificationEmail(email: string, fullName: string, token: string) {
+  const verifyLink = buildVerificationLink(token);
+  await sendVerificationEmailReal({
+    toEmail: email,
+    fullName,
+    verifyLink,
+  });
+  return verifyLink;
+}
+
+async function getEmailVerifiedAtByUserId(userId: number) {
+  const rows = await prisma.$queryRaw<Array<{ emailVerifiedAt: Date | null }>>`
+    SELECT emailVerifiedAt
+    FROM \`User\`
+    WHERE id = ${userId}
+    LIMIT 1
+  `;
+
+  return rows[0]?.emailVerifiedAt ?? null;
+}
+
+async function getEmailVerifiedAtByEmail(email: string) {
+  const rows = await prisma.$queryRaw<Array<{ emailVerifiedAt: Date | null }>>`
+    SELECT emailVerifiedAt
+    FROM \`User\`
+    WHERE email = ${email}
+    LIMIT 1
+  `;
+
+  return rows[0]?.emailVerifiedAt ?? null;
+}
+
+async function markEmailVerified(userId: number) {
+  await prisma.$executeRaw`
+    UPDATE \`User\`
+    SET emailVerifiedAt = ${new Date()}
+    WHERE id = ${userId}
+  `;
 }
 
 function issueRefreshTokenCookie(res: Response, userId: number) {
@@ -115,8 +174,31 @@ export async function register(req: Request, res: Response) {
     fullName: user.fullName,
   });
 
-  issueRefreshTokenCookie(res, user.id);
-  return res.status(201).json(buildAuthResponse(user));
+  const verifyToken = signEmailVerifyToken({ userId: user.id, email: user.email });
+  let verifyLink: string;
+  try {
+    verifyLink = await sendVerificationEmail(
+      user.email,
+      user.fullName,
+      verifyToken,
+    );
+  } catch {
+    return res.status(500).json({
+      message:
+        "Account created but failed to send verification email. Please try resend verification.",
+    });
+  }
+
+  return res.status(201).json({
+    message: "Registration successful. Please verify your email before login.",
+    requiresEmailVerification: true,
+    ...(IS_PROD
+      ? {}
+      : {
+          devVerificationToken: verifyToken,
+          devVerificationLink: verifyLink,
+        }),
+  });
 }
 
 export async function login(req: Request, res: Response) {
@@ -139,8 +221,85 @@ export async function login(req: Request, res: Response) {
     return res.status(401).json({ message: "Invalid email or password" });
   }
 
+  const emailVerifiedAt = await getEmailVerifiedAtByUserId(user.id);
+  if (!emailVerifiedAt) {
+    return res.status(403).json({
+      message: "Email not verified",
+      code: "EMAIL_NOT_VERIFIED",
+    });
+  }
+
   issueRefreshTokenCookie(res, user.id);
   return res.status(200).json(buildAuthResponse(user));
+}
+
+export async function verifyEmail(req: Request, res: Response) {
+  const parsed = verifyEmailSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res
+      .status(400)
+      .json({ message: "Invalid payload", errors: parsed.error.flatten() });
+  }
+
+  try {
+    const payload = verifyEmailVerifyToken(parsed.data.token);
+    const user = await prisma.user.findUnique({ where: { id: payload.userId } });
+
+    if (!user || user.email !== payload.email) {
+      return res.status(400).json({ message: "Invalid verification token" });
+    }
+
+    const emailVerifiedAt = await getEmailVerifiedAtByUserId(user.id);
+    if (emailVerifiedAt) {
+      return res.status(200).json({ message: "Email already verified" });
+    }
+
+    await markEmailVerified(user.id);
+    return res.status(200).json({ message: "Email verified successfully" });
+  } catch {
+    return res.status(400).json({ message: "Invalid or expired verification token" });
+  }
+}
+
+export async function resendVerificationEmail(req: Request, res: Response) {
+  const parsed = resendVerificationSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res
+      .status(400)
+      .json({ message: "Invalid payload", errors: parsed.error.flatten() });
+  }
+
+  const user = await prisma.user.findUnique({ where: { email: parsed.data.email } });
+  if (!user) {
+    return res.status(404).json({ message: "Email not found" });
+  }
+
+  const emailVerifiedAt = await getEmailVerifiedAtByEmail(user.email);
+  if (emailVerifiedAt) {
+    return res.status(200).json({ message: "Email already verified" });
+  }
+
+  const verifyToken = signEmailVerifyToken({ userId: user.id, email: user.email });
+  let verifyLink: string;
+  try {
+    verifyLink = await sendVerificationEmail(
+      user.email,
+      user.fullName,
+      verifyToken,
+    );
+  } catch {
+    return res.status(500).json({ message: "Failed to send verification email" });
+  }
+
+  return res.status(200).json({
+    message: "Verification email sent",
+    ...(IS_PROD
+      ? {}
+      : {
+          devVerificationToken: verifyToken,
+          devVerificationLink: verifyLink,
+        }),
+  });
 }
 
 export async function refresh(req: Request, res: Response) {

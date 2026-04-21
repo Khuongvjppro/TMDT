@@ -4,13 +4,17 @@ import {
 	logout,
 	me,
 	refresh,
+	resendVerificationEmail,
 	register,
+	verifyEmail,
 } from "../controllers/auth.controller";
 import { requireAuth } from "../middleware/auth";
 
 const router = Router();
 
 router.post("/register", register);
+router.post("/verify-email", verifyEmail);
+router.post("/resend-verification", resendVerificationEmail);
 router.post("/login", login);
 router.post("/refresh", refresh);
 router.post("/logout", logout);

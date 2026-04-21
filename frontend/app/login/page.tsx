@@ -41,6 +41,8 @@ export default function LoginPage() {
       const nextMessage =
         rawMessage === "Invalid email or password"
           ? "Email hoặc mật khẩu không đúng"
+          : rawMessage === "Email not verified"
+            ? "Email chưa được xác thực. Vui lòng kiểm tra hộp thư và xác thực trước khi đăng nhập."
           : rawMessage;
       setMessage(nextMessage);
       setMessageType("error");

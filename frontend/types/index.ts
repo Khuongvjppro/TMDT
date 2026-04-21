@@ -17,11 +17,19 @@ export type AuthUser = {
   fullName: string;
   email: string;
   role: UserRole;
+  isEmailVerified?: boolean;
 };
 
 export type AuthResponse = {
   accessToken: string;
   user: AuthUser;
+};
+
+export type RegisterResponse = {
+  message: string;
+  requiresEmailVerification: boolean;
+  devVerificationToken?: string;
+  devVerificationLink?: string;
 };
 
 export type AdminUser = {

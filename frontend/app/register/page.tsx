@@ -2,21 +2,21 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { mapZodErrors, registerSchema } from "../../lib/validation";
-import { register } from "../../lib/api";
-import { useAuth } from "../../components/auth-provider";
+import { register, resendVerification } from "../../lib/api";
 
 type RegisterField = "fullName" | "email" | "password" | "confirmPassword";
 
 export default function RegisterPage() {
-  const router = useRouter();
-  const { setAuthState } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState<"success" | "error" | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
+  const [devVerificationLink, setDevVerificationLink] = useState("");
   const [fieldErrors, setFieldErrors] = useState<
     Partial<Record<RegisterField, string>>
   >({});
@@ -25,6 +25,7 @@ export default function RegisterPage() {
     event.preventDefault();
 
     setMessage("");
+    setMessageType(null);
     setFieldErrors({});
 
     const formData = new FormData(event.currentTarget);
@@ -53,20 +54,41 @@ export default function RegisterPage() {
         password: parsed.data.password,
         confirmPassword: parsed.data.confirmPassword,
       });
-
-      setAuthState({
-        token: data.accessToken,
-        user: data.user,
-      });
-      setMessage("Đăng ký thành công");
-      router.push("/");
-      router.refresh();
+      setRegisteredEmail(parsed.data.email);
+      setDevVerificationLink(data.devVerificationLink || "");
+      setMessage(
+        data.message ||
+          "Đăng ký thành công. Vui lòng kiểm tra email để xác thực tài khoản trước khi đăng nhập.",
+      );
+      setMessageType("success");
     } catch (error) {
       const nextMessage =
         error instanceof Error ? error.message : "Đăng ký thất bại";
       setMessage(nextMessage);
+      setMessageType("error");
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function onResendVerification() {
+    if (!registeredEmail || isResending) {
+      return;
+    }
+
+    setIsResending(true);
+    try {
+      const data = await resendVerification(registeredEmail);
+      setDevVerificationLink(data.devVerificationLink || "");
+      setMessage(data.message || "Đã gửi lại email xác thực");
+      setMessageType("success");
+    } catch (error) {
+      const nextMessage =
+        error instanceof Error ? error.message : "Gửi lại email xác thực thất bại";
+      setMessage(nextMessage);
+      setMessageType("error");
+    } finally {
+      setIsResending(false);
     }
   }
 
@@ -266,9 +288,34 @@ export default function RegisterPage() {
             </p>
 
             {message ? (
-              <p className="mt-4 text-center text-sm font-medium text-slate-700">
+              <p
+                className={`mt-4 text-center text-sm font-medium ${
+                  messageType === "error" ? "text-red-600" : "text-slate-700"
+                }`}
+              >
                 {message}
               </p>
+            ) : null}
+
+            {registeredEmail ? (
+              <div className="mt-3 text-center text-sm text-slate-600">
+                <p>
+                  Chưa nhận được email?{" "}
+                  <button
+                    type="button"
+                    onClick={onResendVerification}
+                    disabled={isResending}
+                    className="font-semibold text-[#0a66c2] hover:underline disabled:opacity-60"
+                  >
+                    {isResending ? "Đang gửi lại..." : "Gửi lại email xác thực"}
+                  </button>
+                </p>
+                {devVerificationLink ? (
+                  <p className="mt-2 text-xs text-slate-500">
+                    Dev link: <a className="text-[#0a66c2] underline" href={devVerificationLink}>Mở link xác thực</a>
+                  </p>
+                ) : null}
+              </div>
             ) : null}
 
             <div className="mt-4 text-center text-xs text-slate-500">

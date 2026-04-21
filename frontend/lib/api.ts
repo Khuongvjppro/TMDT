@@ -11,6 +11,7 @@ import {
   InterviewMode,
   Job,
   JobListResponse,
+  RegisterResponse,
   UserRole,
 } from "../types";
 
@@ -97,7 +98,43 @@ export async function register(payload: {
     throw new Error(data.message || "Register failed");
   }
 
-  return parseJsonResponse<AuthResponse>(response);
+  return parseJsonResponse<RegisterResponse>(response);
+}
+
+export async function verifyEmail(token: string) {
+  const response = await fetch(`${API_BASE_URL}/auth/verify-email`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ token }),
+  });
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Email verification failed");
+  }
+
+  return parseJsonResponse<{ message: string }>(response);
+}
+
+export async function resendVerification(email: string) {
+  const response = await fetch(`${API_BASE_URL}/auth/resend-verification`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Resend verification failed");
+  }
+
+  return parseJsonResponse<{
+    message: string;
+    devVerificationToken?: string;
+    devVerificationLink?: string;
+  }>(response);
 }
 
 export async function refreshAuth() {

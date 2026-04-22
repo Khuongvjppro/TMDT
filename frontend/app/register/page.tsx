@@ -7,10 +7,12 @@ import { mapZodErrors, registerSchema } from "../../lib/validation";
 import { register, resendVerification } from "../../lib/api";
 
 type RegisterField = "fullName" | "email" | "password" | "confirmPassword";
+type RegisterRole = "CANDIDATE" | "EMPLOYER";
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<RegisterRole>("CANDIDATE");
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<"success" | "error" | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -33,6 +35,9 @@ export default function RegisterPage() {
     const email = String(formData.get("email") || "").trim();
     const password = String(formData.get("password") || "");
     const confirmPassword = String(formData.get("confirmPassword") || "");
+    const roleInput = String(formData.get("role") || selectedRole);
+    const role: RegisterRole =
+      roleInput === "EMPLOYER" ? "EMPLOYER" : "CANDIDATE";
 
     const parsed = registerSchema.safeParse({
       fullName,
@@ -53,6 +58,7 @@ export default function RegisterPage() {
         email: parsed.data.email,
         password: parsed.data.password,
         confirmPassword: parsed.data.confirmPassword,
+        role,
       });
       setRegisteredEmail(parsed.data.email);
       setDevVerificationLink(data.devVerificationLink || "");
@@ -107,6 +113,37 @@ export default function RegisterPage() {
             </div>
 
             <form noValidate className="space-y-4" onSubmit={onSubmit}>
+              <div className="space-y-2">
+                <p className="block text-sm font-semibold text-[#191c21]">Bạn đăng ký với vai trò</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="cursor-pointer rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition hover:border-[#0a66c2]">
+                    <input
+                      type="radio"
+                      name="role"
+                      value="CANDIDATE"
+                      checked={selectedRole === "CANDIDATE"}
+                      onChange={() => setSelectedRole("CANDIDATE")}
+                      className="mr-2 align-middle"
+                      disabled={isSubmitting}
+                    />
+                    <span className="align-middle font-medium text-[#191c21]">Ứng viên</span>
+                  </label>
+
+                  <label className="cursor-pointer rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition hover:border-[#0a66c2]">
+                    <input
+                      type="radio"
+                      name="role"
+                      value="EMPLOYER"
+                      checked={selectedRole === "EMPLOYER"}
+                      onChange={() => setSelectedRole("EMPLOYER")}
+                      className="mr-2 align-middle"
+                      disabled={isSubmitting}
+                    />
+                    <span className="align-middle font-medium text-[#191c21]">Nhà tuyển dụng</span>
+                  </label>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <label
                   className="block text-sm font-semibold text-[#191c21]"

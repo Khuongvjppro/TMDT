@@ -49,3 +49,35 @@ export async function sendVerificationEmailReal(payload: {
 
   return { delivered: true };
 }
+
+export async function sendPasswordResetEmailReal(payload: {
+  toEmail: string;
+  fullName: string;
+  resetLink: string;
+}) {
+  const { toEmail, fullName, resetLink } = payload;
+
+  if (!transporter) {
+    console.warn("[EMAIL] SMTP config missing. Falling back to console output.");
+    console.log("[EMAIL RESET PASSWORD]");
+    console.log(`To: ${toEmail}`);
+    console.log(`Hi ${fullName}, reset your password using this link:`);
+    console.log(resetLink);
+    return { delivered: false };
+  }
+
+  await transporter.sendMail({
+    from: EMAIL_FROM,
+    to: toEmail,
+    subject: "Dat lai mat khau tai khoan JobFinder",
+    html: `
+      <p>Xin chao ${fullName},</p>
+      <p>Ban vua yeu cau dat lai mat khau. Bam vao lien ket ben duoi de tiep tuc:</p>
+      <p><a href="${resetLink}">${resetLink}</a></p>
+      <p>Lien ket co hieu luc trong mot thoi gian ngan.</p>
+      <p>Neu ban khong thuc hien yeu cau nay, vui long bo qua email.</p>
+    `,
+  });
+
+  return { delivered: true };
+}

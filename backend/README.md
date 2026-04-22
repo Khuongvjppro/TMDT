@@ -39,9 +39,11 @@ DATABASE_URL=mysql://root:@localhost:3306/job_platform
 JWT_ACCESS_SECRET=replace_with_secure_access_secret
 JWT_REFRESH_SECRET=replace_with_secure_refresh_secret
 JWT_EMAIL_VERIFY_SECRET=replace_with_secure_email_verify_secret
+JWT_RESET_PASSWORD_SECRET=replace_with_secure_reset_password_secret
 JWT_ACCESS_EXPIRES_IN=15m
 JWT_REFRESH_EXPIRES_IN=7d
 JWT_EMAIL_VERIFY_EXPIRES_IN=1h
+JWT_RESET_PASSWORD_EXPIRES_IN=15m
 FRONTEND_ORIGIN=http://localhost:3000
 
 # Nodemailer SMTP
@@ -77,6 +79,8 @@ npm run dev
   - `POST /api/auth/register`
   - `POST /api/auth/verify-email`
   - `POST /api/auth/resend-verification`
+  - `POST /api/auth/forgot-password`
+  - `POST /api/auth/reset-password`
   - `POST /api/auth/login`
   - `POST /api/auth/refresh`
   - `POST /api/auth/logout`
@@ -129,4 +133,4 @@ npm run dev
   - Ensure XAMPP MySQL is running.
   - Check host/port/user/password in `DATABASE_URL`.
 - JWT errors:
-  - Ensure JWT secrets are set consistently: `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `JWT_EMAIL_VERIFY_SECRET`.
+  - Ensure JWT secrets are set consistently: `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `JWT_EMAIL_VERIFY_SECRET`, `JWT_RESET_PASSWORD_SECRET`.

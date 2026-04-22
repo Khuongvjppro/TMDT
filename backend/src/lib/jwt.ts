@@ -6,6 +6,8 @@ const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || BASE_SECRET;
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || BASE_SECRET;
 const JWT_EMAIL_VERIFY_SECRET =
   process.env.JWT_EMAIL_VERIFY_SECRET || BASE_SECRET;
+const JWT_RESET_PASSWORD_SECRET =
+  process.env.JWT_RESET_PASSWORD_SECRET || BASE_SECRET;
 const ACCESS_TOKEN_EXPIRES_IN: jwt.SignOptions["expiresIn"] =
   (process.env.JWT_ACCESS_EXPIRES_IN as jwt.SignOptions["expiresIn"]) ||
   "15m";
@@ -15,6 +17,9 @@ const REFRESH_TOKEN_EXPIRES_IN: jwt.SignOptions["expiresIn"] =
 const EMAIL_VERIFY_EXPIRES_IN: jwt.SignOptions["expiresIn"] =
   (process.env.JWT_EMAIL_VERIFY_EXPIRES_IN as jwt.SignOptions["expiresIn"]) ||
   "1h";
+const RESET_PASSWORD_EXPIRES_IN: jwt.SignOptions["expiresIn"] =
+  (process.env.JWT_RESET_PASSWORD_EXPIRES_IN as jwt.SignOptions["expiresIn"]) ||
+  "15m";
 
 export type AccessTokenPayload = {
   userId: number;
@@ -32,6 +37,12 @@ export type EmailVerifyTokenPayload = {
   userId: number;
   email: string;
   tokenType: "email_verify";
+};
+
+export type ResetPasswordTokenPayload = {
+  userId: number;
+  email: string;
+  tokenType: "reset_password";
 };
 
 export function signAccessToken(payload: {
@@ -98,5 +109,32 @@ export function verifyEmailVerifyToken(token: string): EmailVerifyTokenPayload {
   if (decoded.tokenType !== "email_verify") {
     throw new Error("Invalid email verification token");
   }
+  return decoded;
+}
+
+export function signResetPasswordToken(payload: {
+  userId: number;
+  email: string;
+}): string {
+  const data: ResetPasswordTokenPayload = {
+    ...payload,
+    tokenType: "reset_password",
+  };
+
+  return jwt.sign(data, JWT_RESET_PASSWORD_SECRET, {
+    expiresIn: RESET_PASSWORD_EXPIRES_IN,
+  });
+}
+
+export function verifyResetPasswordToken(token: string): ResetPasswordTokenPayload {
+  const decoded = jwt.verify(
+    token,
+    JWT_RESET_PASSWORD_SECRET,
+  ) as ResetPasswordTokenPayload;
+
+  if (decoded.tokenType !== "reset_password") {
+    throw new Error("Invalid reset password token");
+  }
+
   return decoded;
 }

@@ -106,12 +106,12 @@ export default function LoginPage() {
             <label className="block text-sm font-semibold text-[#191c21]" htmlFor="password">
               Mật khẩu
             </label>
-            <button
-              type="button"
+            <Link
+              href="/forgot-password"
               className="text-xs font-semibold text-[#0a66c2] hover:underline"
             >
               Quên mật khẩu?
-            </button>
+            </Link>
           </div>
           <div className="relative">
             <input

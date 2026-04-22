@@ -35,8 +35,31 @@ export const registerSchema = z
     path: ["confirmPassword"],
   });
 
+export const forgotPasswordSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1, "Vui lòng nhập email")
+    .email("Email không đúng định dạng"),
+});
+
+export const resetPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(1, "Vui lòng nhập mật khẩu mới")
+      .min(6, "Mật khẩu cần ít nhất 6 ký tự"),
+    confirmPassword: z.string().min(1, "Vui lòng nhập lại mật khẩu mới"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Mật khẩu xác nhận không khớp",
+    path: ["confirmPassword"],
+  });
+
 export type LoginFormInput = z.infer<typeof loginSchema>;
 export type RegisterFormInput = z.infer<typeof registerSchema>;
+export type ForgotPasswordFormInput = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordFormInput = z.infer<typeof resetPasswordSchema>;
 
 export function mapZodErrors<T extends string>(issues: z.ZodIssue[]) {
   const errors: Partial<Record<T, string>> = {};

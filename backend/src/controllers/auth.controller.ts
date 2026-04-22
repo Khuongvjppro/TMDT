@@ -5,12 +5,17 @@ import { prisma } from "../lib/prisma";
 import {
   signAccessToken,
   signEmailVerifyToken,
+  signResetPasswordToken,
   signRefreshToken,
   verifyEmailVerifyToken,
+  verifyResetPasswordToken,
   verifyRefreshToken,
 } from "../lib/jwt";
 import { REGISTER_ROLES, UserRole } from "../constants/enums";
-import { sendVerificationEmailReal } from "../services/email.service";
+import {
+  sendPasswordResetEmailReal,
+  sendVerificationEmailReal,
+} from "../services/email.service";
 import { ensureRoleProfile } from "../services/role-profile.service";
 
 const REFRESH_TOKEN_COOKIE = "refreshToken";
@@ -42,6 +47,21 @@ const verifyEmailSchema = z.object({
 const resendVerificationSchema = z.object({
   email: z.string().email(),
 });
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email(),
+});
+
+const resetPasswordSchema = z
+  .object({
+    token: z.string().min(1),
+    password: z.string().min(6),
+    confirmPassword: z.string().min(6),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Password confirmation does not match",
+    path: ["confirmPassword"],
+  });
 
 function toUserResponse(user: {
   id: number;
@@ -82,6 +102,10 @@ function buildVerificationLink(token: string) {
   return `${FRONTEND_ORIGIN}/verify-email?token=${encodeURIComponent(token)}`;
 }
 
+function buildResetPasswordLink(token: string) {
+  return `${FRONTEND_ORIGIN}/reset-password?token=${encodeURIComponent(token)}`;
+}
+
 async function sendVerificationEmail(email: string, fullName: string, token: string) {
   const verifyLink = buildVerificationLink(token);
   await sendVerificationEmailReal({
@@ -90,6 +114,16 @@ async function sendVerificationEmail(email: string, fullName: string, token: str
     verifyLink,
   });
   return verifyLink;
+}
+
+async function sendResetPasswordEmail(email: string, fullName: string, token: string) {
+  const resetLink = buildResetPasswordLink(token);
+  await sendPasswordResetEmailReal({
+    toEmail: email,
+    fullName,
+    resetLink,
+  });
+  return resetLink;
 }
 
 async function getEmailVerifiedAtByUserId(userId: number) {
@@ -300,6 +334,72 @@ export async function resendVerificationEmail(req: Request, res: Response) {
           devVerificationLink: verifyLink,
         }),
   });
+}
+
+export async function forgotPassword(req: Request, res: Response) {
+  const parsed = forgotPasswordSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res
+      .status(400)
+      .json({ message: "Invalid payload", errors: parsed.error.flatten() });
+  }
+
+  const { email } = parsed.data;
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  // Return generic success if account does not exist to avoid email enumeration.
+  if (!user) {
+    return res.status(200).json({
+      message: "If this email exists, a reset link has been sent",
+    });
+  }
+
+  const resetToken = signResetPasswordToken({ userId: user.id, email: user.email });
+  let resetLink: string;
+  try {
+    resetLink = await sendResetPasswordEmail(user.email, user.fullName, resetToken);
+  } catch {
+    return res.status(500).json({ message: "Failed to send reset password email" });
+  }
+
+  return res.status(200).json({
+    message: "If this email exists, a reset link has been sent",
+    ...(IS_PROD
+      ? {}
+      : {
+          devResetPasswordToken: resetToken,
+          devResetPasswordLink: resetLink,
+        }),
+  });
+}
+
+export async function resetPassword(req: Request, res: Response) {
+  const parsed = resetPasswordSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res
+      .status(400)
+      .json({ message: "Invalid payload", errors: parsed.error.flatten() });
+  }
+
+  try {
+    const payload = verifyResetPasswordToken(parsed.data.token);
+    const user = await prisma.user.findUnique({ where: { id: payload.userId } });
+
+    if (!user || user.email !== payload.email) {
+      return res.status(400).json({ message: "Invalid reset password token" });
+    }
+
+    const passwordHash = await bcrypt.hash(parsed.data.password, 10);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash },
+    });
+
+    clearRefreshTokenCookie(res);
+    return res.status(200).json({ message: "Password reset successful" });
+  } catch {
+    return res.status(400).json({ message: "Invalid or expired reset password token" });
+  }
 }
 
 export async function refresh(req: Request, res: Response) {

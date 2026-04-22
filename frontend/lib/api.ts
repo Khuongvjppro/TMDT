@@ -137,6 +137,46 @@ export async function resendVerification(email: string) {
   }>(response);
 }
 
+export async function forgotPassword(email: string) {
+  const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Forgot password failed");
+  }
+
+  return parseJsonResponse<{
+    message: string;
+    devResetPasswordToken?: string;
+    devResetPasswordLink?: string;
+  }>(response);
+}
+
+export async function resetPassword(payload: {
+  token: string;
+  password: string;
+  confirmPassword: string;
+}) {
+  const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Reset password failed");
+  }
+
+  return parseJsonResponse<{ message: string }>(response);
+}
+
 export async function refreshAuth() {
   const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
     method: "POST",

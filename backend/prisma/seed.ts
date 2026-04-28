@@ -64,6 +64,65 @@ async function main() {
     },
   });
 
+  const extraCandidates = [
+    {
+      fullName: "Minh Tran",
+      email: "minh.tran@demo.com",
+      phone: "0900000002",
+      bio: "Frontend developer with React and Tailwind experience.",
+      cvLink: "https://example.com/cv/minh-tran",
+    },
+    {
+      fullName: "Linh Nguyen",
+      email: "linh.nguyen@demo.com",
+      phone: "0900000003",
+      bio: "Backend engineer focused on Node.js and MySQL.",
+      cvLink: "https://example.com/cv/linh-nguyen",
+    },
+    {
+      fullName: "Huy Pham",
+      email: "huy.pham@demo.com",
+      phone: "0900000004",
+      bio: "QA automation with Playwright and Cypress.",
+      cvLink: "https://example.com/cv/huy-pham",
+    },
+    {
+      fullName: "Trang Vo",
+      email: "trang.vo@demo.com",
+      phone: "0900000005",
+      bio: "Product designer with Figma and UX research background.",
+      cvLink: "https://example.com/cv/trang-vo",
+    },
+  ];
+
+  for (const item of extraCandidates) {
+    const user = await prisma.user.upsert({
+      where: { email: item.email },
+      update: {},
+      create: {
+        fullName: item.fullName,
+        email: item.email,
+        passwordHash: candidatePassword,
+        role: UserRole.CANDIDATE,
+      },
+    });
+
+    await prisma.candidateProfile.upsert({
+      where: { userId: user.id },
+      update: {
+        phone: item.phone,
+        bio: item.bio,
+        cvLink: item.cvLink,
+      },
+      create: {
+        userId: user.id,
+        phone: item.phone,
+        bio: item.bio,
+        cvLink: item.cvLink,
+      },
+    });
+  }
+
   await prisma.employerProfile.upsert({
     where: { userId: employer.id },
     update: {},
@@ -119,6 +178,29 @@ async function main() {
     },
   });
 
+  const existingTransactions = await prisma.employerTransaction.count({
+    where: { employerId: employer.id },
+  });
+
+  if (existingTransactions === 0) {
+    const packages = await prisma.billingPackage.findMany({
+      orderBy: { id: "asc" },
+    });
+
+    for (const pkg of packages) {
+      await prisma.employerTransaction.create({
+        data: {
+          transactionCode: `SEED-TXN-${pkg.id}-${Date.now()}`,
+          employerId: employer.id,
+          packageId: pkg.id,
+          amountCents: pkg.priceCents,
+          credits: pkg.credits,
+          status: "SUCCESS",
+        },
+      });
+    }
+  }
+
   const count = await prisma.job.count();
   if (count === 0) {
     await prisma.job.createMany({
@@ -148,6 +230,68 @@ async function main() {
         },
       ],
     });
+  }
+
+  const extraJobs = [
+    {
+      title: "UI/UX Designer",
+      companyName: "BrightLabs",
+      location: "Da Nang",
+      salaryMin: 900,
+      salaryMax: 1500,
+      description: "Design user flows, wireframes, and polished UI systems.",
+      requirements: "2+ years in product design, strong Figma skills.",
+      type: JobType.FULL_TIME,
+    },
+    {
+      title: "QA Automation Engineer",
+      companyName: "QualityHub",
+      location: "Ho Chi Minh City",
+      salaryMin: 1000,
+      salaryMax: 1600,
+      description: "Build E2E tests and maintain automation pipelines.",
+      requirements: "Playwright/Cypress experience, CI/CD familiarity.",
+      type: JobType.FULL_TIME,
+    },
+    {
+      title: "Product Manager",
+      companyName: "NexaSoft",
+      location: "Ha Noi",
+      salaryMin: 1400,
+      salaryMax: 2300,
+      description: "Own product roadmap, align stakeholders, ship features.",
+      requirements: "3+ years PM, strong communication and analytics.",
+      type: JobType.FULL_TIME,
+    },
+    {
+      title: "DevOps Engineer",
+      companyName: "CloudWorks",
+      location: "Remote",
+      salaryMin: 1600,
+      salaryMax: 2600,
+      description: "Manage cloud infrastructure and deployment pipelines.",
+      requirements: "AWS/GCP, Docker, Kubernetes, monitoring tools.",
+      type: JobType.REMOTE,
+    },
+  ];
+
+  for (const job of extraJobs) {
+    const exists = await prisma.job.findFirst({
+      where: {
+        title: job.title,
+        companyName: job.companyName,
+        location: job.location,
+      },
+    });
+
+    if (!exists) {
+      await prisma.job.create({
+        data: {
+          ...job,
+          employerId: employer.id,
+        },
+      });
+    }
   }
 
   const firstJob = await prisma.job.findFirst({ orderBy: { id: "asc" } });

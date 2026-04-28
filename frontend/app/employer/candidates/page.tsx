@@ -11,7 +11,12 @@ export default function EmployerCandidatesPage() {
   const [q, setQ] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [pageInfo, setPageInfo] = useState({ page: 1, pageSize: 10, total: 0, totalPages: 0 });
+  const [pageInfo, setPageInfo] = useState({
+    page: 1,
+    pageSize: 10,
+    total: 0,
+    totalPages: 0,
+  });
 
   const canAccess = auth?.user.role === "EMPLOYER";
 
@@ -28,7 +33,8 @@ export default function EmployerCandidatesPage() {
       setItems(data.items);
       setPageInfo(data.pagination);
     } catch (error) {
-      const nextMessage = error instanceof Error ? error.message : "Cannot load candidates";
+      const nextMessage =
+        error instanceof Error ? error.message : "Cannot load candidates";
       setMessage(nextMessage);
     } finally {
       setIsLoading(false);
@@ -45,21 +51,34 @@ export default function EmployerCandidatesPage() {
   }
 
   if (!isReady) {
-    return <p className="rounded-2xl bg-white p-4 shadow">Loading session...</p>;
+    return (
+      <p className="rounded-2xl bg-white p-4 shadow">Loading session...</p>
+    );
   }
 
   if (!auth) {
-    return <p className="rounded-2xl bg-white p-4 shadow">Please login as EMPLOYER to search candidates.</p>;
+    return (
+      <p className="rounded-2xl bg-white p-4 shadow">
+        Please login as EMPLOYER to search candidates.
+      </p>
+    );
   }
 
   if (!canAccess) {
-    return <p className="rounded-2xl bg-white p-4 shadow">Forbidden for role {auth.user.role}.</p>;
+    return (
+      <p className="rounded-2xl bg-white p-4 shadow">
+        Forbidden for role {auth.user.role}.
+      </p>
+    );
   }
 
   return (
     <section className="space-y-4 rounded-3xl bg-white p-6 shadow-lg">
       <h1 className="text-2xl font-black text-slate-900">Candidate Sourcing</h1>
-      <p className="text-sm text-slate-600">UC20 white feature: search candidate profiles by name, email, phone, bio, or cv link.</p>
+      <p className="text-sm text-slate-600">
+        UC20 white feature: search candidate profiles by name, email, phone,
+        bio, or cv link.
+      </p>
 
       <form className="flex flex-wrap items-center gap-2" onSubmit={onSubmit}>
         <input
@@ -78,16 +97,29 @@ export default function EmployerCandidatesPage() {
         </button>
       </form>
 
-      <p className="text-xs text-slate-500">{pageInfo.total} candidates found</p>
+      <p className="text-xs text-slate-500">
+        {pageInfo.total} candidates found
+      </p>
 
       <div className="space-y-3">
         {items.map((item) => (
-          <article key={item.id} className="rounded-2xl border border-slate-200 p-4">
-            <h2 className="text-lg font-bold text-slate-900">{item.fullName}</h2>
+          <article
+            key={item.id}
+            className="rounded-2xl border border-slate-200 p-4"
+          >
+            <h2 className="text-lg font-bold text-slate-900">
+              {item.fullName}
+            </h2>
             <p className="text-sm text-slate-600">{item.email}</p>
-            <p className="text-xs text-slate-500">Phone: {item.candidateProfile?.phone || "N/A"}</p>
-            <p className="text-xs text-slate-500">Applications: {item._count.applications}</p>
-            <p className="mt-2 text-sm text-slate-700">{item.candidateProfile?.bio || "No bio"}</p>
+            <p className="text-xs text-slate-500">
+              Phone: {item.candidateProfile?.phone || "N/A"}
+            </p>
+            <p className="text-xs text-slate-500">
+              Applications: {item._count.applications}
+            </p>
+            <p className="mt-2 text-sm text-slate-700">
+              {item.candidateProfile?.bio || "No bio"}
+            </p>
             {item.candidateProfile?.cvLink ? (
               <a
                 href={item.candidateProfile.cvLink}
@@ -103,7 +135,9 @@ export default function EmployerCandidatesPage() {
       </div>
 
       {!isLoading && items.length === 0 ? (
-        <p className="text-sm text-slate-600">No candidates matched your query.</p>
+        <p className="text-sm text-slate-600">
+          No candidates matched your query.
+        </p>
       ) : null}
 
       <div className="flex items-center gap-2">
@@ -115,7 +149,9 @@ export default function EmployerCandidatesPage() {
         >
           Previous
         </button>
-        <p className="text-xs text-slate-600">Page {pageInfo.page} / {Math.max(pageInfo.totalPages, 1)}</p>
+        <p className="text-xs text-slate-600">
+          Page {pageInfo.page} / {Math.max(pageInfo.totalPages, 1)}
+        </p>
         <button
           type="button"
           disabled={isLoading || pageInfo.page >= pageInfo.totalPages}
@@ -126,7 +162,9 @@ export default function EmployerCandidatesPage() {
         </button>
       </div>
 
-      {message ? <p className="text-sm font-medium text-slate-700">{message}</p> : null}
+      {message ? (
+        <p className="text-sm font-medium text-slate-700">{message}</p>
+      ) : null}
     </section>
   );
 }

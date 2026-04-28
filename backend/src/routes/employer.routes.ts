@@ -28,6 +28,9 @@ router.get("/jobs", listMyJobs);
 router.get("/jobs/:jobId/applications", listApplicationsByJob);
 router.patch("/applications/:applicationId/status", updateApplicationStatus);
 router.patch("/applications/:applicationId/interview", upsertInterviewSchedule);
-router.delete("/applications/:applicationId/interview", deleteInterviewSchedule);
+router.delete(
+  "/applications/:applicationId/interview",
+  deleteInterviewSchedule,
+);
 
 export default router;

@@ -29,7 +29,9 @@ export default function EmployerBillingPage() {
         setItems(data.items);
       } catch (error) {
         const nextMessage =
-          error instanceof Error ? error.message : "Cannot load billing packages";
+          error instanceof Error
+            ? error.message
+            : "Cannot load billing packages";
         setMessage(nextMessage);
       } finally {
         setIsLoading(false);
@@ -58,21 +60,33 @@ export default function EmployerBillingPage() {
   }
 
   if (!isReady) {
-    return <p className="rounded-2xl bg-white p-4 shadow">Loading session...</p>;
+    return (
+      <p className="rounded-2xl bg-white p-4 shadow">Loading session...</p>
+    );
   }
 
   if (!auth) {
-    return <p className="rounded-2xl bg-white p-4 shadow">Please login as EMPLOYER to view billing.</p>;
+    return (
+      <p className="rounded-2xl bg-white p-4 shadow">
+        Please login as EMPLOYER to view billing.
+      </p>
+    );
   }
 
   if (auth.user.role !== "EMPLOYER") {
-    return <p className="rounded-2xl bg-white p-4 shadow">Forbidden for role {auth.user.role}.</p>;
+    return (
+      <p className="rounded-2xl bg-white p-4 shadow">
+        Forbidden for role {auth.user.role}.
+      </p>
+    );
   }
 
   return (
     <section className="space-y-4 rounded-3xl bg-white p-6 shadow-lg">
       <h1 className="text-2xl font-black text-slate-900">Billing Packages</h1>
-      <p className="text-sm text-slate-600">Choose a package and create a billing transaction.</p>
+      <p className="text-sm text-slate-600">
+        Choose a package and create a billing transaction.
+      </p>
 
       <button
         type="button"
@@ -85,7 +99,9 @@ export default function EmployerBillingPage() {
             setItems(data.items);
           } catch (error) {
             const nextMessage =
-              error instanceof Error ? error.message : "Cannot load billing packages";
+              error instanceof Error
+                ? error.message
+                : "Cannot load billing packages";
             setMessage(nextMessage);
           } finally {
             setIsLoading(false);
@@ -99,7 +115,10 @@ export default function EmployerBillingPage() {
 
       <div className="grid gap-3 md:grid-cols-3">
         {items.map((pkg) => (
-          <article key={pkg.id} className="rounded-2xl border border-slate-200 p-4">
+          <article
+            key={pkg.id}
+            className="rounded-2xl border border-slate-200 p-4"
+          >
             <h2 className="text-lg font-bold text-slate-900">{pkg.name}</h2>
             <p className="mt-1 text-sm text-slate-600">{pkg.credits} credits</p>
             <p className="mt-2 text-xl font-black text-slate-900">
@@ -121,7 +140,9 @@ export default function EmployerBillingPage() {
         <p className="text-sm text-slate-600">No billing packages available.</p>
       ) : null}
 
-      {message ? <p className="text-sm font-medium text-slate-700">{message}</p> : null}
+      {message ? (
+        <p className="text-sm font-medium text-slate-700">{message}</p>
+      ) : null}
     </section>
   );
 }

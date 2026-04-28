@@ -84,23 +84,37 @@ export default function EmployerEditJobPage({ params }: Props) {
   }
 
   if (!isReady) {
-    return <p className="rounded-2xl bg-white p-4 shadow">Loading session...</p>;
+    return (
+      <p className="rounded-2xl bg-white p-4 shadow">Loading session...</p>
+    );
   }
 
   if (!auth) {
-    return <p className="rounded-2xl bg-white p-4 shadow">Please login as EMPLOYER to edit jobs.</p>;
+    return (
+      <p className="rounded-2xl bg-white p-4 shadow">
+        Please login as EMPLOYER to edit jobs.
+      </p>
+    );
   }
 
   if (!canAccess) {
-    return <p className="rounded-2xl bg-white p-4 shadow">Forbidden for role {auth.user.role}.</p>;
+    return (
+      <p className="rounded-2xl bg-white p-4 shadow">
+        Forbidden for role {auth.user.role}.
+      </p>
+    );
   }
 
   return (
     <section className="mx-auto max-w-3xl rounded-3xl bg-white p-6 shadow-lg">
       <h1 className="text-2xl font-black text-slate-900">Edit Job</h1>
-      <p className="mt-1 text-sm text-slate-600">Employer white feature: update own job.</p>
+      <p className="mt-1 text-sm text-slate-600">
+        Employer white feature: update own job.
+      </p>
 
-      {isLoading ? <p className="mt-3 text-sm text-slate-600">Loading job...</p> : null}
+      {isLoading ? (
+        <p className="mt-3 text-sm text-slate-600">Loading job...</p>
+      ) : null}
 
       <form className="mt-6 space-y-3" onSubmit={onSubmit}>
         <input
@@ -109,7 +123,9 @@ export default function EmployerEditJobPage({ params }: Props) {
           className="w-full rounded-xl border px-3 py-2 text-sm"
           required
           value={form.title}
-          onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
+          onChange={(event) =>
+            setForm((prev) => ({ ...prev, title: event.target.value }))
+          }
           disabled={isLoading || isSaving}
         />
         <input
@@ -118,7 +134,9 @@ export default function EmployerEditJobPage({ params }: Props) {
           className="w-full rounded-xl border px-3 py-2 text-sm"
           required
           value={form.companyName}
-          onChange={(event) => setForm((prev) => ({ ...prev, companyName: event.target.value }))}
+          onChange={(event) =>
+            setForm((prev) => ({ ...prev, companyName: event.target.value }))
+          }
           disabled={isLoading || isSaving}
         />
         <input
@@ -127,14 +145,18 @@ export default function EmployerEditJobPage({ params }: Props) {
           className="w-full rounded-xl border px-3 py-2 text-sm"
           required
           value={form.location}
-          onChange={(event) => setForm((prev) => ({ ...prev, location: event.target.value }))}
+          onChange={(event) =>
+            setForm((prev) => ({ ...prev, location: event.target.value }))
+          }
           disabled={isLoading || isSaving}
         />
         <select
           name="type"
           className="w-full rounded-xl border px-3 py-2 text-sm"
           value={form.type}
-          onChange={(event) => setForm((prev) => ({ ...prev, type: event.target.value }))}
+          onChange={(event) =>
+            setForm((prev) => ({ ...prev, type: event.target.value }))
+          }
           disabled={isLoading || isSaving}
         >
           <option value="FULL_TIME">Full time</option>
@@ -149,7 +171,9 @@ export default function EmployerEditJobPage({ params }: Props) {
           className="h-32 w-full rounded-xl border px-3 py-2 text-sm"
           required
           value={form.description}
-          onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
+          onChange={(event) =>
+            setForm((prev) => ({ ...prev, description: event.target.value }))
+          }
           disabled={isLoading || isSaving}
         />
         <textarea
@@ -158,7 +182,9 @@ export default function EmployerEditJobPage({ params }: Props) {
           className="h-32 w-full rounded-xl border px-3 py-2 text-sm"
           required
           value={form.requirements}
-          onChange={(event) => setForm((prev) => ({ ...prev, requirements: event.target.value }))}
+          onChange={(event) =>
+            setForm((prev) => ({ ...prev, requirements: event.target.value }))
+          }
           disabled={isLoading || isSaving}
         />
         <button
@@ -170,7 +196,9 @@ export default function EmployerEditJobPage({ params }: Props) {
         </button>
       </form>
 
-      {message ? <p className="mt-4 text-sm font-medium text-slate-700">{message}</p> : null}
+      {message ? (
+        <p className="mt-4 text-sm font-medium text-slate-700">{message}</p>
+      ) : null}
     </section>
   );
 }

@@ -23,7 +23,10 @@ export default function EmployerTransactionsPage() {
       setIsLoading(true);
       setMessage("");
       try {
-        const data = await listEmployerTransactions(auth.token, { page, pageSize: 10 });
+        const data = await listEmployerTransactions(auth.token, {
+          page,
+          pageSize: 10,
+        });
         setItems(data.items);
         setTotalPages(data.pagination.totalPages || 1);
       } catch (error) {
@@ -39,21 +42,35 @@ export default function EmployerTransactionsPage() {
   }, [auth?.token, auth?.user.role, page]);
 
   if (!isReady) {
-    return <p className="rounded-2xl bg-white p-4 shadow">Loading session...</p>;
+    return (
+      <p className="rounded-2xl bg-white p-4 shadow">Loading session...</p>
+    );
   }
 
   if (!auth) {
-    return <p className="rounded-2xl bg-white p-4 shadow">Please login as EMPLOYER to view transactions.</p>;
+    return (
+      <p className="rounded-2xl bg-white p-4 shadow">
+        Please login as EMPLOYER to view transactions.
+      </p>
+    );
   }
 
   if (auth.user.role !== "EMPLOYER") {
-    return <p className="rounded-2xl bg-white p-4 shadow">Forbidden for role {auth.user.role}.</p>;
+    return (
+      <p className="rounded-2xl bg-white p-4 shadow">
+        Forbidden for role {auth.user.role}.
+      </p>
+    );
   }
 
   return (
     <section className="space-y-4 rounded-3xl bg-white p-6 shadow-lg">
-      <h1 className="text-2xl font-black text-slate-900">Transaction History</h1>
-      <p className="text-sm text-slate-600">Your billing transactions are listed here.</p>
+      <h1 className="text-2xl font-black text-slate-900">
+        Transaction History
+      </h1>
+      <p className="text-sm text-slate-600">
+        Your billing transactions are listed here.
+      </p>
 
       <button
         type="button"
@@ -70,7 +87,9 @@ export default function EmployerTransactionsPage() {
             setTotalPages(data.pagination.totalPages || 1);
           } catch (error) {
             const nextMessage =
-              error instanceof Error ? error.message : "Cannot load transactions";
+              error instanceof Error
+                ? error.message
+                : "Cannot load transactions";
             setMessage(nextMessage);
           } finally {
             setIsLoading(false);
@@ -99,10 +118,14 @@ export default function EmployerTransactionsPage() {
               <tr key={item.id}>
                 <td className="py-2 pr-4">{item.transactionCode}</td>
                 <td className="py-2 pr-4">{item.package.name}</td>
-                <td className="py-2 pr-4">{formatUsdFromCents(item.amountCents)}</td>
+                <td className="py-2 pr-4">
+                  {formatUsdFromCents(item.amountCents)}
+                </td>
                 <td className="py-2 pr-4">{item.credits}</td>
                 <td className="py-2 pr-4">{item.status}</td>
-                <td className="py-2 pr-4">{new Date(item.createdAt).toLocaleString()}</td>
+                <td className="py-2 pr-4">
+                  {new Date(item.createdAt).toLocaleString()}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -127,7 +150,9 @@ export default function EmployerTransactionsPage() {
         </span>
         <button
           type="button"
-          onClick={() => setPage((prev) => Math.min(Math.max(1, totalPages), prev + 1))}
+          onClick={() =>
+            setPage((prev) => Math.min(Math.max(1, totalPages), prev + 1))
+          }
           disabled={page >= totalPages || isLoading}
           className="rounded-lg border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 disabled:opacity-60"
         >
@@ -135,7 +160,9 @@ export default function EmployerTransactionsPage() {
         </button>
       </div>
 
-      {message ? <p className="text-sm font-medium text-slate-700">{message}</p> : null}
+      {message ? (
+        <p className="text-sm font-medium text-slate-700">{message}</p>
+      ) : null}
     </section>
   );
 }

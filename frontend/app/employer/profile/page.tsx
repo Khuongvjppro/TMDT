@@ -65,23 +65,37 @@ export default function EmployerProfilePage() {
   }
 
   if (!isReady) {
-    return <p className="rounded-2xl bg-white p-4 shadow">Loading session...</p>;
+    return (
+      <p className="rounded-2xl bg-white p-4 shadow">Loading session...</p>
+    );
   }
 
   if (!auth) {
-    return <p className="rounded-2xl bg-white p-4 shadow">Please login as EMPLOYER to manage company profile.</p>;
+    return (
+      <p className="rounded-2xl bg-white p-4 shadow">
+        Please login as EMPLOYER to manage company profile.
+      </p>
+    );
   }
 
   if (!canAccess) {
-    return <p className="rounded-2xl bg-white p-4 shadow">Forbidden for role {auth.user.role}.</p>;
+    return (
+      <p className="rounded-2xl bg-white p-4 shadow">
+        Forbidden for role {auth.user.role}.
+      </p>
+    );
   }
 
   return (
     <section className="mx-auto max-w-3xl rounded-3xl bg-white p-6 shadow-lg">
       <h1 className="text-2xl font-black text-slate-900">Company Profile</h1>
-      <p className="mt-1 text-sm text-slate-600">Employer white feature: manage company profile.</p>
+      <p className="mt-1 text-sm text-slate-600">
+        Employer white feature: manage company profile.
+      </p>
 
-      {isLoading ? <p className="mt-3 text-sm text-slate-600">Loading profile...</p> : null}
+      {isLoading ? (
+        <p className="mt-3 text-sm text-slate-600">Loading profile...</p>
+      ) : null}
 
       <form className="mt-6 space-y-3" onSubmit={onSubmit}>
         <input
@@ -90,7 +104,9 @@ export default function EmployerProfilePage() {
           className="w-full rounded-xl border px-3 py-2 text-sm"
           required
           value={form.companyName}
-          onChange={(event) => setForm((prev) => ({ ...prev, companyName: event.target.value }))}
+          onChange={(event) =>
+            setForm((prev) => ({ ...prev, companyName: event.target.value }))
+          }
           disabled={isLoading || isSaving}
         />
         <input
@@ -98,7 +114,9 @@ export default function EmployerProfilePage() {
           placeholder="Company Website"
           className="w-full rounded-xl border px-3 py-2 text-sm"
           value={form.companyWebsite}
-          onChange={(event) => setForm((prev) => ({ ...prev, companyWebsite: event.target.value }))}
+          onChange={(event) =>
+            setForm((prev) => ({ ...prev, companyWebsite: event.target.value }))
+          }
           disabled={isLoading || isSaving}
         />
         <input
@@ -106,7 +124,12 @@ export default function EmployerProfilePage() {
           placeholder="Company Location"
           className="w-full rounded-xl border px-3 py-2 text-sm"
           value={form.companyLocation}
-          onChange={(event) => setForm((prev) => ({ ...prev, companyLocation: event.target.value }))}
+          onChange={(event) =>
+            setForm((prev) => ({
+              ...prev,
+              companyLocation: event.target.value,
+            }))
+          }
           disabled={isLoading || isSaving}
         />
         <textarea
@@ -114,7 +137,9 @@ export default function EmployerProfilePage() {
           placeholder="Company Description"
           className="h-40 w-full rounded-xl border px-3 py-2 text-sm"
           value={form.description}
-          onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
+          onChange={(event) =>
+            setForm((prev) => ({ ...prev, description: event.target.value }))
+          }
           disabled={isLoading || isSaving}
         />
         <button
@@ -126,7 +151,9 @@ export default function EmployerProfilePage() {
         </button>
       </form>
 
-      {message ? <p className="mt-4 text-sm font-medium text-slate-700">{message}</p> : null}
+      {message ? (
+        <p className="mt-4 text-sm font-medium text-slate-700">{message}</p>
+      ) : null}
     </section>
   );
 }

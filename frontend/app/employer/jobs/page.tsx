@@ -65,9 +65,7 @@ export default function EmployerJobsPage() {
         ),
       );
       setMessage(
-        nextStatus
-          ? `Re-activated job #${jobId}`
-          : `Hidden job #${jobId}`,
+        nextStatus ? `Re-activated job #${jobId}` : `Hidden job #${jobId}`,
       );
     } catch (error) {
       const nextMessage =
@@ -79,15 +77,25 @@ export default function EmployerJobsPage() {
   }
 
   if (!isReady) {
-    return <p className="rounded-2xl bg-white p-4 shadow">Loading session...</p>;
+    return (
+      <p className="rounded-2xl bg-white p-4 shadow">Loading session...</p>
+    );
   }
 
   if (!auth) {
-    return <p className="rounded-2xl bg-white p-4 shadow">Please login as EMPLOYER to manage jobs.</p>;
+    return (
+      <p className="rounded-2xl bg-white p-4 shadow">
+        Please login as EMPLOYER to manage jobs.
+      </p>
+    );
   }
 
   if (!canAccess) {
-    return <p className="rounded-2xl bg-white p-4 shadow">Forbidden for role {auth.user.role}.</p>;
+    return (
+      <p className="rounded-2xl bg-white p-4 shadow">
+        Forbidden for role {auth.user.role}.
+      </p>
+    );
   }
 
   return (
@@ -101,7 +109,9 @@ export default function EmployerJobsPage() {
           Create New Job
         </Link>
       </div>
-      <p className="text-sm text-slate-600">Employer white feature: list and manage own jobs.</p>
+      <p className="text-sm text-slate-600">
+        Employer white feature: list and manage own jobs.
+      </p>
 
       <button
         type="button"
@@ -114,11 +124,22 @@ export default function EmployerJobsPage() {
 
       <div className="space-y-3">
         {items.map((job) => (
-          <article key={job.id} className="rounded-2xl border border-slate-200 p-4">
-            <p className="text-xs font-semibold text-slate-500">#{job.id} • {job.type}</p>
-            <h2 className="mt-1 text-lg font-bold text-slate-900">{job.title}</h2>
-            <p className="text-sm text-slate-600">{job.companyName} • {job.location}</p>
-            <p className="mt-1 text-xs text-slate-500">Status: {job.isActive ? "ACTIVE" : "INACTIVE"}</p>
+          <article
+            key={job.id}
+            className="rounded-2xl border border-slate-200 p-4"
+          >
+            <p className="text-xs font-semibold text-slate-500">
+              #{job.id} • {job.type}
+            </p>
+            <h2 className="mt-1 text-lg font-bold text-slate-900">
+              {job.title}
+            </h2>
+            <p className="text-sm text-slate-600">
+              {job.companyName} • {job.location}
+            </p>
+            <p className="mt-1 text-xs text-slate-500">
+              Status: {job.isActive ? "ACTIVE" : "INACTIVE"}
+            </p>
 
             <div className="mt-3 flex flex-wrap gap-2">
               <Link
@@ -159,10 +180,14 @@ export default function EmployerJobsPage() {
       </div>
 
       {!isLoading && items.length === 0 ? (
-        <p className="text-sm text-slate-600">No jobs found. Create your first job.</p>
+        <p className="text-sm text-slate-600">
+          No jobs found. Create your first job.
+        </p>
       ) : null}
 
-      {message ? <p className="text-sm font-medium text-slate-700">{message}</p> : null}
+      {message ? (
+        <p className="text-sm font-medium text-slate-700">{message}</p>
+      ) : null}
     </section>
   );
 }

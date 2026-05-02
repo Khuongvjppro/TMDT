@@ -20,6 +20,15 @@ export default function EmployerCandidatesPage() {
 
   const canAccess = auth?.user.role === "EMPLOYER";
 
+  function getInitials(name: string) {
+    if (!name) return "NA";
+    const letters = name
+      .split(" ")
+      .filter(Boolean)
+      .map((part) => part[0]);
+    return letters.slice(0, 2).join("").toUpperCase() || "NA";
+  }
+
   async function loadData(nextPage = 1, keyword = q) {
     if (!auth?.token || !canAccess) return;
     setIsLoading(true);
@@ -73,93 +82,150 @@ export default function EmployerCandidatesPage() {
   }
 
   return (
-    <section className="space-y-4 rounded-3xl bg-white p-6 shadow-lg">
-      <h1 className="text-2xl font-black text-slate-900">Candidate Sourcing</h1>
-      <p className="text-sm text-slate-600">
-        UC20 white feature: search candidate profiles by name, email, phone,
-        bio, or cv link.
-      </p>
+    <section className="space-y-6 rounded-[28px] border border-slate-100 bg-white/80 p-6 shadow-xl backdrop-blur">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+            Candidate Sourcing
+          </p>
+          <h1 className="mt-2 text-3xl font-black text-slate-900">
+            Discover the right people faster
+          </h1>
+          <p className="mt-2 max-w-xl text-sm text-slate-600">
+            Search candidate profiles by name, email, phone, bio, or CV link.
+          </p>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs text-slate-500 shadow-sm">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+            Results
+          </p>
+          <p className="mt-1 text-2xl font-black text-slate-900">
+            {pageInfo.total}
+          </p>
+          <p className="text-[11px] text-slate-500">candidates found</p>
+        </div>
+      </div>
 
-      <form className="flex flex-wrap items-center gap-2" onSubmit={onSubmit}>
-        <input
-          value={q}
-          onChange={(event) => setQ(event.target.value)}
-          placeholder="Search keyword"
-          className="min-w-[260px] rounded-xl border px-3 py-2 text-sm"
-          disabled={isLoading}
-        />
+      <form
+        className="flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-3 shadow-sm"
+        onSubmit={onSubmit}
+      >
+        <div className="flex min-w-[240px] flex-1 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+          <span className="text-sm text-slate-400">🔍</span>
+          <input
+            value={q}
+            onChange={(event) => setQ(event.target.value)}
+            placeholder="Search name, email, phone, or bio"
+            className="w-full bg-transparent text-sm text-slate-700 outline-none"
+            disabled={isLoading}
+          />
+        </div>
         <button
           type="submit"
           disabled={isLoading}
-          className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+          className="rounded-xl bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800 disabled:opacity-60"
         >
           {isLoading ? "Searching..." : "Search"}
         </button>
       </form>
 
-      <p className="text-xs text-slate-500">
-        {pageInfo.total} candidates found
-      </p>
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {items.map((item) => {
+          const initials = getInitials(item.fullName);
+          const hasCv = Boolean(item.candidateProfile?.cvLink);
+          const phone = item.candidateProfile?.phone || "N/A";
+          const bio = item.candidateProfile?.bio || "No bio";
 
-      <div className="space-y-3">
-        {items.map((item) => (
-          <article
-            key={item.id}
-            className="rounded-2xl border border-slate-200 p-4"
-          >
-            <h2 className="text-lg font-bold text-slate-900">
-              {item.fullName}
-            </h2>
-            <p className="text-sm text-slate-600">{item.email}</p>
-            <p className="text-xs text-slate-500">
-              Phone: {item.candidateProfile?.phone || "N/A"}
-            </p>
-            <p className="text-xs text-slate-500">
-              Applications: {item._count.applications}
-            </p>
-            <p className="mt-2 text-sm text-slate-700">
-              {item.candidateProfile?.bio || "No bio"}
-            </p>
-            {item.candidateProfile?.cvLink ? (
-              <a
-                href={item.candidateProfile.cvLink}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-2 inline-block rounded-lg border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700"
-              >
-                Open CV Link
-              </a>
-            ) : null}
-          </article>
-        ))}
+          return (
+            <article
+              key={item.id}
+              className="group flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-slate-300 hover:shadow-xl"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 text-sm font-semibold text-white">
+                    {initials || "NA"}
+                  </div>
+                  <div className="min-w-0">
+                    <h2 className="text-lg font-semibold text-slate-900">
+                      {item.fullName}
+                    </h2>
+                    <p className="text-xs text-slate-500">{item.email}</p>
+                  </div>
+                </div>
+                <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+                  {item._count.applications} apps
+                </span>
+              </div>
+
+              <div className="mt-4 grid gap-2 rounded-2xl border border-slate-100 bg-slate-50 p-3 text-xs text-slate-600">
+                <p>
+                  <span className="font-semibold text-slate-700">Phone:</span>{" "}
+                  {phone}
+                </p>
+                <p>
+                  <span className="font-semibold text-slate-700">Status:</span>{" "}
+                  {hasCv ? "CV ready" : "CV missing"}
+                </p>
+              </div>
+
+              <p className="mt-4 line-clamp-3 text-sm text-slate-700">{bio}</p>
+
+              <div className="mt-5 flex flex-wrap items-center gap-2">
+                {hasCv ? (
+                  <a
+                    href={item.candidateProfile?.cvLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+                  >
+                    Open CV
+                    <span aria-hidden className="text-sm">
+                      ↗
+                    </span>
+                  </a>
+                ) : (
+                  <span className="rounded-full bg-slate-100 px-4 py-1.5 text-xs font-semibold text-slate-500">
+                    No CV link
+                  </span>
+                )}
+                <span className="rounded-full bg-slate-900 px-4 py-1.5 text-xs font-semibold text-white transition group-hover:bg-slate-800">
+                  View profile
+                </span>
+              </div>
+            </article>
+          );
+        })}
       </div>
 
       {!isLoading && items.length === 0 ? (
-        <p className="text-sm text-slate-600">
+        <p className="rounded-2xl border border-dashed border-slate-200 px-4 py-6 text-center text-sm text-slate-600">
           No candidates matched your query.
         </p>
       ) : null}
 
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          disabled={isLoading || pageInfo.page <= 1}
-          onClick={() => loadData(pageInfo.page - 1, q.trim())}
-          className="rounded-lg border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 disabled:opacity-60"
-        >
-          Previous
-        </button>
-        <p className="text-xs text-slate-600">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-xs text-slate-500">
           Page {pageInfo.page} / {Math.max(pageInfo.totalPages, 1)}
         </p>
-        <button
-          type="button"
-          disabled={isLoading || pageInfo.page >= pageInfo.totalPages}
-          onClick={() => loadData(pageInfo.page + 1, q.trim())}
-          className="rounded-lg border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 disabled:opacity-60"
-        >
-          Next
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            disabled={isLoading || pageInfo.page <= 1}
+            onClick={() => loadData(pageInfo.page - 1, q.trim())}
+            className="rounded-full border border-slate-300 px-4 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-400 disabled:opacity-60"
+          >
+            Previous
+          </button>
+          <button
+            type="button"
+            disabled={isLoading || pageInfo.page >= pageInfo.totalPages}
+            onClick={() => loadData(pageInfo.page + 1, q.trim())}
+            className="rounded-full border border-slate-300 px-4 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-400 disabled:opacity-60"
+          >
+            Next
+          </button>
+        </div>
       </div>
 
       {message ? (

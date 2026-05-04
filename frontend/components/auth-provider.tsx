@@ -27,9 +27,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const raw = window.localStorage.getItem(AUTH_STORAGE_KEY);
       if (raw) {
-        const parsed = JSON.parse(raw) as AuthState;
+        const parsed = JSON.parse(raw) as Partial<AuthState> & {
+          refreshToken?: string;
+        };
         if (parsed?.token && parsed?.user?.role) {
-          setAuth(parsed);
+          setAuth({
+            token: parsed.token,
+            user: parsed.user,
+          });
         }
       }
     } catch {

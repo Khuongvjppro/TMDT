@@ -124,7 +124,7 @@ export default function LoginPage() {
               disabled={isSubmitting}
             />
             <button
-              type="button"
+              type="button" tabIndex={-1}
               onClick={() => setShowPassword((prev) => !prev)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-800"
               aria-label="Hiển thị mật khẩu"

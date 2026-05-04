@@ -2,34 +2,179 @@ import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
-import { signToken } from "../lib/jwt";
-import { REGISTER_ROLES } from "../constants/enums";
+import {
+  signAccessToken,
+  signEmailVerifyToken,
+  signResetPasswordToken,
+  signRefreshToken,
+  verifyEmailVerifyToken,
+  verifyResetPasswordToken,
+  verifyRefreshToken,
+} from "../lib/jwt";
+import { REGISTER_ROLES, UserRole } from "../constants/enums";
+import {
+  sendPasswordResetEmailReal,
+  sendVerificationEmailReal,
+} from "../services/email.service";
 import { ensureRoleProfile } from "../services/role-profile.service";
 
-const registerSchema = z.object({
-  fullName: z.string().min(2),
-  email: z.string().email(),
-  password: z.string().min(6),
-  role: z.enum(REGISTER_ROLES).optional(),
-});
+const REFRESH_TOKEN_COOKIE = "refreshToken";
+const IS_PROD = process.env.NODE_ENV === "production";
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:3000";
+
+const registerSchema = z
+  .object({
+    fullName: z.string().min(2),
+    email: z.string().email(),
+    password: z.string().min(6),
+    confirmPassword: z.string().min(6),
+    role: z.enum(REGISTER_ROLES).optional(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Password confirmation does not match",
+    path: ["confirmPassword"],
+  });
 
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
 });
 
+const verifyEmailSchema = z.object({
+  token: z.string().min(1),
+});
+
+const resendVerificationSchema = z.object({
+  email: z.string().email(),
+});
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email(),
+});
+
+const resetPasswordSchema = z
+  .object({
+    token: z.string().min(1),
+    password: z.string().min(6),
+    confirmPassword: z.string().min(6),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Password confirmation does not match",
+    path: ["confirmPassword"],
+  });
+
 function toUserResponse(user: {
   id: number;
   fullName: string;
   email: string;
-  role: string;
+  role: UserRole;
+  emailVerifiedAt?: Date | null;
 }) {
   return {
     id: user.id,
     fullName: user.fullName,
     email: user.email,
     role: user.role,
+    isEmailVerified: Boolean(user.emailVerifiedAt),
   };
+}
+
+function buildAuthResponse(user: {
+  id: number;
+  fullName: string;
+  email: string;
+  role: UserRole;
+  emailVerifiedAt?: Date | null;
+}) {
+  const accessToken = signAccessToken({
+    userId: user.id,
+    role: user.role,
+    email: user.email,
+  });
+
+  return {
+    accessToken,
+    user: toUserResponse(user),
+  };
+}
+
+function buildVerificationLink(token: string) {
+  return `${FRONTEND_ORIGIN}/verify-email?token=${encodeURIComponent(token)}`;
+}
+
+function buildResetPasswordLink(token: string) {
+  return `${FRONTEND_ORIGIN}/reset-password?token=${encodeURIComponent(token)}`;
+}
+
+async function sendVerificationEmail(email: string, fullName: string, token: string) {
+  const verifyLink = buildVerificationLink(token);
+  await sendVerificationEmailReal({
+    toEmail: email,
+    fullName,
+    verifyLink,
+  });
+  return verifyLink;
+}
+
+async function sendResetPasswordEmail(email: string, fullName: string, token: string) {
+  const resetLink = buildResetPasswordLink(token);
+  await sendPasswordResetEmailReal({
+    toEmail: email,
+    fullName,
+    resetLink,
+  });
+  return resetLink;
+}
+
+async function getEmailVerifiedAtByUserId(userId: number) {
+  const rows = await prisma.$queryRaw<Array<{ emailVerifiedAt: Date | null }>>`
+    SELECT emailVerifiedAt
+    FROM \`User\`
+    WHERE id = ${userId}
+    LIMIT 1
+  `;
+
+  return rows[0]?.emailVerifiedAt ?? null;
+}
+
+async function getEmailVerifiedAtByEmail(email: string) {
+  const rows = await prisma.$queryRaw<Array<{ emailVerifiedAt: Date | null }>>`
+    SELECT emailVerifiedAt
+    FROM \`User\`
+    WHERE email = ${email}
+    LIMIT 1
+  `;
+
+  return rows[0]?.emailVerifiedAt ?? null;
+}
+
+async function markEmailVerified(userId: number) {
+  await prisma.$executeRaw`
+    UPDATE \`User\`
+    SET emailVerifiedAt = ${new Date()}
+    WHERE id = ${userId}
+  `;
+}
+
+function issueRefreshTokenCookie(res: Response, userId: number) {
+  const refreshToken = signRefreshToken({ userId });
+
+  res.cookie(REFRESH_TOKEN_COOKIE, refreshToken, {
+    httpOnly: true,
+    secure: IS_PROD,
+    sameSite: "lax",
+    path: "/api/auth",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+}
+
+function clearRefreshTokenCookie(res: Response) {
+  res.clearCookie(REFRESH_TOKEN_COOKIE, {
+    httpOnly: true,
+    secure: IS_PROD,
+    sameSite: "lax",
+    path: "/api/auth",
+  });
 }
 
 export async function register(req: Request, res: Response) {
@@ -63,14 +208,30 @@ export async function register(req: Request, res: Response) {
     fullName: user.fullName,
   });
 
-  const token = signToken({
-    userId: user.id,
-    role: user.role,
-    email: user.email,
-  });
+  const verifyToken = signEmailVerifyToken({ userId: user.id, email: user.email });
+  let verifyLink: string;
+  try {
+    verifyLink = await sendVerificationEmail(
+      user.email,
+      user.fullName,
+      verifyToken,
+    );
+  } catch {
+    return res.status(500).json({
+      message:
+        "Account created but failed to send verification email. Please try resend verification.",
+    });
+  }
+
   return res.status(201).json({
-    token,
-    user: toUserResponse(user),
+    message: "Registration successful. Please verify your email before login.",
+    requiresEmailVerification: true,
+    ...(IS_PROD
+      ? {}
+      : {
+          devVerificationToken: verifyToken,
+          devVerificationLink: verifyLink,
+        }),
   });
 }
 
@@ -94,15 +255,187 @@ export async function login(req: Request, res: Response) {
     return res.status(401).json({ message: "Invalid email or password" });
   }
 
-  const token = signToken({
-    userId: user.id,
-    role: user.role,
-    email: user.email,
-  });
+  const emailVerifiedAt = await getEmailVerifiedAtByUserId(user.id);
+  if (!emailVerifiedAt) {
+    return res.status(403).json({
+      message: "Email not verified",
+      code: "EMAIL_NOT_VERIFIED",
+    });
+  }
+
+  issueRefreshTokenCookie(res, user.id);
+  return res.status(200).json(buildAuthResponse(user));
+}
+
+export async function verifyEmail(req: Request, res: Response) {
+  const parsed = verifyEmailSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res
+      .status(400)
+      .json({ message: "Invalid payload", errors: parsed.error.flatten() });
+  }
+
+  try {
+    const payload = verifyEmailVerifyToken(parsed.data.token);
+    const user = await prisma.user.findUnique({ where: { id: payload.userId } });
+
+    if (!user || user.email !== payload.email) {
+      return res.status(400).json({ message: "Invalid verification token" });
+    }
+
+    const emailVerifiedAt = await getEmailVerifiedAtByUserId(user.id);
+    if (emailVerifiedAt) {
+      return res.status(200).json({ message: "Email already verified" });
+    }
+
+    await markEmailVerified(user.id);
+    return res.status(200).json({ message: "Email verified successfully" });
+  } catch {
+    return res.status(400).json({ message: "Invalid or expired verification token" });
+  }
+}
+
+export async function resendVerificationEmail(req: Request, res: Response) {
+  const parsed = resendVerificationSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res
+      .status(400)
+      .json({ message: "Invalid payload", errors: parsed.error.flatten() });
+  }
+
+  const user = await prisma.user.findUnique({ where: { email: parsed.data.email } });
+  if (!user) {
+    return res.status(404).json({ message: "Email not found" });
+  }
+
+  const emailVerifiedAt = await getEmailVerifiedAtByEmail(user.email);
+  if (emailVerifiedAt) {
+    return res.status(200).json({ message: "Email already verified" });
+  }
+
+  const verifyToken = signEmailVerifyToken({ userId: user.id, email: user.email });
+  let verifyLink: string;
+  try {
+    verifyLink = await sendVerificationEmail(
+      user.email,
+      user.fullName,
+      verifyToken,
+    );
+  } catch {
+    return res.status(500).json({ message: "Failed to send verification email" });
+  }
+
   return res.status(200).json({
-    token,
-    user: toUserResponse(user),
+    message: "Verification email sent",
+    ...(IS_PROD
+      ? {}
+      : {
+          devVerificationToken: verifyToken,
+          devVerificationLink: verifyLink,
+        }),
   });
+}
+
+export async function forgotPassword(req: Request, res: Response) {
+  const parsed = forgotPasswordSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res
+      .status(400)
+      .json({ message: "Invalid payload", errors: parsed.error.flatten() });
+  }
+
+  const { email } = parsed.data;
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  // Return generic success if account does not exist to avoid email enumeration.
+  if (!user) {
+    return res.status(200).json({
+      message: "If this email exists, a reset link has been sent",
+    });
+  }
+
+  const resetToken = signResetPasswordToken({ userId: user.id, email: user.email });
+  let resetLink: string;
+  try {
+    resetLink = await sendResetPasswordEmail(user.email, user.fullName, resetToken);
+  } catch {
+    return res.status(500).json({ message: "Failed to send reset password email" });
+  }
+
+  return res.status(200).json({
+    message: "If this email exists, a reset link has been sent",
+    ...(IS_PROD
+      ? {}
+      : {
+          devResetPasswordToken: resetToken,
+          devResetPasswordLink: resetLink,
+        }),
+  });
+}
+
+export async function resetPassword(req: Request, res: Response) {
+  const parsed = resetPasswordSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res
+      .status(400)
+      .json({ message: "Invalid payload", errors: parsed.error.flatten() });
+  }
+
+  try {
+    const payload = verifyResetPasswordToken(parsed.data.token);
+    const user = await prisma.user.findUnique({ where: { id: payload.userId } });
+
+    if (!user || user.email !== payload.email) {
+      return res.status(400).json({ message: "Invalid reset password token" });
+    }
+
+    const passwordHash = await bcrypt.hash(parsed.data.password, 10);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash },
+    });
+
+    clearRefreshTokenCookie(res);
+    return res.status(200).json({ message: "Password reset successful" });
+  } catch {
+    return res.status(400).json({ message: "Invalid or expired reset password token" });
+  }
+}
+
+export async function refresh(req: Request, res: Response) {
+  const refreshToken = req.cookies?.[REFRESH_TOKEN_COOKIE];
+  if (!refreshToken) {
+    return res.status(401).json({ message: "Missing refresh token" });
+  }
+
+  try {
+    const payload = verifyRefreshToken(refreshToken);
+
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        role: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(401).json({ message: "Invalid refresh token" });
+    }
+
+    issueRefreshTokenCookie(res, user.id);
+    return res.status(200).json(buildAuthResponse(user));
+  } catch {
+    clearRefreshTokenCookie(res);
+    return res.status(401).json({ message: "Invalid refresh token" });
+  }
+}
+
+export async function logout(_req: Request, res: Response) {
+  clearRefreshTokenCookie(res);
+  return res.status(200).json({ message: "Logged out" });
 }
 
 export async function me(req: Request, res: Response) {

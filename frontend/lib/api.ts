@@ -11,6 +11,7 @@ import {
   InterviewMode,
   Job,
   JobListResponse,
+  RegisterResponse,
   UserRole,
 } from "../types";
 
@@ -66,6 +67,7 @@ export async function login(email: string, password: string) {
   const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify({ email, password }),
   });
 
@@ -75,6 +77,131 @@ export async function login(email: string, password: string) {
   }
 
   return parseJsonResponse<AuthResponse>(response);
+}
+
+export async function register(payload: {
+  fullName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  role?: "CANDIDATE" | "EMPLOYER";
+}) {
+  const response = await fetch(`${API_BASE_URL}/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Register failed");
+  }
+
+  return parseJsonResponse<RegisterResponse>(response);
+}
+
+export async function verifyEmail(token: string) {
+  const response = await fetch(`${API_BASE_URL}/auth/verify-email`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ token }),
+  });
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Email verification failed");
+  }
+
+  return parseJsonResponse<{ message: string }>(response);
+}
+
+export async function resendVerification(email: string) {
+  const response = await fetch(`${API_BASE_URL}/auth/resend-verification`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Resend verification failed");
+  }
+
+  return parseJsonResponse<{
+    message: string;
+    devVerificationToken?: string;
+    devVerificationLink?: string;
+  }>(response);
+}
+
+export async function forgotPassword(email: string) {
+  const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Forgot password failed");
+  }
+
+  return parseJsonResponse<{
+    message: string;
+    devResetPasswordToken?: string;
+    devResetPasswordLink?: string;
+  }>(response);
+}
+
+export async function resetPassword(payload: {
+  token: string;
+  password: string;
+  confirmPassword: string;
+}) {
+  const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Reset password failed");
+  }
+
+  return parseJsonResponse<{ message: string }>(response);
+}
+
+export async function refreshAuth() {
+  const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Refresh token failed");
+  }
+
+  return parseJsonResponse<AuthResponse>(response);
+}
+
+export async function logout() {
+  const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+    method: "POST",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Logout failed");
+  }
 }
 
 export async function fetchMe(token: string) {

@@ -4,70 +4,13 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useAuth } from "./auth-provider";
-import { UserRole } from "../types";
+import { getRoleNavItems } from "./nav-config";
 
 function roleClassName(role: string) {
   if (role === "ADMIN") return "bg-rose-100 text-rose-700";
   if (role === "EMPLOYER") return "bg-blue-100 text-blue-700";
   if (role === "CANDIDATE") return "bg-emerald-100 text-emerald-700";
   return "bg-slate-100 text-slate-700";
-}
-
-type NavItem = {
-  href: string;
-  label: string;
-  matchers?: string[];
-};
-
-function getRoleNavItems(role?: UserRole): NavItem[] {
-  if (!role) return [];
-
-  if (role === "EMPLOYER") {
-    return [
-      {
-        href: "/employer/jobs/new",
-        label: "Post a Job",
-        matchers: ["/employer/jobs/new", "/recruiter/jobs/new"],
-      },
-      {
-        href: "/employer/jobs",
-        label: "My Jobs",
-        matchers: ["__EMPLOYER_MY_JOBS__"],
-      },
-      {
-        href: "/employer/profile",
-        label: "Company Profile",
-        matchers: ["/employer/profile"],
-      },
-      {
-        href: "/employer/candidates",
-        label: "Candidates",
-        matchers: ["/employer/candidates"],
-      },
-      {
-        href: "/employer/billing",
-        label: "Billing",
-        matchers: ["/employer/billing"],
-      },
-      {
-        href: "/employer/transactions",
-        label: "Transactions",
-        matchers: ["/employer/transactions"],
-      },
-    ];
-  }
-
-  if (role === "ADMIN") {
-    return [
-      {
-        href: "/admin/users",
-        label: "Admin Users",
-        matchers: ["/admin/users"],
-      },
-    ];
-  }
-
-  return [];
 }
 
 function isActivePath(pathname: string, matchers?: string[]) {
@@ -92,6 +35,12 @@ function isActivePath(pathname: string, matchers?: string[]) {
     }
     return pathname === matcher || pathname.startsWith(`${matcher}/`);
   });
+}
+
+function navItemClass(isActive: boolean) {
+  return isActive
+    ? "flex items-center gap-3 rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-sm font-semibold text-slate-900"
+    : "flex items-center gap-3 rounded-2xl border border-transparent px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50";
 }
 
 export default function AuthNav() {
@@ -159,30 +108,45 @@ export default function AuthNav() {
           />
 
           <aside
-            className={`fixed left-0 top-0 z-50 h-full w-[78vw] max-w-[300px] overflow-y-auto border-r border-slate-200 bg-white p-6 shadow-2xl transition-transform duration-300 ease-out ${
+            className={`fixed left-0 top-0 z-50 h-full w-[80vw] max-w-[320px] overflow-y-auto border-r border-slate-200 bg-white p-5 shadow-2xl transition-transform duration-300 ease-out ${
               isSidebarOpen ? "translate-x-0" : "-translate-x-full"
             }`}
           >
-            <div>
-              <p className="mt-1 text-lg font-black text-slate-900">{auth.user.fullName}</p>
-              <p className="mt-1 text-sm text-slate-600">{auth.user.email}</p>
+            <div className="rounded-2xl border border-slate-200 p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-sky-600 text-lg font-black text-white">
+                  {userShortName}
+                </div>
+                <div>
+                  <p className="text-base font-black text-slate-900">
+                    {auth.user.fullName}
+                  </p>
+                  <p className="text-xs text-slate-500">{auth.user.email}</p>
+                </div>
+              </div>
               <p
-                className={`mt-3 inline-block rounded-full px-2.5 py-1 text-xs font-bold ${roleClassName(auth.user.role)}`}
+                className={`mt-3 inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide ${roleClassName(auth.user.role)}`}
               >
                 {auth.user.role}
               </p>
             </div>
 
-            <div className="mt-6 space-y-2">
+            <div className="mt-5 space-y-2">
               <Link
                 href="/"
                 onClick={() => setIsSidebarOpen(false)}
-                className={
-                  pathname === "/"
-                    ? "block rounded-2xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white shadow-sm"
-                    : "block rounded-2xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
-                }
+                className={navItemClass(pathname === "/")}
               >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.8}
+                >
+                  <path d="M3 11.5 12 4l9 7.5" />
+                  <path d="M5 10.5V20h14v-9.5" />
+                </svg>
                 Home
               </Link>
 
@@ -191,24 +155,56 @@ export default function AuthNav() {
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsSidebarOpen(false)}
-                  className={
-                    isActivePath(pathname, item.matchers)
-                      ? "block rounded-2xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white shadow-sm"
-                      : "block rounded-2xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
-                  }
+                  className={navItemClass(
+                    isActivePath(pathname, item.matchers),
+                  )}
                 >
+                  {item.icon}
                   {item.label}
                 </Link>
               ))}
             </div>
 
-            <button
-              type="button"
-              onClick={onLogout}
-              className="mt-8 w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-slate-700"
-            >
-              Logout
-            </button>
+            <div className="mt-8 flex flex-col gap-3">
+              <button
+                type="button"
+                className="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.8}
+                >
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 8v5" />
+                  <circle cx="12" cy="16.5" r="0.9" fill="currentColor" />
+                </svg>
+                Support
+              </button>
+
+              <button
+                type="button"
+                onClick={onLogout}
+                className="flex items-center justify-center gap-2 rounded-2xl border border-rose-200 px-4 py-3 text-sm font-semibold text-rose-600 transition hover:bg-rose-50"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.8}
+                >
+                  <path d="M9 6h6" />
+                  <path d="M9 18h6" />
+                  <path d="M12 6v12" />
+                  <path d="M15.5 12H5" />
+                  <path d="M18 9l3 3-3 3" />
+                </svg>
+                Logout
+              </button>
+            </div>
           </aside>
         </>
       ) : null}

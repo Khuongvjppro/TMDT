@@ -132,14 +132,18 @@ export default function EmployerJobApplicationsPage({ params }: Props) {
     setInterviewUpdatingId(applicationId);
     setMessage("");
     try {
-      const data = await upsertEmployerInterviewSchedule(auth.token, applicationId, {
-        mode: form.mode,
-        startsAt: form.startsAt,
-        endsAt: form.endsAt,
-        meetingLink: form.meetingLink,
-        location: form.location,
-        note: form.note,
-      });
+      const data = await upsertEmployerInterviewSchedule(
+        auth.token,
+        applicationId,
+        {
+          mode: form.mode,
+          startsAt: form.startsAt,
+          endsAt: form.endsAt,
+          meetingLink: form.meetingLink,
+          location: form.location,
+          note: form.note,
+        },
+      );
 
       setItems((prev) =>
         prev.map((item) =>
@@ -154,7 +158,9 @@ export default function EmployerJobApplicationsPage({ params }: Props) {
       setMessage(`Interview schedule saved for application #${applicationId}`);
     } catch (error) {
       const nextMessage =
-        error instanceof Error ? error.message : "Save interview schedule failed";
+        error instanceof Error
+          ? error.message
+          : "Save interview schedule failed";
       setMessage(nextMessage);
     } finally {
       setInterviewUpdatingId(null);
@@ -178,10 +184,14 @@ export default function EmployerJobApplicationsPage({ params }: Props) {
             : item,
         ),
       );
-      setMessage(`Interview schedule deleted for application #${applicationId}`);
+      setMessage(
+        `Interview schedule deleted for application #${applicationId}`,
+      );
     } catch (error) {
       const nextMessage =
-        error instanceof Error ? error.message : "Delete interview schedule failed";
+        error instanceof Error
+          ? error.message
+          : "Delete interview schedule failed";
       setMessage(nextMessage);
     } finally {
       setInterviewUpdatingId(null);
@@ -203,7 +213,10 @@ export default function EmployerJobApplicationsPage({ params }: Props) {
     init();
   }, [params, auth?.token, canAccess]);
 
-  async function onChangeStatus(applicationId: number, status: ApplicationStatus) {
+  async function onChangeStatus(
+    applicationId: number,
+    status: ApplicationStatus,
+  ) {
     if (!auth?.token) return;
     setUpdatingId(applicationId);
     setMessage("");
@@ -231,15 +244,25 @@ export default function EmployerJobApplicationsPage({ params }: Props) {
   }
 
   if (!isReady) {
-    return <p className="rounded-2xl bg-white p-4 shadow">Loading session...</p>;
+    return (
+      <p className="rounded-2xl bg-white p-4 shadow">Loading session...</p>
+    );
   }
 
   if (!auth) {
-    return <p className="rounded-2xl bg-white p-4 shadow">Please login as EMPLOYER to view applications.</p>;
+    return (
+      <p className="rounded-2xl bg-white p-4 shadow">
+        Please login as EMPLOYER to view applications.
+      </p>
+    );
   }
 
   if (!canAccess) {
-    return <p className="rounded-2xl bg-white p-4 shadow">Forbidden for role {auth.user.role}.</p>;
+    return (
+      <p className="rounded-2xl bg-white p-4 shadow">
+        Forbidden for role {auth.user.role}.
+      </p>
+    );
   }
 
   return (
@@ -263,21 +286,37 @@ export default function EmployerJobApplicationsPage({ params }: Props) {
 
       <div className="space-y-3">
         {items.map((item) => (
-          <article key={item.id} className="rounded-2xl border border-slate-200 p-4">
-            <p className="text-xs font-semibold text-slate-500">Application #{item.id}</p>
-            <h2 className="mt-1 text-base font-bold text-slate-900">{item.candidate.fullName}</h2>
+          <article
+            key={item.id}
+            className="rounded-2xl border border-slate-200 p-4"
+          >
+            <p className="text-xs font-semibold text-slate-500">
+              Application #{item.id}
+            </p>
+            <h2 className="mt-1 text-base font-bold text-slate-900">
+              {item.candidate.fullName}
+            </h2>
             <p className="text-sm text-slate-600">{item.candidate.email}</p>
-            <p className="text-xs text-slate-500">Phone: {item.candidate.candidateProfile?.phone || "N/A"}</p>
-            <p className="mt-2 text-sm text-slate-700">{item.coverLetter || "No cover letter"}</p>
+            <p className="text-xs text-slate-500">
+              Phone: {item.candidate.candidateProfile?.phone || "N/A"}
+            </p>
+            <p className="mt-2 text-sm text-slate-700">
+              {item.coverLetter || "No cover letter"}
+            </p>
 
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              <span className="text-xs font-semibold text-slate-600">Status</span>
+              <span className="text-xs font-semibold text-slate-600">
+                Status
+              </span>
               <select
                 className="rounded-lg border border-slate-300 px-2 py-1 text-sm"
                 value={item.status}
                 disabled={updatingId === item.id}
                 onChange={(event) =>
-                  onChangeStatus(item.id, event.target.value as ApplicationStatus)
+                  onChangeStatus(
+                    item.id,
+                    event.target.value as ApplicationStatus,
+                  )
                 }
               >
                 {STATUS_OPTIONS.map((status) => (
@@ -288,7 +327,11 @@ export default function EmployerJobApplicationsPage({ params }: Props) {
               </select>
               {item.cvLink || item.candidate.candidateProfile?.cvLink ? (
                 <a
-                  href={item.cvLink || item.candidate.candidateProfile?.cvLink || "#"}
+                  href={
+                    item.cvLink ||
+                    item.candidate.candidateProfile?.cvLink ||
+                    "#"
+                  }
                   target="_blank"
                   rel="noreferrer"
                   className="rounded-lg border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-700"
@@ -299,14 +342,19 @@ export default function EmployerJobApplicationsPage({ params }: Props) {
             </div>
 
             <div className="mt-4 rounded-xl border border-slate-200 p-3">
-              <p className="text-xs font-semibold text-slate-600">Interview Schedule</p>
+              <p className="text-xs font-semibold text-slate-600">
+                Interview Schedule
+              </p>
               {item.interviewSchedule ? (
                 <p className="mt-1 text-xs text-emerald-700">
-                  Scheduled: {new Date(item.interviewSchedule.startsAt).toLocaleString()} - {" "}
+                  Scheduled:{" "}
+                  {new Date(item.interviewSchedule.startsAt).toLocaleString()} -{" "}
                   {new Date(item.interviewSchedule.endsAt).toLocaleString()}
                 </p>
               ) : (
-                <p className="mt-1 text-xs text-slate-500">No interview schedule yet.</p>
+                <p className="mt-1 text-xs text-slate-500">
+                  No interview schedule yet.
+                </p>
               )}
 
               <div className="mt-3 grid gap-2 md:grid-cols-2">
@@ -329,7 +377,11 @@ export default function EmployerJobApplicationsPage({ params }: Props) {
                   className="rounded-lg border border-slate-300 px-2 py-1 text-sm"
                   value={interviewForms[item.id]?.startsAt || ""}
                   onChange={(event) =>
-                    updateInterviewField(item.id, "startsAt", event.target.value)
+                    updateInterviewField(
+                      item.id,
+                      "startsAt",
+                      event.target.value,
+                    )
                   }
                 />
 
@@ -360,7 +412,11 @@ export default function EmployerJobApplicationsPage({ params }: Props) {
                   className="rounded-lg border border-slate-300 px-2 py-1 text-sm"
                   value={interviewForms[item.id]?.location || ""}
                   onChange={(event) =>
-                    updateInterviewField(item.id, "location", event.target.value)
+                    updateInterviewField(
+                      item.id,
+                      "location",
+                      event.target.value,
+                    )
                   }
                 />
               </div>
@@ -381,7 +437,9 @@ export default function EmployerJobApplicationsPage({ params }: Props) {
                   disabled={interviewUpdatingId === item.id}
                   className="rounded-lg bg-slate-900 px-3 py-1 text-xs font-semibold text-white disabled:opacity-60"
                 >
-                  {interviewUpdatingId === item.id ? "Saving..." : "Save Interview"}
+                  {interviewUpdatingId === item.id
+                    ? "Saving..."
+                    : "Save Interview"}
                 </button>
                 {item.interviewSchedule ? (
                   <button
@@ -400,10 +458,14 @@ export default function EmployerJobApplicationsPage({ params }: Props) {
       </div>
 
       {!isLoading && items.length === 0 ? (
-        <p className="text-sm text-slate-600">No applications for this job yet.</p>
+        <p className="text-sm text-slate-600">
+          No applications for this job yet.
+        </p>
       ) : null}
 
-      {message ? <p className="text-sm font-medium text-slate-700">{message}</p> : null}
+      {message ? (
+        <p className="text-sm font-medium text-slate-700">{message}</p>
+      ) : null}
     </section>
   );
 }

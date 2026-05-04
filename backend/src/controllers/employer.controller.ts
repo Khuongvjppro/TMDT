@@ -327,7 +327,9 @@ export async function listMyTransactions(req: Request, res: Response) {
       skip: (page - 1) * pageSize,
       take: pageSize,
     }),
-    prisma.employerTransaction.count({ where: { employerId: authUser.userId } }),
+    prisma.employerTransaction.count({
+      where: { employerId: authUser.userId },
+    }),
   ]);
 
   return res.status(200).json({
@@ -358,7 +360,9 @@ export async function listApplicationsByJob(req: Request, res: Response) {
   }
 
   if (job.employerId !== authUser.userId) {
-    return res.status(403).json({ message: "You can only view applications for your own jobs" });
+    return res
+      .status(403)
+      .json({ message: "You can only view applications for your own jobs" });
   }
 
   const items = await prisma.application.findMany({

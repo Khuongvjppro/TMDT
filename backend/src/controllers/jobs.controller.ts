@@ -12,15 +12,20 @@ const listJobsQuerySchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(PAGE_SIZE_MAX).default(10),
   q: z.string().trim().default(""),
   location: z.string().trim().default(""),
-  type: z.enum(JOB_TYPES).optional(),
+  type: z
+    .preprocess((value) => {
+      if (typeof value !== "string") return value;
+      return value.trim().toUpperCase().replace(/\s+/g, "_");
+    }, z.enum(JOB_TYPES))
+    .optional(),
 });
 
 const jobPayloadSchema = z.object({
   title: z.string().min(2),
   companyName: z.string().min(2),
   location: z.string().min(2),
-  salaryMin: z.number().int().positive().optional(),
-  salaryMax: z.number().int().positive().optional(),
+  salaryMin: z.number().int().min(10).max(50).optional(),
+  salaryMax: z.number().int().min(10).max(50).optional(),
   description: z.string().min(10),
   requirements: z.string().min(10),
   type: z.enum(JOB_TYPES),
@@ -84,12 +89,17 @@ export async function listJobs(req: Request, res: Response) {
   const andConditions: Array<Record<string, unknown>> = [];
   if (q) {
     andConditions.push({
-      OR: [{ title: { contains: q } }, { companyName: { contains: q } }],
+      OR: [
+        { title: { contains: q, mode: "insensitive" } },
+        { companyName: { contains: q, mode: "insensitive" } },
+      ],
     });
   }
 
   if (location) {
-    andConditions.push({ location: { contains: location } });
+    andConditions.push({
+      location: { contains: location, mode: "insensitive" },
+    });
   }
 
   if (type) {

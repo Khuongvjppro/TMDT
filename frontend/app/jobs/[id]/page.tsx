@@ -8,8 +8,8 @@ type JobDetailPageProps = {
 
 function formatDate(value: string) {
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Chưa cập nhật";
-  return new Intl.DateTimeFormat("vi-VN", {
+  if (Number.isNaN(date.getTime())) return "Not updated";
+  return new Intl.DateTimeFormat("en-US", {
     year: "numeric",
     month: "short",
     day: "2-digit",
@@ -75,55 +75,55 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
   const job = await fetchJobDetail(Number(id));
 
   const sampleBenefits = [
-    "Lương: 10 - 50 triệu (tùy theo năng lực)",
-    "Thưởng dự án, thưởng hiệu suất theo quý/năm",
-    "Đóng BHXH, BHYT, BHTN đầy đủ theo quy định",
-    "Cơ hội đào tạo, phát triển lộ trình nghề nghiệp",
-    "Môi trường làm việc chuyên nghiệp, đồng đội hỗ trợ",
+    "Salary: 10 - 50 million (based on experience)",
+    "Project bonuses, quarterly/yearly performance bonuses",
+    "Full social, health, and unemployment insurance",
+    "Training opportunities and clear career paths",
+    "Professional working environment with supportive teammates",
   ];
   const sampleWorkLocation = [
-    "Hà Nội: Số 6A/183 Hoàng Văn Thái, Phường Phương Liệt",
-    "Chi nhánh: Tầng 6, 219 Trung Kính, Cầu Giấy (nếu cần)",
+    "Hanoi: 6A/183 Hoang Van Thai, Phuong Lien Ward",
+    "Branch: Floor 6, 219 Trung Kinh, Cau Giay (if needed)",
   ];
   const sampleWorkTime = [
-    "Thứ 2 - Thứ 7 (08:00 - 17:00)",
-    "Nghỉ Chủ nhật và các ngày lễ theo quy định",
-    "Linh hoạt 1 buổi/tuần theo kế hoạch đội nhóm",
+    "Monday - Saturday (08:00 - 17:00)",
+    "Sundays and public holidays off",
+    "One flexible half-day per week based on team plan",
   ];
   const sampleRequiredDocs = [
-    "CV cập nhật, nêu rõ dự án đã tham gia",
-    "Portfolio/Link sản phẩm (nếu có)",
-    "Bằng cấp/chứng chỉ liên quan",
+    "Updated CV with project experience",
+    "Portfolio/product links (if any)",
+    "Relevant degrees/certificates",
   ];
   const sampleHiringProcess = [
-    "Sàng lọc hồ sơ (1-2 ngày)",
-    "Phỏng vấn chuyên môn (1 vòng)",
-    "Thông báo kết quả trong 3-5 ngày làm việc",
+    "Resume screening (1-2 days)",
+    "Technical interview (1 round)",
+    "Results notified within 3-5 business days",
   ];
   const sampleContactInfo = [
-    "Phòng Nhân sự: 0901 234 567",
+    "HR department: 0901 234 567",
     "Email: hr@congty.vn",
-    "Thời gian nhận hồ sơ: 08:30 - 17:30",
+    "Application hours: 08:30 - 17:30",
   ];
   const sampleDescription = [
-    "Thiết kế kiến trúc công trình dân dụng và nội thất theo định hướng dự án.",
-    "Lên phương án thiết kế 2D/3D, triển khai bản vẽ kỹ thuật thi công.",
-    "Phối hợp với các bộ phận liên quan để hoàn thiện hồ sơ thiết kế.",
-    "Tham gia khảo sát hiện trạng, đo đạc và cập nhật hồ sơ hiện trường.",
-    "Đảm bảo tính thẩm mỹ, kỹ thuật và khả thi trong thi công.",
+    "Design civil and interior architecture aligned with project goals.",
+    "Create 2D/3D concepts and deliver construction drawings.",
+    "Coordinate with related teams to finalize design packages.",
+    "Join site surveys, measurements, and field documentation updates.",
+    "Ensure design aesthetics, technical accuracy, and buildability.",
   ];
   const sampleRequirements = [
-    "Có kinh nghiệm thiết kế kiến trúc hoặc nội thất từ 1 năm trở lên.",
-    "Thành thạo AutoCAD, SketchUp/3ds Max hoặc phần mềm tương đương.",
-    "Hiểu biết về vật liệu, kết cấu và quy chuẩn xây dựng cơ bản.",
-    "Tư duy thiết kế tốt, làm việc cẩn thận, chú trọng chi tiết.",
-    "Có tinh thần trách nhiệm, chủ động và phối hợp tốt trong nhóm.",
+    "At least 1 year of architecture or interior design experience.",
+    "Proficient in AutoCAD, SketchUp/3ds Max, or similar tools.",
+    "Knowledge of materials, structures, and basic building standards.",
+    "Strong design thinking, careful work style, and attention to detail.",
+    "Responsible, proactive, and collaborative team player.",
   ];
 
   return (
     <section className="space-y-6">
       <div className="text-xs text-slate-500">
-        Trang chủ / Việc làm /{" "}
+        Home / Jobs /{" "}
         <span className="text-slate-700">{job.title}</span>
       </div>
 
@@ -151,7 +151,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                 {job.type.replace("_", " ")}
               </span>
               <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-600">
-                Ngay dang: {formatDate(job.createdAt)}
+                Posted: {formatDate(job.createdAt)}
               </span>
             </div>
 
@@ -171,7 +171,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500">Mức lương</p>
+                  <p className="text-xs text-slate-500">Salary</p>
                   <p className="text-sm font-semibold text-slate-900">
                     {formatSalaryRange(job.salaryMin, job.salaryMax)}
                   </p>
@@ -191,7 +191,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500">Địa điểm</p>
+                  <p className="text-xs text-slate-500">Location</p>
                   <p className="text-sm font-semibold text-slate-900">
                     {job.location}
                   </p>
@@ -213,7 +213,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500">Hình thức</p>
+                  <p className="text-xs text-slate-500">Employment type</p>
                   <p className="text-sm font-semibold text-slate-900">
                     {job.type.replace("_", " ")}
                   </p>
@@ -226,25 +226,25 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                 href="#apply-panel"
                 className="inline-flex items-center justify-center rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-brand-700"
               >
-                Ứng tuyển ngay
+                Apply now
               </a>
               <button
                 type="button"
                 className="inline-flex items-center justify-center rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-brand-200 hover:bg-brand-50"
               >
-                Lưu tin
+                Save job
               </button>
             </div>
           </article>
 
           <article className="rounded-3xl bg-white p-6 shadow-md">
             <h2 className="text-xl font-bold text-slate-900">
-              Chi tiết công việc
+              Job details
             </h2>
             <div className="mt-4 space-y-6">
               <section>
                 <h3 className="text-base font-semibold text-slate-900">
-                  Mô tả công việc
+                  Job description
                 </h3>
                 <div className="mt-2 space-y-2">
                   {renderRichText(job.description)}
@@ -256,7 +256,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
               <div className="h-px w-full bg-slate-100" />
               <section>
                 <h3 className="text-base font-semibold text-slate-900">
-                  Yêu cầu ứng viên
+                  Candidate requirements
                 </h3>
                 <div className="mt-2 space-y-2">
                   {renderRichText(job.requirements)}
@@ -268,14 +268,14 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
               <div className="h-px w-full bg-slate-100" />
               <section>
                 <h3 className="text-base font-semibold text-slate-900">
-                  Quyền lợi
+                  Benefits
                 </h3>
                 <div className="mt-2">{renderBulletList(sampleBenefits)}</div>
               </section>
               <div className="h-px w-full bg-slate-100" />
               <section>
                 <h3 className="text-base font-semibold text-slate-900">
-                  Địa điểm làm việc
+                  Work location
                 </h3>
                 <div className="mt-2">
                   {renderBulletList(sampleWorkLocation)}
@@ -283,14 +283,14 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
               </section>
               <section>
                 <h3 className="text-base font-semibold text-slate-900">
-                  Thời gian làm việc
+                  Working hours
                 </h3>
                 <div className="mt-2">{renderBulletList(sampleWorkTime)}</div>
               </section>
               <div className="h-px w-full bg-slate-100" />
               <section>
                 <h3 className="text-base font-semibold text-slate-900">
-                  Hồ sơ yêu cầu
+                  Required documents
                 </h3>
                 <div className="mt-2">
                   {renderBulletList(sampleRequiredDocs)}
@@ -298,7 +298,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
               </section>
               <section>
                 <h3 className="text-base font-semibold text-slate-900">
-                  Quy trình tuyển dụng
+                  Hiring process
                 </h3>
                 <div className="mt-2">
                   {renderBulletList(sampleHiringProcess)}
@@ -306,7 +306,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
               </section>
               <section>
                 <h3 className="text-base font-semibold text-slate-900">
-                  Thông tin liên hệ
+                  Contact information
                 </h3>
                 <div className="mt-2">
                   {renderBulletList(sampleContactInfo)}
@@ -332,7 +332,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                 />
               </div>
               <div>
-                <p className="text-xs text-slate-500">Công ty</p>
+                <p className="text-xs text-slate-500">Company</p>
                 <p className="text-base font-semibold text-slate-900">
                   {job.companyName}
                 </p>
@@ -341,21 +341,21 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
 
             <div className="mt-5 space-y-3 text-sm">
               <div className="flex items-center justify-between text-slate-600">
-                <span>Địa điểm</span>
+                <span>Location</span>
                 <span className="font-medium text-slate-900">
                   {job.location}
                 </span>
               </div>
               <div className="flex items-center justify-between text-slate-600">
-                <span>Quy mô</span>
+                <span>Company size</span>
                 <span className="font-medium text-slate-900">
-                  Chưa cập nhật
+                  Not updated
                 </span>
               </div>
               <div className="flex items-center justify-between text-slate-600">
-                <span>Lĩnh vực</span>
+                <span>Industry</span>
                 <span className="font-medium text-slate-900">
-                  Chưa cập nhật
+                  Not updated
                 </span>
               </div>
             </div>
@@ -363,27 +363,27 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
 
           <article className="rounded-3xl bg-white p-6 shadow-md">
             <h3 className="text-base font-semibold text-slate-900">
-              Thông tin chung
+              General information
             </h3>
             <div className="mt-4 space-y-3 text-sm">
               <div className="flex items-center justify-between text-slate-600">
-                <span>Mã việc làm</span>
+                <span>Job ID</span>
                 <span className="font-medium text-slate-900">#{job.id}</span>
               </div>
               <div className="flex items-center justify-between text-slate-600">
-                <span>Trạng thái</span>
+                <span>Status</span>
                 <span className="font-medium text-slate-900">
-                  {job.isActive ? "Đang tuyển" : "Tạm dừng"}
+                  {job.isActive ? "Hiring" : "Paused"}
                 </span>
               </div>
               <div className="flex items-center justify-between text-slate-600">
-                <span>Ngày đăng</span>
+                <span>Posted on</span>
                 <span className="font-medium text-slate-900">
                   {formatDate(job.createdAt)}
                 </span>
               </div>
               <div className="flex items-center justify-between text-slate-600">
-                <span>Hình thức</span>
+                <span>Employment type</span>
                 <span className="font-medium text-slate-900">
                   {job.type.replace("_", " ")}
                 </span>

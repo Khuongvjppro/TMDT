@@ -4,12 +4,12 @@ export const loginSchema = z.object({
   email: z
     .string()
     .trim()
-    .min(1, "Vui lòng nhập email")
-    .email("Email không đúng định dạng"),
+    .min(1, "Please enter your email")
+    .email("Invalid email format"),
   password: z
     .string()
-    .min(1, "Vui lòng nhập mật khẩu")
-    .min(6, "Mật khẩu cần ít nhất 6 ký tự"),
+    .min(1, "Please enter your password")
+    .min(6, "Password must be at least 6 characters"),
 });
 
 export const registerSchema = z
@@ -17,21 +17,21 @@ export const registerSchema = z
     fullName: z
       .string()
       .trim()
-      .min(1, "Vui lòng nhập họ và tên")
-      .min(2, "Họ và tên cần ít nhất 2 ký tự"),
+      .min(1, "Please enter your full name")
+      .min(2, "Full name must be at least 2 characters"),
     email: z
       .string()
       .trim()
-      .min(1, "Vui lòng nhập email")
-      .email("Email không đúng định dạng"),
+      .min(1, "Please enter your email")
+      .email("Invalid email format"),
     password: z
       .string()
-      .min(1, "Vui lòng nhập mật khẩu")
-      .min(6, "Mật khẩu cần ít nhất 6 ký tự"),
-    confirmPassword: z.string().min(1, "Vui lòng nhập lại mật khẩu"),
+      .min(1, "Please enter your password")
+      .min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string().min(1, "Please re-enter your password"),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Mật khẩu xác nhận không khớp",
+    message: "Password confirmation does not match",
     path: ["confirmPassword"],
   });
 
@@ -39,20 +39,20 @@ export const forgotPasswordSchema = z.object({
   email: z
     .string()
     .trim()
-    .min(1, "Vui lòng nhập email")
-    .email("Email không đúng định dạng"),
+    .min(1, "Please enter your email")
+    .email("Invalid email format"),
 });
 
 export const resetPasswordSchema = z
   .object({
     password: z
       .string()
-      .min(1, "Vui lòng nhập mật khẩu mới")
-      .min(6, "Mật khẩu cần ít nhất 6 ký tự"),
-    confirmPassword: z.string().min(1, "Vui lòng nhập lại mật khẩu mới"),
+      .min(1, "Please enter a new password")
+      .min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string().min(1, "Please re-enter the new password"),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Mật khẩu xác nhận không khớp",
+    message: "Password confirmation does not match",
     path: ["confirmPassword"],
   });
 

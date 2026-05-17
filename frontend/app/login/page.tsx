@@ -32,18 +32,18 @@ export default function LoginPage() {
         token: data.accessToken,
         user: data.user,
       });
-      setMessage(`Đăng nhập thành công với vai trò ${data.user.role}`);
+      setMessage(`Signed in successfully with role ${data.user.role}`);
       setMessageType("success");
       router.push("/");
       router.refresh();
     } catch (error) {
       const rawMessage =
-        error instanceof Error ? error.message : "Đăng nhập thất bại";
+        error instanceof Error ? error.message : "Sign in failed";
       const nextMessage =
         rawMessage === "Invalid email or password"
-          ? "Email hoặc mật khẩu không đúng"
+          ? "Invalid email or password"
           : rawMessage === "Email not verified"
-            ? "Email chưa được xác thực. Vui lòng kiểm tra hộp thư và xác thực trước khi đăng nhập."
+            ? "Email not verified. Please check your inbox and verify before signing in."
             : rawMessage;
       setMessage(nextMessage);
       setMessageType("error");
@@ -76,13 +76,13 @@ export default function LoginPage() {
       <div className="w-full max-w-md rounded-3xl bg-white p-8 text-[#191c21] shadow-[0_25px_60px_-40px_rgba(15,23,42,0.45)]">
         <div className="mb-8 space-y-2 text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0a66c2]">
-            Đăng nhập tài khoản
+            Sign in to your account
           </p>
           <h1 className="text-3xl font-bold text-[#191c21]">
-            Chào mừng trở lại
+            Welcome back
           </h1>
           <p className="text-sm text-[#414752]">
-            Vui lòng nhập thông tin đăng nhập để truy cập tài khoản của bạn.
+            Please enter your credentials to access your account.
           </p>
         </div>
 
@@ -116,13 +116,13 @@ export default function LoginPage() {
                 className="block text-sm font-semibold text-[#191c21]"
                 htmlFor="password"
               >
-                Mật khẩu
+                Password
               </label>
               <Link
                 href="/forgot-password"
                 className="text-xs font-semibold text-[#0a66c2] hover:underline"
               >
-                Quên mật khẩu?
+                Forgot password?
               </Link>
             </div>
             <div className="relative">
@@ -130,7 +130,7 @@ export default function LoginPage() {
                 id="password"
                 name="password"
                 type={showPassword ? "text" : "password"}
-                placeholder="Mật khẩu"
+                placeholder="Password"
                 className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 pr-12 text-sm text-[#191c21] outline-none transition focus:border-[#0a66c2] focus:ring-2 focus:ring-[#0a66c2]/20"
                 required
                 disabled={isSubmitting}
@@ -140,8 +140,8 @@ export default function LoginPage() {
                 tabIndex={-1}
                 onClick={() => setShowPassword((prev) => !prev)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-800"
-                aria-label="Hiển thị mật khẩu"
-                title={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                aria-label="Show password"
+                title={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? <Eye /> : <EyeOff />}
               </button>
@@ -158,7 +158,7 @@ export default function LoginPage() {
             disabled={isSubmitting}
             className="w-full rounded-xl bg-gradient-to-r from-[#004e99] to-[#0a66c2] py-3.5 text-sm font-bold text-white transition active:scale-[0.99] disabled:opacity-60"
           >
-            {isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
+            {isSubmitting ? "Signing in..." : "Sign in"}
           </button>
         </form>
 
@@ -168,7 +168,7 @@ export default function LoginPage() {
           </div>
           <div className="relative flex justify-center text-[11px] uppercase">
             <span className="bg-white px-3 font-semibold tracking-widest text-slate-500">
-              hoặc tiếp tục với
+              or continue with
             </span>
           </div>
         </div>
@@ -214,12 +214,12 @@ export default function LoginPage() {
         </div>
 
         <p className="mt-6 text-center text-sm text-slate-600">
-          Chưa có tài khoản?{" "}
+          Don't have an account?{" "}
           <Link
             href="/register"
             className="font-semibold text-[#0a66c2] hover:underline"
           >
-            Tạo tài khoản
+            Create account
           </Link>
         </p>
 

@@ -173,10 +173,22 @@ export async function listMyJobs(req: Request, res: Response) {
   const authUser = getAuthUser(req, res);
   if (!authUser) return;
 
-  const items = await prisma.job.findMany({
+  const rawItems = await prisma.job.findMany({
     where: { employerId: authUser.userId },
     orderBy: { createdAt: "desc" },
+    include: {
+      _count: {
+        select: {
+          applications: true,
+        },
+      },
+    },
   });
+
+  const items = rawItems.map(({ _count, ...job }) => ({
+    ...job,
+    applicationsCount: _count.applications,
+  }));
 
   return res.status(200).json({ items });
 }

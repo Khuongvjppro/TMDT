@@ -220,7 +220,14 @@ export default function EmployerJobsPage() {
                 href={`/employer/jobs/${job.id}/applications`}
                 className="rounded-full border border-slate-300 px-4 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-brand-200 hover:bg-brand-50"
               >
-                Applications
+                <span className="flex items-center gap-2">
+                  <span>Applications</span>
+                  {job.applicationsCount ? (
+                    <span className="min-w-[20px] rounded-full bg-slate-900 px-2 py-0.5 text-center text-[10px] font-bold text-white">
+                      {job.applicationsCount}
+                    </span>
+                  ) : null}
+                </span>
               </Link>
               <button
                 type="button"

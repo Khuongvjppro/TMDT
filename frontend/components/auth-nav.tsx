@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "./auth-provider";
 import { getRoleNavItems } from "./nav-config";
+import { getEmployerPendingApplicationsCount } from "../lib/api";
 
 function roleClassName(role: string) {
   if (role === "ADMIN") return "bg-rose-100 text-rose-700";
@@ -48,11 +49,42 @@ export default function AuthNav() {
   const router = useRouter();
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
   const navItems = getRoleNavItems(auth?.user.role);
   const userShortName = useMemo(() => {
     const source = auth?.user.fullName || auth?.user.email || "U";
     return source.charAt(0).toUpperCase();
   }, [auth?.user.fullName, auth?.user.email]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    if (!auth?.token || auth.user.role !== "EMPLOYER") {
+      setPendingCount(0);
+      return;
+    }
+
+    async function loadPendingCount() {
+      try {
+        const data = await getEmployerPendingApplicationsCount(auth.token);
+        if (isMounted) {
+          setPendingCount(data.pendingCount);
+        }
+      } catch {
+        if (isMounted) {
+          setPendingCount(0);
+        }
+      }
+    }
+
+    loadPendingCount();
+    const intervalId = window.setInterval(loadPendingCount, 20000);
+
+    return () => {
+      isMounted = false;
+      window.clearInterval(intervalId);
+    };
+  }, [auth?.token, auth?.user.role]);
 
   function onLogout() {
     setIsSidebarOpen(false);
@@ -160,7 +192,14 @@ export default function AuthNav() {
                   )}
                 >
                   {item.icon}
-                  {item.label}
+                  <span className="flex items-center gap-2">
+                    <span>{item.label}</span>
+                    {item.href === "/employer/jobs" && pendingCount > 0 ? (
+                      <span className="min-w-[22px] rounded-full bg-rose-500 px-2 py-0.5 text-center text-[10px] font-bold text-white">
+                        {pendingCount}
+                      </span>
+                    ) : null}
+                  </span>
                 </Link>
               ))}
             </div>

@@ -173,12 +173,43 @@ export async function listMyJobs(req: Request, res: Response) {
   const authUser = getAuthUser(req, res);
   if (!authUser) return;
 
-  const items = await prisma.job.findMany({
+  const rawItems = await prisma.job.findMany({
     where: { employerId: authUser.userId },
     orderBy: { createdAt: "desc" },
+    include: {
+      _count: {
+        select: {
+          applications: true,
+        },
+      },
+    },
   });
 
+  const items = rawItems.map(({ _count, ...job }) => ({
+    ...job,
+    applicationsCount: _count.applications,
+  }));
+
   return res.status(200).json({ items });
+}
+
+export async function getEmployerApplicationNotifications(
+  req: Request,
+  res: Response,
+) {
+  const authUser = getAuthUser(req, res);
+  if (!authUser) return;
+
+  const pendingCount = await prisma.application.count({
+    where: {
+      status: "PENDING",
+      job: {
+        employerId: authUser.userId,
+      },
+    },
+  });
+
+  return res.status(200).json({ pendingCount });
 }
 
 export async function listCandidates(req: Request, res: Response) {

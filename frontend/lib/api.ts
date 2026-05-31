@@ -464,6 +464,23 @@ export async function listEmployerTransactions(
   }>(response);
 }
 
+export async function getEmployerPendingApplicationsCount(token: string) {
+  const response = await fetch(
+    `${API_BASE_URL}/employer/notifications/applications`,
+    {
+      cache: "no-store",
+      headers: { Authorization: `Bearer ${token}` },
+    },
+  );
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Cannot load application notifications");
+  }
+
+  return parseJsonResponse<{ pendingCount: number }>(response);
+}
+
 export async function listEmployerJobApplications(
   token: string,
   jobId: number,

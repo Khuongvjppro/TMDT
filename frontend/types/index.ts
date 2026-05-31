@@ -53,6 +53,7 @@ export type Job = {
   isActive: boolean;
   employerId: number;
   createdAt: string;
+  applicationsCount?: number;
 };
 
 export type JobListResponse = {

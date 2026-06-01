@@ -12,15 +12,20 @@ const listJobsQuerySchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(PAGE_SIZE_MAX).default(10),
   q: z.string().trim().default(""),
   location: z.string().trim().default(""),
-  type: z.enum(JOB_TYPES).optional(),
+  type: z
+    .preprocess((value) => {
+      if (typeof value !== "string") return value;
+      return value.trim().toUpperCase().replace(/\s+/g, "_");
+    }, z.enum(JOB_TYPES))
+    .optional(),
 });
 
 const jobPayloadSchema = z.object({
   title: z.string().min(2),
   companyName: z.string().min(2),
   location: z.string().min(2),
-  salaryMin: z.number().int().positive().optional(),
-  salaryMax: z.number().int().positive().optional(),
+  salaryMin: z.number().int().min(10).max(50).optional(),
+  salaryMax: z.number().int().min(10).max(50).optional(),
   description: z.string().min(10),
   requirements: z.string().min(10),
   type: z.enum(JOB_TYPES),
@@ -47,6 +52,10 @@ const updateJobSchema = jobPayloadSchema
     message: "salaryMin must be less than or equal to salaryMax",
     path: ["salaryMin"],
   });
+
+const setJobActiveSchema = z.object({
+  isActive: z.boolean(),
+});
 
 const employerSelect = {
   id: true,
@@ -80,12 +89,17 @@ export async function listJobs(req: Request, res: Response) {
   const andConditions: Array<Record<string, unknown>> = [];
   if (q) {
     andConditions.push({
-      OR: [{ title: { contains: q } }, { companyName: { contains: q } }],
+      OR: [
+        { title: { contains: q, mode: "insensitive" } },
+        { companyName: { contains: q, mode: "insensitive" } },
+      ],
     });
   }
 
   if (location) {
-    andConditions.push({ location: { contains: location } });
+    andConditions.push({
+      location: { contains: location, mode: "insensitive" },
+    });
   }
 
   if (type) {
@@ -224,4 +238,42 @@ export async function deleteJob(req: Request, res: Response) {
 
   await prisma.job.delete({ where: { id: jobId } });
   return res.status(204).send();
+}
+
+export async function setJobActive(req: Request, res: Response) {
+  const authUser = getAuthUser(req, res);
+  if (!authUser) return;
+
+  const jobIdParsed = parseJobId(req.params.id);
+  if (!jobIdParsed.success) {
+    return res.status(400).json({ message: "Invalid job id" });
+  }
+
+  const parsed = setJobActiveSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res
+      .status(400)
+      .json({ message: "Invalid payload", errors: parsed.error.flatten() });
+  }
+
+  const jobId = jobIdParsed.data;
+  const existing = await prisma.job.findUnique({ where: { id: jobId } });
+
+  if (!existing) {
+    return res.status(404).json({ message: "Job not found" });
+  }
+
+  const isAdmin = authUser.role === "ADMIN";
+  if (!isAdmin && existing.employerId !== authUser.userId) {
+    return res
+      .status(403)
+      .json({ message: "You can only update your own job status" });
+  }
+
+  const updated = await prisma.job.update({
+    where: { id: jobId },
+    data: { isActive: parsed.data.isActive },
+  });
+
+  return res.status(200).json({ item: updated });
 }

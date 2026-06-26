@@ -90,6 +90,7 @@ model EmployerProfile {
   companyWebsite  String?
   companyLocation String?
   description     String?  @db.Text
+  credits         Int      @default(0)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

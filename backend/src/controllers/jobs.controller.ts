@@ -22,10 +22,10 @@ const listJobsQuerySchema = z.object({
 
 const jobPayloadSchema = z.object({
   title: z.string().min(2),
-  companyName: z.string().min(2),
+  companyName: z.string().min(2).optional(),
   location: z.string().min(2),
-  salaryMin: z.number().int().min(10).max(50).optional(),
-  salaryMax: z.number().int().min(10).max(50).optional(),
+  salaryMin: z.number().int().nonnegative().optional(),
+  salaryMax: z.number().int().nonnegative().optional(),
   description: z.string().min(10),
   requirements: z.string().min(10),
   type: z.enum(JOB_TYPES),
@@ -167,9 +167,43 @@ export async function createJob(req: Request, res: Response) {
       .json({ message: "Invalid payload", errors: parsed.error.flatten() });
   }
 
+  let companyName = parsed.data.companyName;
+
+  if (authUser.role === "EMPLOYER") {
+    const profile = await prisma.employerProfile.findUnique({
+      where: { userId: authUser.userId },
+    });
+    if (!profile) {
+      return res.status(400).json({ message: "Employer profile not found." });
+    }
+    companyName = profile.companyName;
+
+    // Credit check for Employer
+    if (profile.credits < 1) {
+      return res.status(403).json({
+        message: "Insufficient credits to post a job. Please purchase a billing package.",
+      });
+    }
+
+    // Decrement credit
+    await prisma.employerProfile.update({
+      where: { userId: authUser.userId },
+      data: {
+        credits: {
+          decrement: 1,
+        },
+      },
+    });
+  } else if (authUser.role === "ADMIN") {
+    if (!companyName) {
+      return res.status(400).json({ message: "Company name is required for Admin." });
+    }
+  }
+
   const job = await prisma.job.create({
     data: {
       ...parsed.data,
+      companyName: companyName!,
       employerId: authUser.userId,
     },
   });
@@ -205,9 +239,19 @@ export async function updateJob(req: Request, res: Response) {
     return res.status(403).json({ message: "You can only edit your own jobs" });
   }
 
+  const updatedData = { ...parsed.data };
+  if (authUser.role === "EMPLOYER") {
+    const profile = await prisma.employerProfile.findUnique({
+      where: { userId: authUser.userId },
+    });
+    if (profile) {
+      updatedData.companyName = profile.companyName;
+    }
+  }
+
   const updated = await prisma.job.update({
     where: { id: jobId },
-    data: parsed.data,
+    data: updatedData,
   });
 
   return res.status(200).json({ item: updated });

@@ -1,3 +1,4 @@
+import React from "react";
 import { fetchJobDetail } from "../../../lib/api";
 import JobApplyPanel from "../../../components/job-apply-panel";
 import { formatSalaryRange, getCompanyLogoUrl } from "../../../lib/job-utils";
@@ -18,7 +19,7 @@ function formatDate(value: string) {
 
 function renderRichText(text: string) {
   const lines = text.split("\n").map((line) => line.trim());
-  const elements: JSX.Element[] = [];
+  const elements: React.ReactNode[] = [];
   let bullets: string[] = [];
 
   function flushBullets(key: number) {
@@ -127,9 +128,9 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
         <span className="text-slate-700">{job.title}</span>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] items-start">
         <div className="space-y-6">
-          <article className="rounded-[26px] bg-white/90 p-5 shadow-xl ring-1 ring-slate-100 backdrop-blur">
+          <article className="rounded-3xl bg-white p-6 shadow-md ring-1 ring-slate-100">
             <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-600">
               {job.type.replace("_", " ")}
             </p>
@@ -155,8 +156,8 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
               </span>
             </div>
 
-            <div className="mt-4 grid gap-3 lg:grid-cols-3">
-              <div className="flex items-center gap-3 rounded-2xl bg-slate-50 px-3 py-2">
+            <div className="mt-4 grid gap-3 lg:grid-cols-3 items-stretch">
+              <div className="flex h-full items-center gap-3 rounded-2xl bg-slate-50 px-3 py-2">
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-100 text-brand-600">
                   <svg
                     viewBox="0 0 24 24"
@@ -170,14 +171,14 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                     <path d="M12 7v10" />
                   </svg>
                 </div>
-                <div>
+                <div className="flex-1">
                   <p className="text-xs text-slate-500">Salary</p>
                   <p className="text-sm font-semibold text-slate-900">
                     {formatSalaryRange(job.salaryMin, job.salaryMax)}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 rounded-2xl bg-slate-50 px-3 py-2">
+              <div className="flex h-full items-center gap-3 rounded-2xl bg-slate-50 px-3 py-2">
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-100 text-brand-600">
                   <svg
                     viewBox="0 0 24 24"
@@ -190,14 +191,14 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                     <path d="M9.5 9.5a2.5 2.5 0 1 0 5 0 2.5 2.5 0 0 0-5 0z" />
                   </svg>
                 </div>
-                <div>
+                <div className="flex-1">
                   <p className="text-xs text-slate-500">Location</p>
                   <p className="text-sm font-semibold text-slate-900">
                     {job.location}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 rounded-2xl bg-slate-50 px-3 py-2">
+              <div className="flex h-full items-center gap-3 rounded-2xl bg-slate-50 px-3 py-2">
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-100 text-brand-600">
                   <svg
                     viewBox="0 0 24 24"
@@ -212,7 +213,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                     <path d="M10 11h4" />
                   </svg>
                 </div>
-                <div>
+                <div className="flex-1">
                   <p className="text-xs text-slate-500">Employment type</p>
                   <p className="text-sm font-semibold text-slate-900">
                     {job.type.replace("_", " ")}
@@ -320,8 +321,8 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
           </div>
         </div>
 
-        <aside className="space-y-6 lg:sticky lg:top-6">
-          <article className="rounded-3xl bg-white p-6 shadow-md">
+        <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start">
+          <article className="rounded-3xl bg-white p-6 shadow-md box-border overflow-hidden">
             <div className="flex items-center gap-4">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-slate-200 bg-white">
                 <img
@@ -361,7 +362,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
             </div>
           </article>
 
-          <article className="rounded-3xl bg-white p-6 shadow-md">
+          <article className="rounded-3xl bg-white p-6 shadow-md box-border overflow-hidden">
             <h3 className="text-base font-semibold text-slate-900">
               General information
             </h3>

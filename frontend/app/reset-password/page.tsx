@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, Suspense } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { resetPassword } from "../../lib/api";
 import { mapZodErrors, resetPasswordSchema } from "../../lib/validation";
@@ -29,7 +29,7 @@ function toEnglishResetPasswordMessage(message: string) {
   return message;
 }
 
-export default function ResetPasswordPage() {
+function ResetPasswordFormContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";
 
@@ -92,17 +92,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <section className="mx-auto max-w-xl rounded-3xl bg-white p-6 text-[#191c21] shadow-lg">
-      <div className="mb-6 space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0a66c2]">
-          Reset password
-        </p>
-        <h1 className="text-2xl font-bold text-[#191c21]">Create a new password</h1>
-        <p className="text-sm text-[#414752]">
-          Enter a new password to finish restoring your account.
-        </p>
-      </div>
-
+    <>
       <form noValidate className="space-y-4" onSubmit={onSubmit}>
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-[#191c21]" htmlFor="password">
@@ -183,6 +173,26 @@ export default function ResetPasswordPage() {
           {message}
         </p>
       ) : null}
+    </>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <section className="mx-auto max-w-xl rounded-3xl bg-white p-6 text-[#191c21] shadow-lg">
+      <div className="mb-6 space-y-2">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0a66c2]">
+          Reset password
+        </p>
+        <h1 className="text-2xl font-bold text-[#191c21]">Create a new password</h1>
+        <p className="text-sm text-[#414752]">
+          Enter a new password to finish restoring your account.
+        </p>
+      </div>
+
+      <Suspense fallback={<p className="text-center text-sm text-slate-500">Loading form...</p>}>
+        <ResetPasswordFormContent />
+      </Suspense>
 
       <p className="mt-6 text-center text-sm text-slate-600">
         <Link href="/login" className="font-semibold text-[#0a66c2] hover:underline">

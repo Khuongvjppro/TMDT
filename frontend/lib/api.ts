@@ -4,6 +4,7 @@ import {
   AuthResponse,
   AuthUser,
   BillingPackage,
+  CandidateApplication,
   EmployerCandidateListResponse,
   EmployerJobApplication,
   EmployerProfile,
@@ -633,4 +634,18 @@ export async function updateUserRole(
   }
 
   return parseJsonResponse<{ item: AdminUser }>(response);
+}
+
+export async function listMyApplications(token: string) {
+  const response = await fetch(`${API_BASE_URL}/applications/me`, {
+    cache: "no-store",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Cannot load applications");
+  }
+
+  return parseJsonResponse<{ items: CandidateApplication[] }>(response);
 }

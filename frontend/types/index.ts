@@ -72,6 +72,7 @@ export type EmployerProfile = {
   companyWebsite?: string | null;
   companyLocation?: string | null;
   description?: string | null;
+  credits?: number;
   createdAt: string;
   updatedAt: string;
   fullName?: string;
@@ -164,5 +165,19 @@ export type EmployerTransaction = {
     name: string;
     credits: number;
     priceCents: number;
+  };
+};
+
+export type CandidateApplication = {
+  id: number;
+  status: ApplicationStatus;
+  createdAt: string;
+  cvLink?: string | null;
+  job: {
+    id: number;
+    title: string;
+    companyName: string;
+    location: string;
+    type: JobType;
   };
 };

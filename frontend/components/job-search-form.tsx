@@ -21,6 +21,7 @@ export default function JobSearchForm() {
     if (type) params.set("type", type);
 
     router.push(`/?${params.toString()}`);
+    router.refresh();
   }
 
   return (

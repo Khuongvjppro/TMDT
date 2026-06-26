@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { deleteJob, listEmployerJobs, setJobActive } from "../../../lib/api";
+import { deleteJob, getEmployerProfile, listEmployerJobs, setJobActive } from "../../../lib/api";
 import { useAuth } from "../../../components/auth-provider";
 import { Job } from "../../../types";
 import { formatSalaryRange } from "../../../lib/job-utils";
@@ -10,6 +10,7 @@ import { formatSalaryRange } from "../../../lib/job-utils";
 export default function EmployerJobsPage() {
   const { auth, isReady } = useAuth();
   const [items, setItems] = useState<Job[]>([]);
+  const [credits, setCredits] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -25,8 +26,12 @@ export default function EmployerJobsPage() {
     setIsLoading(true);
     setMessage("");
     try {
-      const data = await listEmployerJobs(auth.token);
-      setItems(data.items);
+      const [jobsData, profileData] = await Promise.all([
+        listEmployerJobs(auth.token),
+        getEmployerProfile(auth.token),
+      ]);
+      setItems(jobsData.items);
+      setCredits(profileData.item.credits ?? 0);
     } catch (error) {
       const nextMessage =
         error instanceof Error ? error.message : "Cannot load jobs";
@@ -119,7 +124,12 @@ export default function EmployerJobsPage() {
             clear overview.
           </p>
         </div>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {credits !== null ? (
+            <span className="rounded-full bg-amber-50 border border-amber-200 px-4 py-2 text-sm font-bold text-amber-800">
+              Credits: {credits}
+            </span>
+          ) : null}
           <button
             type="button"
             onClick={loadData}

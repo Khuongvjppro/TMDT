@@ -294,6 +294,20 @@ export async function purchaseBillingPackage(req: Request, res: Response) {
     },
   });
 
+  await prisma.employerProfile.upsert({
+    where: { userId: authUser.userId },
+    update: {
+      credits: {
+        increment: selectedPackage.credits,
+      },
+    },
+    create: {
+      userId: authUser.userId,
+      companyName: `${authUser.email.split("@")[0]} Company`,
+      credits: selectedPackage.credits,
+    },
+  });
+
   return res.status(201).json({ item });
 }
 

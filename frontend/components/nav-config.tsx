@@ -121,6 +121,22 @@ export function getRoleNavItems(role?: UserRole): NavItem[] {
   if (role === "ADMIN") {
     return [
       {
+        href: "/admin",
+        label: "Dashboard",
+        matchers: ["/admin"],
+        icon: (
+          <svg
+            viewBox="0 0 24 24"
+            className="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.8}
+          >
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        ),
+      },
+      {
         href: "/admin/users",
         label: "Admin Users",
         matchers: ["/admin/users"],

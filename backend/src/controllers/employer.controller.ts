@@ -533,6 +533,76 @@ export async function upsertInterviewSchedule(req: Request, res: Response) {
   return res.status(200).json({ item: updated });
 }
 
+export async function getEmployerJobTypeStats(req: Request, res: Response) {
+  const authUser = getAuthUser(req, res);
+  if (!authUser) return;
+
+  const stats = await prisma.job.groupBy({
+    by: ["type"],
+    where: { employerId: authUser.userId },
+    _count: { id: true },
+  });
+
+  const items = stats.map((s) => ({
+    type: s.type,
+    count: s._count.id,
+  }));
+
+  return res.status(200).json({ items });
+}
+
+export async function getEmployerApplicationStatusStats(
+  req: Request,
+  res: Response,
+) {
+  const authUser = getAuthUser(req, res);
+  if (!authUser) return;
+
+  const stats = await prisma.application.groupBy({
+    by: ["status"],
+    where: {
+      job: {
+        employerId: authUser.userId,
+      },
+    },
+    _count: { id: true },
+  });
+
+  const items = stats.map((s) => ({
+    status: s.status,
+    count: s._count.id,
+  }));
+
+  return res.status(200).json({ items });
+}
+
+export async function getEmployerInterviewModeStats(
+  req: Request,
+  res: Response,
+) {
+  const authUser = getAuthUser(req, res);
+  if (!authUser) return;
+
+  const stats = await prisma.interviewSchedule.groupBy({
+    by: ["mode"],
+    where: {
+      application: {
+        job: {
+          employerId: authUser.userId,
+        },
+      },
+    },
+    _count: { id: true },
+  });
+
+  const items = stats.map((s) => ({
+    mode: s.mode,
+    count: s._count.id,
+  }));
+
+  return res.status(200).json({ items });
+}
+
 export async function deleteInterviewSchedule(req: Request, res: Response) {
   const authUser = getAuthUser(req, res);
   if (!authUser) return;

@@ -42,62 +42,110 @@ enum TransactionStatus {
   FAILED
 }
 
-model User {
-  id           Int           @id @default(autoincrement())
-  fullName     String
-  email        String        @unique
-  emailVerifiedAt DateTime?
-  passwordHash String
-  role         UserRole      @default(CANDIDATE)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+enum UserStatus {
+  ACTIVE
+  LOCKED
+  DELETED
+}
 
-  jobs         Job[]
-  applications Application[]
-  transactions EmployerTransaction[]
-  candidateProfile CandidateProfile?
-  employerProfile  EmployerProfile?
-  adminProfile     AdminProfile?
-  candidateCvs     CandidateCv[]
-  savedJobs        SavedJob[]
-  jobAlerts        JobAlert[]
-  companyReviews   CompanyReview[] @relation("ReviewAuthor")
-  receivedReviews  CompanyReview[] @relation("ReviewCompany")
-  candidateConversations Conversation[] @relation("CandidateConversations")
-  employerConversations  Conversation[] @relation("EmployerConversations")
-  sentMessages     ChatMessage[]
+enum JobStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AuditActionType {
+  USER_LOCKED
+  USER_UNLOCKED
+  USER_DELETED
+  ROLE_CHANGED
+  STATUS_CHANGED
+  USER_CREATED
+  USER_INVITED
+  JOB_APPROVED
+  JOB_REJECTED
+  CATEGORY_CREATED
+  CATEGORY_UPDATED
+  CATEGORY_DELETED
+  PACKAGE_CREATED
+  PACKAGE_UPDATED
+  PACKAGE_DELETED
+  PACKAGE_STATUS_CHANGED
+  REVIEW_HIDDEN
+  REVIEW_RESTORED
+}
+
+model User {
+  id              Int        @id @default(autoincrement())
+  fullName        String
+  email           String     @unique
+  emailVerifiedAt DateTime?
+  passwordHash    String
+  role            UserRole   @default(CANDIDATE)
+  status          UserStatus @default(ACTIVE)
+  violationCount  Int        @default(0)
+  lockedAt        DateTime?
+  lockedBy        Int?
+  deletedAt       DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  jobs                   Job[]
+  applications           Application[]
+  transactions           EmployerTransaction[]
+  candidateProfile       CandidateProfile?
+  employerProfile        EmployerProfile?
+  adminProfile           AdminProfile?
+  candidateCvs           CandidateCv[]
+  savedJobs              SavedJob[]
+  jobAlerts              JobAlert[]
+  companyReviews         CompanyReview[] @relation("CompanyReviewAuthor")
+  receivedReviews        CompanyReview[] @relation("CompanyReviewCompany")
+  candidateConversations Conversation[]  @relation("CandidateConversations")
+  employerConversations  Conversation[]  @relation("EmployerConversations")
+  sentMessages           ChatMessage[]
+  auditLogs              AuditLog[]
+  reviews                Review[]        @relation("JobReviewAuthor")
+  hiddenReviews          Review[]        @relation("JobReviewHiddenBy")
+
+  @@index([status])
+  @@index([email])
 }
 
 model BillingPackage {
-  id         Int       @id @default(autoincrement())
-  name       String    @unique
-  credits    Int
-  priceCents Int
-  isActive   Boolean   @default(true)
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id           Int      @id @default(autoincrement())
+  name         String   @unique
+  price        Int
+  durationDays Int
+  maxJobPosts  Int
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   transactions EmployerTransaction[]
+  auditLogs    AuditLog[]
+
+  @@index([isActive])
 }
 
 model CandidateProfile {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @unique
-  phone     String?
-  bio       String?  @db.Text
-  cvLink    String?
-  jobTitle  String?
-  address   String?
-  skills    String?  @db.Text
-  experienceYears Int @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              Int      @id @default(autoincrement())
+  userId          Int      @unique
+  phone           String?
+  bio             String?  @db.Text
+  cvLink          String?
+  jobTitle        String?
+  address         String?
+  skills          String?  @db.Text
+  experienceYears Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model EmployerProfile {
-  id             Int      @id @default(autoincrement())
+  id              Int      @id @default(autoincrement())
   userId          Int      @unique
   companyName     String
   companyWebsite  String?
@@ -106,7 +154,7 @@ model EmployerProfile {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model AdminProfile {
@@ -117,32 +165,38 @@ model AdminProfile {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Job {
-  id              Int           @id @default(autoincrement())
+  id              Int       @id @default(autoincrement())
   title           String
   companyName     String
   location        String
   salaryMin       Int?
   salaryMax       Int?
-  experienceYears Int           @default(0)
-  description     String        @db.Text
-  requirements    String        @db.Text
+  experienceYears Int       @default(0)
+  description     String    @db.Text
+  requirements    String    @db.Text
   type            JobType
-  isActive        Boolean       @default(true)
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  isActive        Boolean   @default(true)
+  status          JobStatus @default(PENDING)
+  rejectReason    String?   @db.Text
+  publishedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  employerId      Int
-  employer        User          @relation(fields: [employerId], references: [id], onDelete: Cascade)
-  applications    Application[]
-  savedBy         SavedJob[]
+  employerId   Int
+  employer     User          @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  applications Application[]
+  savedBy      SavedJob[]
+  auditLogs    AuditLog[]
+  reviews      Review[]
 
   @@index([title])
   @@index([companyName])
   @@index([location])
+  @@index([status])
 }
 
 model Application {
@@ -166,32 +220,32 @@ model Application {
 }
 
 model InterviewSchedule {
-  id          Int           @id @default(autoincrement())
-  applicationId Int         @unique
-  mode        InterviewMode @default(ONLINE)
-  startsAt    DateTime
-  endsAt      DateTime
-  meetingLink String?
-  location    String?
-  note        String?       @db.Text
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id            Int           @id @default(autoincrement())
+  applicationId Int           @unique
+  mode          InterviewMode @default(ONLINE)
+  startsAt      DateTime
+  endsAt        DateTime
+  meetingLink   String?
+  location      String?
+  note          String?       @db.Text
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
-  application Application   @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 }
 
 model EmployerTransaction {
-  id          Int               @id @default(autoincrement())
-  transactionCode String        @unique
-  employerId  Int
-  packageId   Int
-  amountCents Int
-  credits     Int
-  status      TransactionStatus @default(SUCCESS)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  id              Int               @id @default(autoincrement())
+  transactionCode String            @unique
+  employerId      Int
+  packageId       Int
+  amountCents     Int
+  credits         Int
+  status          TransactionStatus @default(SUCCESS)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 
-  employer User @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  employer User           @relation(fields: [employerId], references: [id], onDelete: Cascade)
   package  BillingPackage @relation(fields: [packageId], references: [id], onDelete: Restrict)
 
   @@index([employerId, createdAt])
@@ -227,19 +281,19 @@ model SavedJob {
 }
 
 model JobAlert {
-  id            Int      @id @default(autoincrement())
-  candidateId   Int
-  name          String
-  keywords      String?  @map("keyword")
-  location      String?
-  type          JobType?
-  salaryMin     Int?     @map("minSalary")
-  salaryMax     Int?
-  experienceMax Int?     @map("maxExperienceYears")
-  isActive      Boolean  @default(true)
+  id             Int       @id @default(autoincrement())
+  candidateId    Int
+  name           String
+  keywords       String?   @map("keyword")
+  location       String?
+  type           JobType?
+  salaryMin      Int?      @map("minSalary")
+  salaryMax      Int?
+  experienceMax  Int?      @map("maxExperienceYears")
+  isActive       Boolean   @default(true)
   lastNotifiedAt DateTime? @map("lastCheckedAt")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   candidate User @relation(fields: [candidateId], references: [id], onDelete: Cascade)
 
@@ -256,8 +310,8 @@ model CompanyReview {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  candidate User @relation("ReviewAuthor", fields: [candidateId], references: [id], onDelete: Cascade)
-  employer  User @relation("ReviewCompany", fields: [employerId], references: [id], onDelete: Cascade)
+  candidate User @relation("CompanyReviewAuthor", fields: [candidateId], references: [id], onDelete: Cascade)
+  employer  User @relation("CompanyReviewCompany", fields: [employerId], references: [id], onDelete: Cascade)
 
   @@unique([candidateId, employerId])
   @@index([employerId, createdAt])
@@ -270,8 +324,8 @@ model Conversation {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  candidate User @relation("CandidateConversations", fields: [candidateId], references: [id], onDelete: Cascade)
-  employer  User @relation("EmployerConversations", fields: [employerId], references: [id], onDelete: Cascade)
+  candidate User          @relation("CandidateConversations", fields: [candidateId], references: [id], onDelete: Cascade)
+  employer  User          @relation("EmployerConversations", fields: [employerId], references: [id], onDelete: Cascade)
   messages  ChatMessage[]
 
   @@unique([candidateId, employerId])
@@ -291,4 +345,73 @@ model ChatMessage {
 
   @@index([conversationId, createdAt])
   @@index([senderId])
+}
+
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String
+  slug        String   @unique
+  description String?  @db.Text
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  auditLogs AuditLog[]
+
+  @@index([name])
+  @@index([isDeleted])
+}
+
+model Review {
+  id         Int       @id @default(autoincrement())
+  rating     Int
+  content    String    @db.Text
+  isHidden   Boolean   @default(false)
+  hideReason String?   @db.Text
+  hiddenAt   DateTime?
+  hiddenBy   Int?
+  authorId   Int
+  jobId      Int
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  author       User       @relation("JobReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  job          Job        @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  hiddenByUser User?      @relation("JobReviewHiddenBy", fields: [hiddenBy], references: [id], onDelete: SetNull)
+  auditLogs    AuditLog[]
+
+  @@unique([authorId, jobId])
+  @@index([isHidden])
+  @@index([jobId])
+  @@index([rating])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id               Int             @id @default(autoincrement())
+  action           AuditActionType
+  userId           Int
+  targetUserId     Int?
+  targetJobId      Int?
+  targetCategoryId Int?
+  targetPackageId  Int?
+  targetReviewId   Int?
+  details          String?         @db.Text
+  ipAddress        String?
+  userAgent        String?
+  createdAt        DateTime        @default(now())
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job            Job?            @relation(fields: [targetJobId], references: [id], onDelete: Cascade)
+  category       Category?       @relation(fields: [targetCategoryId], references: [id], onDelete: Cascade)
+  billingPackage BillingPackage? @relation(fields: [targetPackageId], references: [id], onDelete: Cascade)
+  review         Review?         @relation(fields: [targetReviewId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([targetUserId, createdAt])
+  @@index([targetJobId, createdAt])
+  @@index([targetCategoryId, createdAt])
+  @@index([targetPackageId, createdAt])
+  @@index([targetReviewId, createdAt])
+  @@index([action])
 }

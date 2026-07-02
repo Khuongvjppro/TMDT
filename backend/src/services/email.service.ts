@@ -81,3 +81,76 @@ export async function sendPasswordResetEmailReal(payload: {
 
   return { delivered: true };
 }
+
+export async function sendInviteEmailReal(payload: {
+  toEmail: string;
+  fullName: string;
+  inviteLink: string;
+}) {
+  const { toEmail, fullName, inviteLink } = payload;
+
+  if (!transporter) {
+    console.warn("[EMAIL] SMTP config missing. Falling back to console output.");
+    console.log("[EMAIL INVITE]");
+    console.log(`To: ${toEmail}`);
+    console.log(`Hi ${fullName}, complete your account setup using this link:`);
+    console.log(inviteLink);
+    return { delivered: false };
+  }
+
+  await transporter.sendMail({
+    from: EMAIL_FROM,
+    to: toEmail,
+    subject: "Lời mời tham gia JobFinder",
+    html: `
+      <p>Xin chao ${fullName},</p>
+      <p>Bạn đã được mời tham gia JobFinder. Vui lòng nhấn vào liên kết bên dưới để hoàn tất đăng ký và tạo mật khẩu:</p>
+      <p><a href="${inviteLink}">${inviteLink}</a></p>
+      <p>Liên kết này sẽ có hiệu lực trong một thời gian ngắn.</p>
+      <p>Nếu bạn không yêu cầu điều này, hãy bỏ qua email này.</p>
+    `,
+  });
+
+  return { delivered: true };
+}
+
+export async function sendJobModerationEmail(payload: {
+  toEmail: string;
+  fullName: string;
+  jobTitle: string;
+  type: "APPROVED" | "REJECTED";
+  rejectReason?: string;
+}) {
+  const { toEmail, fullName, jobTitle, type, rejectReason } = payload;
+  const isApproved = type === "APPROVED";
+  const subject = isApproved
+    ? `Tin tuyen dung "${jobTitle}" da duoc duyet`
+    : `Tin tuyen dung "${jobTitle}" bi tu choi`;
+
+  const bodyHtml = isApproved
+    ? `<p>Xin chao ${fullName},</p>
+       <p>Tin tuyen dung <strong>${jobTitle}</strong> cua ban da duoc admin phe duyet va da duoc cong bo.</p>
+       <p>Ban co the xem lai tin tuyen dung trong trang quan ly viec lam cua minh.</p>`
+    : `<p>Xin chao ${fullName},</p>
+       <p>Tin tuyen dung <strong>${jobTitle}</strong> cua ban da bi tu choi.</p>
+       <p><strong>Ly do:</strong> ${rejectReason ?? "Khong ro"}</p>
+       <p>Vui long chinh sua va gui lai neu can.</p>`;
+
+  if (!transporter) {
+    console.warn("[EMAIL] SMTP config missing. Falling back to console output.");
+    console.log(`[EMAIL JOB ${type}]`);
+    console.log(`To: ${toEmail}`);
+    console.log(`Subject: ${subject}`);
+    console.log(bodyHtml.replace(/<[^>]+>/g, " "));
+    return { delivered: false };
+  }
+
+  await transporter.sendMail({
+    from: EMAIL_FROM,
+    to: toEmail,
+    subject,
+    html: bodyHtml,
+  });
+
+  return { delivered: true };
+}

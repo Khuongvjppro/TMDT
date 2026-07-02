@@ -263,6 +263,21 @@ export async function login(req: Request, res: Response) {
     });
   }
 
+  // Check user status
+  if (user.status === "LOCKED") {
+    return res.status(403).json({
+      message: "Account is locked",
+      code: "ACCOUNT_LOCKED",
+    });
+  }
+
+  if (user.status === "DELETED") {
+    return res.status(403).json({
+      message: "Account has been deleted",
+      code: "ACCOUNT_DELETED",
+    });
+  }
+
   issueRefreshTokenCookie(res, user.id);
   return res.status(200).json(buildAuthResponse(user));
 }

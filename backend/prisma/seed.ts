@@ -147,33 +147,51 @@ async function main() {
 
   await prisma.billingPackage.upsert({
     where: { name: "Starter" },
-    update: { credits: 30, priceCents: 1900, isActive: true },
+    update: {
+      price: 190000,
+      durationDays: 30,
+      maxJobPosts: 30,
+      isActive: true,
+    },
     create: {
       name: "Starter",
-      credits: 30,
-      priceCents: 1900,
+      price: 190000,
+      durationDays: 30,
+      maxJobPosts: 30,
       isActive: true,
     },
   });
 
   await prisma.billingPackage.upsert({
     where: { name: "Growth" },
-    update: { credits: 80, priceCents: 4500, isActive: true },
+    update: {
+      price: 450000,
+      durationDays: 60,
+      maxJobPosts: 80,
+      isActive: true,
+    },
     create: {
       name: "Growth",
-      credits: 80,
-      priceCents: 4500,
+      price: 450000,
+      durationDays: 60,
+      maxJobPosts: 80,
       isActive: true,
     },
   });
 
   await prisma.billingPackage.upsert({
     where: { name: "Scale" },
-    update: { credits: 180, priceCents: 8900, isActive: true },
+    update: {
+      price: 890000,
+      durationDays: 90,
+      maxJobPosts: 180,
+      isActive: true,
+    },
     create: {
       name: "Scale",
-      credits: 180,
-      priceCents: 8900,
+      price: 890000,
+      durationDays: 90,
+      maxJobPosts: 180,
       isActive: true,
     },
   });
@@ -193,8 +211,8 @@ async function main() {
           transactionCode: `SEED-TXN-${pkg.id}-${Date.now()}`,
           employerId: employer.id,
           packageId: pkg.id,
-          amountCents: pkg.priceCents,
-          credits: pkg.credits,
+          amountCents: pkg.price,
+          credits: pkg.maxJobPosts,
           status: "SUCCESS",
         },
       });
@@ -312,6 +330,58 @@ async function main() {
         cvLink: "https://example.com/cv/candidate",
       },
     });
+
+    const reviewCount = await prisma.review.count();
+    if (reviewCount === 0) {
+      const jobs = await prisma.job.findMany({
+        take: 3,
+        orderBy: { id: "asc" },
+      });
+
+      const seedReviews = [
+        {
+          jobId: jobs[0]?.id ?? firstJob.id,
+          rating: 5,
+          content:
+            "Great interview process and clear job description. Highly recommend applying here.",
+        },
+        {
+          jobId: jobs[1]?.id ?? firstJob.id,
+          rating: 2,
+          content:
+            "Slow response from HR team. The role description did not match the actual interview topics.",
+        },
+        {
+          jobId: jobs[2]?.id ?? firstJob.id,
+          rating: 1,
+          content:
+            "Inappropriate questions during interview. Would not recommend this company to others.",
+          isHidden: true,
+          hideReason: "Contains inappropriate content flagged during moderation",
+        },
+      ];
+
+      for (const item of seedReviews) {
+        await prisma.review.upsert({
+          where: {
+            authorId_jobId: {
+              authorId: candidate.id,
+              jobId: item.jobId,
+            },
+          },
+          update: {},
+          create: {
+            authorId: candidate.id,
+            jobId: item.jobId,
+            rating: item.rating,
+            content: item.content,
+            isHidden: item.isHidden ?? false,
+            hideReason: item.isHidden ? item.hideReason : null,
+            hiddenAt: item.isHidden ? new Date() : null,
+          },
+        });
+      }
+    }
   }
 }
 

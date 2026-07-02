@@ -47,11 +47,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   function setAuthState(next: AuthState) {
     setAuth(next);
     window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(next));
+    window.localStorage.setItem("accessToken", next.token);
+    window.localStorage.setItem("token", next.token);
   }
 
   function clearAuthState() {
     setAuth(null);
     window.localStorage.removeItem(AUTH_STORAGE_KEY);
+    window.localStorage.removeItem("accessToken");
+    window.localStorage.removeItem("token");
   }
 
   const value = useMemo(

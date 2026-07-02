@@ -115,6 +115,7 @@ export async function listJobs(req: Request, res: Response) {
 
   const where = {
     isActive: true,
+    status: "APPROVED" as const,
     AND: andConditions,
   };
 
@@ -157,6 +158,14 @@ export async function getJobById(req: Request, res: Response) {
   });
 
   if (!job) {
+    return res.status(404).json({ message: "Job not found" });
+  }
+
+  const authUser = req.user;
+  const isOwner = authUser && job.employerId === authUser.userId;
+  const isAdmin = authUser?.role === "ADMIN";
+
+  if (job.status !== "APPROVED" && !isOwner && !isAdmin) {
     return res.status(404).json({ message: "Job not found" });
   }
 

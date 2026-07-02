@@ -8,13 +8,17 @@ import {
 } from "../../../lib/api";
 import { BillingPackage } from "../../../types";
 
-function formatUsdFromCents(value: number) {
-  return `$${(value / 100).toFixed(2)}`;
+function formatVnd(value: number) {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 0,
+  }).format(value);
 }
 
-function formatUnitPrice(priceCents: number, credits: number) {
-  if (!credits) return "$0.00";
-  return `$${(priceCents / credits / 100).toFixed(2)}`;
+function formatUnitPrice(price: number, maxJobPosts: number) {
+  if (!maxJobPosts) return formatVnd(0);
+  return formatVnd(Math.round(price / maxJobPosts));
 }
 
 export default function EmployerBillingPage() {
@@ -28,7 +32,7 @@ export default function EmployerBillingPage() {
     if (!current) return pkg.id;
     const currentItem = items.find((item) => item.id === current);
     if (!currentItem) return pkg.id;
-    return pkg.credits > currentItem.credits ? pkg.id : current;
+    return pkg.maxJobPosts > currentItem.maxJobPosts ? pkg.id : current;
   }, null);
 
   useEffect(() => {
@@ -60,7 +64,7 @@ export default function EmployerBillingPage() {
     try {
       const data = await purchaseEmployerBillingPackage(auth.token, packageId);
       setMessage(
-        `Purchase success: ${data.item.package.name} (${data.item.credits} credits) - ${data.item.transactionCode}`,
+        `Purchase success: ${data.item.package.name} (${data.item.credits} job posts) - ${data.item.transactionCode}`,
       );
     } catch (error) {
       const nextMessage =
@@ -159,15 +163,15 @@ export default function EmployerBillingPage() {
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-bold text-slate-900">{pkg.name}</h2>
                 <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">
-                  {pkg.credits} credits
+                  {pkg.maxJobPosts} job posts
                 </span>
               </div>
 
               <p className="mt-4 text-3xl font-black text-slate-900">
-                {formatUsdFromCents(pkg.priceCents)}
+                {formatVnd(pkg.price)}
               </p>
               <p className="mt-1 text-xs text-slate-500">
-                {formatUnitPrice(pkg.priceCents, pkg.credits)} per credit
+                {pkg.durationDays} days · {formatUnitPrice(pkg.price, pkg.maxJobPosts)} / post
               </p>
 
               <div className="mt-4 space-y-2 text-sm text-slate-600">

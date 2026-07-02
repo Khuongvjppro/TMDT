@@ -7,14 +7,21 @@ import {
   setJobActive,
   updateJob,
 } from "../controllers/jobs.controller";
+import { listPublicJobReviews } from "../controllers/review.controller";
 import { requireAuth, requireRole } from "../middleware/auth";
 import { asyncHandler } from "../middleware/async-handler";
 
 const router = Router();
 
 router.get("/", asyncHandler(listJobs));
+router.get("/:id/reviews", asyncHandler(listPublicJobReviews));
 router.get("/:id", asyncHandler(getJobById));
-router.post("/", requireAuth, requireRole(["EMPLOYER", "ADMIN"]), asyncHandler(createJob));
+router.post(
+  "/",
+  requireAuth,
+  requireRole(["EMPLOYER", "ADMIN"]),
+  asyncHandler(createJob),
+);
 router.patch(
   "/:id",
   requireAuth,

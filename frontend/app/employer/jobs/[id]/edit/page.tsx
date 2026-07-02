@@ -21,6 +21,8 @@ export default function EmployerEditJobPage({ params }: Props) {
     companyName: "",
     location: "",
     type: "FULL_TIME",
+    salaryMin: "",
+    salaryMax: "",
     description: "",
     requirements: "",
   });
@@ -46,6 +48,8 @@ export default function EmployerEditJobPage({ params }: Props) {
           companyName: job.companyName,
           location: job.location,
           type: job.type,
+          salaryMin: job.salaryMin !== null && job.salaryMin !== undefined ? String(job.salaryMin) : "",
+          salaryMax: job.salaryMax !== null && job.salaryMax !== undefined ? String(job.salaryMax) : "",
           description: job.description,
           requirements: job.requirements,
         });
@@ -70,8 +74,20 @@ export default function EmployerEditJobPage({ params }: Props) {
 
     setIsSaving(true);
     setMessage("");
+
+    const payload = {
+      title: form.title,
+      companyName: form.companyName,
+      location: form.location,
+      type: form.type,
+      salaryMin: form.salaryMin ? Number(form.salaryMin) : undefined,
+      salaryMax: form.salaryMax ? Number(form.salaryMax) : undefined,
+      description: form.description,
+      requirements: form.requirements,
+    };
+
     try {
-      await updateJob(auth.token, jobId, form);
+      await updateJob(auth.token, jobId, payload);
       setMessage("Update job success.");
       router.push("/employer/jobs");
     } catch (error) {
@@ -131,13 +147,10 @@ export default function EmployerEditJobPage({ params }: Props) {
         <input
           name="companyName"
           placeholder="Company name"
-          className="w-full rounded-xl border px-3 py-2 text-sm"
+          className="w-full rounded-xl border px-3 py-2 text-sm bg-slate-50 cursor-not-allowed"
           required
           value={form.companyName}
-          onChange={(event) =>
-            setForm((prev) => ({ ...prev, companyName: event.target.value }))
-          }
-          disabled={isLoading || isSaving}
+          disabled
         />
         <input
           name="location"
@@ -165,6 +178,28 @@ export default function EmployerEditJobPage({ params }: Props) {
           <option value="FREELANCE">Freelance</option>
           <option value="REMOTE">Remote</option>
         </select>
+        <div className="grid gap-3 md:grid-cols-2">
+          <input
+            type="number"
+            placeholder="Minimum Salary"
+            className="w-full rounded-xl border px-3 py-2 text-sm"
+            value={form.salaryMin}
+            onChange={(event) =>
+              setForm((prev) => ({ ...prev, salaryMin: event.target.value }))
+            }
+            disabled={isLoading || isSaving}
+          />
+          <input
+            type="number"
+            placeholder="Maximum Salary"
+            className="w-full rounded-xl border px-3 py-2 text-sm"
+            value={form.salaryMax}
+            onChange={(event) =>
+              setForm((prev) => ({ ...prev, salaryMax: event.target.value }))
+            }
+            disabled={isLoading || isSaving}
+          />
+        </div>
         <textarea
           name="description"
           placeholder="Description"

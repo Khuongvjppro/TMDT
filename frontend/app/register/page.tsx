@@ -64,12 +64,12 @@ export default function RegisterPage() {
       setDevVerificationLink(data.devVerificationLink || "");
       setMessage(
         data.message ||
-          "Đăng ký thành công. Vui lòng kiểm tra email để xác thực tài khoản trước khi đăng nhập.",
+          "Registration successful. Please check your email to verify your account before signing in.",
       );
       setMessageType("success");
     } catch (error) {
       const nextMessage =
-        error instanceof Error ? error.message : "Đăng ký thất bại";
+        error instanceof Error ? error.message : "Registration failed";
       setMessage(nextMessage);
       setMessageType("error");
     } finally {
@@ -86,11 +86,11 @@ export default function RegisterPage() {
     try {
       const data = await resendVerification(registeredEmail);
       setDevVerificationLink(data.devVerificationLink || "");
-      setMessage(data.message || "Đã gửi lại email xác thực");
+      setMessage(data.message || "Verification email resent");
       setMessageType("success");
     } catch (error) {
       const nextMessage =
-        error instanceof Error ? error.message : "Gửi lại email xác thực thất bại";
+        error instanceof Error ? error.message : "Failed to resend verification email";
       setMessage(nextMessage);
       setMessageType("error");
     } finally {
@@ -102,19 +102,19 @@ export default function RegisterPage() {
     <section className="mx-auto max-w-xl rounded-3xl bg-white p-6 text-[#191c21] shadow-lg">
             <div className="mb-6 space-y-2">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0a66c2]">
-                Đăng ký tài khoản
+                Create your account
               </p>
               <h2 className="text-2xl font-bold text-[#191c21]">
-                Chào mừng bạn đến với JobFinder
+                Welcome to JobFinder
               </h2>
               <p className="text-sm text-[#414752]">
-                Điền thông tin bên dưới để tạo tài khoản và bắt đầu tìm việc.
+                Fill in the details below to create your account and start your job search.
               </p>
             </div>
 
             <form noValidate className="space-y-4" onSubmit={onSubmit}>
               <div className="space-y-2">
-                <p className="block text-sm font-semibold text-[#191c21]">Bạn đăng ký với vai trò</p>
+                <p className="block text-sm font-semibold text-[#191c21]">Register as</p>
                 <div className="grid grid-cols-2 gap-3">
                   <label className="cursor-pointer rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition hover:border-[#0a66c2]">
                     <input
@@ -126,7 +126,7 @@ export default function RegisterPage() {
                       className="mr-2 align-middle"
                       disabled={isSubmitting}
                     />
-                    <span className="align-middle font-medium text-[#191c21]">Ứng viên</span>
+                    <span className="align-middle font-medium text-[#191c21]">Candidate</span>
                   </label>
 
                   <label className="cursor-pointer rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition hover:border-[#0a66c2]">
@@ -139,7 +139,7 @@ export default function RegisterPage() {
                       className="mr-2 align-middle"
                       disabled={isSubmitting}
                     />
-                    <span className="align-middle font-medium text-[#191c21]">Nhà tuyển dụng</span>
+                    <span className="align-middle font-medium text-[#191c21]">Employer</span>
                   </label>
                 </div>
               </div>
@@ -149,14 +149,14 @@ export default function RegisterPage() {
                   className="block text-sm font-semibold text-[#191c21]"
                   htmlFor="fullName"
                 >
-                  Họ và tên
+                  Full name
                 </label>
                 <input
                   id="fullName"
                   name="fullName"
                   type="text"
                   required
-                  placeholder="Họ và tên"
+                  placeholder="Full name"
                   className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-[#191c21] outline-none transition focus:border-[#0a66c2] focus:ring-2 focus:ring-[#0a66c2]/20"
                   disabled={isSubmitting}
                 />
@@ -191,7 +191,7 @@ export default function RegisterPage() {
                   className="block text-sm font-semibold text-[#191c21]"
                   htmlFor="password"
                 >
-                  Mật khẩu
+                  Password
                 </label>
                 <div className="relative">
                   <input
@@ -199,7 +199,7 @@ export default function RegisterPage() {
                     name="password"
                     type={showPassword ? "text" : "password"}
                     required
-                    placeholder="Mật khẩu"
+                    placeholder="Password"
                     className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 pr-12 text-sm text-[#191c21] outline-none transition focus:border-[#0a66c2] focus:ring-2 focus:ring-[#0a66c2]/20"
                     disabled={isSubmitting}
                   />
@@ -207,8 +207,8 @@ export default function RegisterPage() {
                     type="button" tabIndex={-1} 
                     onClick={() => setShowPassword((prev) => !prev)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-800"
-                    aria-label="Hiển thị mật khẩu"
-                    title={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                    aria-label="Show password"
+                    title={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? <Eye /> : <EyeOff />}
                   </button>
@@ -223,7 +223,7 @@ export default function RegisterPage() {
                   className="block text-sm font-semibold text-[#191c21]"
                   htmlFor="confirmPassword"
                 >
-                  Xác nhận mật khẩu
+                  Confirm password
                 </label>
                 <div className="relative">
                   <input
@@ -231,7 +231,7 @@ export default function RegisterPage() {
                     name="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
                     required
-                    placeholder="Nhập lại mật khẩu"
+                    placeholder="Confirm password"
                     className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 pr-12 text-sm text-[#191c21] outline-none transition focus:border-[#0a66c2] focus:ring-2 focus:ring-[#0a66c2]/20"
                     disabled={isSubmitting}
                   />
@@ -239,11 +239,11 @@ export default function RegisterPage() {
                     type="button" tabIndex={-1} 
                     onClick={() => setShowConfirmPassword((prev) => !prev)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-800"
-                    aria-label="Hiển thị xác nhận mật khẩu"
+                    aria-label="Show confirmation password"
                     title={
                       showConfirmPassword
-                        ? "Ẩn xác nhận mật khẩu"
-                        : "Hiện xác nhận mật khẩu"
+                        ? "Hide confirmation password"
+                        : "Show confirmation password"
                     }
                   >
                     {showConfirmPassword ? <Eye /> : <EyeOff />}
@@ -259,7 +259,7 @@ export default function RegisterPage() {
                 disabled={isSubmitting}
                 className="w-full rounded-xl bg-gradient-to-r from-[#004e99] to-[#0a66c2] py-3.5 text-sm font-bold text-white transition active:scale-[0.99] disabled:opacity-60"
               >
-                {isSubmitting ? "Đang tạo tài khoản..." : "Tạo tài khoản"}
+                {isSubmitting ? "Creating account..." : "Create account"}
               </button>
             </form>
 
@@ -269,7 +269,7 @@ export default function RegisterPage() {
               </div>
               <div className="relative flex justify-center text-[11px] uppercase">
                 <span className="bg-white px-3 font-semibold tracking-widest text-slate-500">
-                  hoặc tiếp tục với
+                  or continue with
                 </span>
               </div>
             </div>
@@ -315,12 +315,12 @@ export default function RegisterPage() {
             </div>
 
             <p className="mt-6 text-center text-sm text-slate-600">
-              Đã có tài khoản?{" "}
+              Already have an account?{" "}
               <Link
                 href="/login"
                 className="font-semibold text-[#0a66c2] hover:underline"
               >
-                Đăng nhập ngay
+                Sign in
               </Link>
             </p>
 
@@ -337,19 +337,19 @@ export default function RegisterPage() {
             {registeredEmail ? (
               <div className="mt-3 text-center text-sm text-slate-600">
                 <p>
-                  Chưa nhận được email?{" "}
+                  Didn't receive an email?{" "}
                   <button
                     type="button"
                     onClick={onResendVerification}
                     disabled={isResending}
                     className="font-semibold text-[#0a66c2] hover:underline disabled:opacity-60"
                   >
-                    {isResending ? "Đang gửi lại..." : "Gửi lại email xác thực"}
+                    {isResending ? "Resending..." : "Resend verification email"}
                   </button>
                 </p>
                 {devVerificationLink ? (
                   <p className="mt-2 text-xs text-slate-500">
-                    Dev link: <a className="text-[#0a66c2] underline" href={devVerificationLink}>Mở link xác thực</a>
+                    Dev link: <a className="text-[#0a66c2] underline" href={devVerificationLink}>Open verification link</a>
                   </p>
                 ) : null}
               </div>
@@ -357,7 +357,7 @@ export default function RegisterPage() {
 
             <div className="mt-4 text-center text-xs text-slate-500">
               <Link href="/" className="hover:text-[#0a66c2] hover:underline">
-                Quay lại trang chủ
+                Back to home
               </Link>
             </div>
     </section>

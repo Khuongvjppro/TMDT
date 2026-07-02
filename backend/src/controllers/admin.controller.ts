@@ -424,3 +424,80 @@ export async function getStats(req: Request, res: Response) {
     return res.status(500).json({ message: "Internal server error" });
   }
 }
+
+export async function getUserRoleStats(req: Request, res: Response) {
+  try {
+    const roleStats = await prisma.user.groupBy({
+      by: ["role"],
+      _count: { role: true },
+      where: { NOT: { status: "DELETED" } },
+    });
+
+    const items = roleStats.map((item) => ({
+      role: item.role,
+      count: item._count.role,
+    }));
+
+    return res.status(200).json({ items });
+  } catch (error) {
+    console.error("Get user role stats error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function getUserStatusStats(req: Request, res: Response) {
+  try {
+    const statusStats = await prisma.user.groupBy({
+      by: ["status"],
+      _count: { status: true },
+    });
+
+    const items = statusStats.map((item) => ({
+      status: item.status,
+      count: item._count.status,
+    }));
+
+    return res.status(200).json({ items });
+  } catch (error) {
+    console.error("Get user status stats error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function getJobTypeStats(req: Request, res: Response) {
+  try {
+    const typeStats = await prisma.job.groupBy({
+      by: ["type"],
+      _count: { type: true },
+    });
+
+    const items = typeStats.map((item) => ({
+      type: item.type,
+      count: item._count.type,
+    }));
+
+    return res.status(200).json({ items });
+  } catch (error) {
+    console.error("Get job type stats error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function getApplicationStatusStats(req: Request, res: Response) {
+  try {
+    const statusStats = await prisma.application.groupBy({
+      by: ["status"],
+      _count: { status: true },
+    });
+
+    const items = statusStats.map((item) => ({
+      status: item.status,
+      count: item._count.status,
+    }));
+
+    return res.status(200).json({ items });
+  } catch (error) {
+    console.error("Get application status stats error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}

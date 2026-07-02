@@ -465,6 +465,57 @@ export async function listEmployerTransactions(
   }>(response);
 }
 
+export async function getEmployerJobTypeStats(token: string) {
+  const response = await fetch(
+    `${API_BASE_URL}/employer/stats/job-types`,
+    {
+      cache: "no-store",
+      headers: { Authorization: `Bearer ${token}` },
+    },
+  );
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Cannot load job type stats");
+  }
+
+  return parseJsonResponse<{ items: { type: string; count: number }[] }>(response);
+}
+
+export async function getEmployerApplicationStatusStats(token: string) {
+  const response = await fetch(
+    `${API_BASE_URL}/employer/stats/application-statuses`,
+    {
+      cache: "no-store",
+      headers: { Authorization: `Bearer ${token}` },
+    },
+  );
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Cannot load application status stats");
+  }
+
+  return parseJsonResponse<{ items: { status: string; count: number }[] }>(response);
+}
+
+export async function getEmployerInterviewModeStats(token: string) {
+  const response = await fetch(
+    `${API_BASE_URL}/employer/stats/interview-modes`,
+    {
+      cache: "no-store",
+      headers: { Authorization: `Bearer ${token}` },
+    },
+  );
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Cannot load interview mode stats");
+  }
+
+  return parseJsonResponse<{ items: { mode: string; count: number }[] }>(response);
+}
+
 export async function getEmployerPendingApplicationsCount(token: string) {
   const response = await fetch(
     `${API_BASE_URL}/employer/notifications/applications`,

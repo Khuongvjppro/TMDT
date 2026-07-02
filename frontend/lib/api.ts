@@ -4,6 +4,7 @@ import {
   AuthResponse,
   AuthUser,
   BillingPackage,
+  CandidateApplication,
   EmployerCandidateListResponse,
   EmployerJobApplication,
   EmployerProfile,
@@ -13,6 +14,14 @@ import {
   JobListResponse,
   RegisterResponse,
   UserRole,
+  CandidateProfile,
+  CandidateCv,
+  SavedJob,
+  JobAlert,
+  CompanyReview,
+  Conversation,
+  ChatMessage,
+  CandidateCompany,
 } from "../types";
 
 export const API_BASE_URL =
@@ -23,12 +32,18 @@ export async function fetchJobs(query: {
   location?: string;
   type?: string;
   page?: string;
+  salaryMin?: string;
+  salaryMax?: string;
+  experienceMax?: string;
 }) {
   const searchParams = new URLSearchParams();
   if (query.q) searchParams.set("q", query.q);
   if (query.location) searchParams.set("location", query.location);
   if (query.type) searchParams.set("type", query.type);
   if (query.page) searchParams.set("page", query.page);
+  if (query.salaryMin) searchParams.set("salaryMin", query.salaryMin);
+  if (query.salaryMax) searchParams.set("salaryMax", query.salaryMax);
+  if (query.experienceMax) searchParams.set("experienceMax", query.experienceMax);
 
   const response = await fetch(
     `${API_BASE_URL}/jobs?${searchParams.toString()}`,
@@ -650,4 +665,151 @@ export async function updateUserRole(
   }
 
   return parseJsonResponse<{ item: AdminUser }>(response);
+}
+
+export async function listMyApplications(token: string) {
+  const response = await fetch(`${API_BASE_URL}/applications/me`, {
+    cache: "no-store",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Cannot load applications");
+  }
+
+  return parseJsonResponse<{ items: CandidateApplication[] }>(response);
+}
+
+async function candidateRequest<T>(token: string, path: string, init?: RequestInit) {
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      cache: "no-store",
+      ...init,
+      headers: {
+        ...(init?.body ? { "Content-Type": "application/json" } : {}),
+        Authorization: `Bearer ${token}`,
+        ...init?.headers,
+      },
+    });
+  } catch {
+    throw new Error("Backend API is offline. Start the full app with: npm run dev");
+  }
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Request failed");
+  }
+  if (response.status === 204) return undefined as T;
+  return parseJsonResponse<T>(response);
+}
+
+export function getCandidateProfile(token: string) {
+  return candidateRequest<{ item: CandidateProfile }>(token, "/candidate/profile");
+}
+
+export function updateCandidateProfile(
+  token: string,
+  payload: {
+    fullName: string;
+    phone?: string;
+    bio?: string;
+    jobTitle?: string;
+    address?: string;
+    skills?: string;
+    experienceYears: number;
+  },
+) {
+  return candidateRequest<{ item: CandidateProfile["candidateProfile"] }>(token, "/candidate/profile", {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function listCandidateCvs(token: string) {
+  return candidateRequest<{ items: CandidateCv[] }>(token, "/candidate/cvs");
+}
+
+export function createCandidateCv(token: string, payload: Omit<CandidateCv, "id" | "userId" | "createdAt" | "updatedAt">) {
+  return candidateRequest<{ item: CandidateCv }>(token, "/candidate/cvs", { method: "POST", body: JSON.stringify(payload) });
+}
+
+export function updateCandidateCv(token: string, id: number, payload: Partial<Pick<CandidateCv, "title" | "fileUrl" | "summary" | "isPrimary">>) {
+  return candidateRequest<{ item: CandidateCv }>(token, `/candidate/cvs/${id}`, { method: "PATCH", body: JSON.stringify(payload) });
+}
+
+export function deleteCandidateCv(token: string, id: number) {
+  return candidateRequest<void>(token, `/candidate/cvs/${id}`, { method: "DELETE" });
+}
+
+export function listSavedJobs(token: string) {
+  return candidateRequest<{ items: SavedJob[] }>(token, "/candidate/saved-jobs");
+}
+
+export function getSavedJobStatus(token: string, jobId: number) {
+  return candidateRequest<{ saved: boolean }>(token, `/candidate/saved-jobs/${jobId}/status`);
+}
+
+export function saveJob(token: string, jobId: number) {
+  return candidateRequest<{ item: SavedJob }>(token, `/candidate/saved-jobs/${jobId}`, { method: "POST" });
+}
+
+export function unsaveJob(token: string, jobId: number) {
+  return candidateRequest<void>(token, `/candidate/saved-jobs/${jobId}`, { method: "DELETE" });
+}
+
+export function withdrawApplication(token: string, applicationId: number) {
+  return candidateRequest<{ item: CandidateApplication }>(token, `/applications/${applicationId}/withdraw`, { method: "PATCH" });
+}
+
+export function listJobAlerts(token: string) {
+  return candidateRequest<{ items: JobAlert[] }>(token, "/candidate/alerts");
+}
+
+export function createJobAlert(token: string, payload: Omit<JobAlert, "id" | "createdAt" | "lastNotifiedAt">) {
+  return candidateRequest<{ item: JobAlert }>(token, "/candidate/alerts", { method: "POST", body: JSON.stringify(payload) });
+}
+
+export function updateJobAlert(token: string, id: number, payload: Partial<JobAlert>) {
+  return candidateRequest<{ item: JobAlert }>(token, `/candidate/alerts/${id}`, { method: "PATCH", body: JSON.stringify(payload) });
+}
+
+export function deleteJobAlert(token: string, id: number) {
+  return candidateRequest<void>(token, `/candidate/alerts/${id}`, { method: "DELETE" });
+}
+
+export function runJobAlert(token: string, id: number) {
+  return candidateRequest<{ matches: Job[]; notification: string }>(token, `/candidate/alerts/${id}/run`, { method: "POST" });
+}
+
+export function listCompanyReviews(token: string) {
+  return candidateRequest<{ items: CompanyReview[] }>(token, "/candidate/reviews");
+}
+
+export function listCandidateCompanies(token: string) {
+  return candidateRequest<{ items: CandidateCompany[] }>(token, "/candidate/companies");
+}
+
+export function saveCompanyReview(token: string, employerId: number, payload: { rating: number; title?: string; content?: string }) {
+  return candidateRequest<{ item: CompanyReview }>(token, `/candidate/reviews/${employerId}`, { method: "PUT", body: JSON.stringify(payload) });
+}
+
+export function deleteCompanyReview(token: string, employerId: number) {
+  return candidateRequest<void>(token, `/candidate/reviews/${employerId}`, { method: "DELETE" });
+}
+
+export function listConversations(token: string) {
+  return candidateRequest<{ items: Conversation[] }>(token, "/chat/conversations");
+}
+
+export function createConversation(token: string, employerId: number) {
+  return candidateRequest<{ item: Conversation }>(token, "/chat/conversations", { method: "POST", body: JSON.stringify({ employerId }) });
+}
+
+export function listMessages(token: string, conversationId: number) {
+  return candidateRequest<{ items: ChatMessage[] }>(token, `/chat/conversations/${conversationId}/messages`);
+}
+
+export function sendMessage(token: string, conversationId: number, content: string) {
+  return candidateRequest<{ item: ChatMessage }>(token, `/chat/conversations/${conversationId}/messages`, { method: "POST", body: JSON.stringify({ content }) });
 }

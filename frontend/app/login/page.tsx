@@ -34,7 +34,15 @@ export default function LoginPage() {
       });
       setMessage(`Đăng nhập thành công với vai trò ${data.user.role}`);
       setMessageType("success");
-      router.push("/");
+      const landingPage =
+        data.user.role === "CANDIDATE"
+          ? "/candidate/jobs"
+          : data.user.role === "EMPLOYER"
+            ? "/employer/jobs"
+            : data.user.role === "ADMIN"
+              ? "/admin/users"
+              : "/";
+      router.push(landingPage);
       router.refresh();
     } catch (error) {
       const rawMessage =

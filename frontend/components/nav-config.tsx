@@ -14,6 +14,12 @@ export function getRoleNavItems(role?: UserRole): NavItem[] {
   if (role === "EMPLOYER") {
     return [
       {
+        href: "/employer/chat",
+        label: "Candidate Chat",
+        matchers: ["/employer/chat"],
+        icon: <span aria-hidden="true">💬</span>,
+      },
+      {
         href: "/employer/jobs/new",
         label: "Post a Job",
         matchers: ["/employer/jobs/new", "/recruiter/jobs/new"],
@@ -137,6 +143,66 @@ export function getRoleNavItems(role?: UserRole): NavItem[] {
             <path d="M16 7h6M16 11h6" />
           </svg>
         ),
+      },
+    ];
+  }
+
+  if (role === "CANDIDATE") {
+    return [
+      {
+        href: "/candidate/profile",
+        label: "Profile & CVs",
+        matchers: ["/candidate/profile"],
+        icon: <span aria-hidden="true">👤</span>,
+      },
+      {
+        href: "/candidate/jobs",
+        label: "Advanced Job Search",
+        matchers: ["/candidate/jobs"],
+        icon: <span aria-hidden="true">🔎</span>,
+      },
+      {
+        href: "/candidate/saved-jobs",
+        label: "Saved Jobs",
+        matchers: ["/candidate/saved-jobs"],
+        icon: <span aria-hidden="true">💙</span>,
+      },
+      {
+        href: "/candidate/applications",
+        label: "Application History",
+        matchers: ["/candidate/applications"],
+        icon: (
+          <svg
+            viewBox="0 0 24 24"
+            className="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.8}
+          >
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+          </svg>
+        ),
+      },
+      {
+        href: "/candidate/alerts",
+        label: "Job Alert",
+        matchers: ["/candidate/alerts"],
+        icon: <span aria-hidden="true">🔔</span>,
+      },
+      {
+        href: "/candidate/reviews",
+        label: "Company Reviews",
+        matchers: ["/candidate/reviews"],
+        icon: <span aria-hidden="true">⭐</span>,
+      },
+      {
+        href: "/candidate/chat",
+        label: "Employer Chat",
+        matchers: ["/candidate/chat"],
+        icon: <span aria-hidden="true">💬</span>,
       },
     ];
   }

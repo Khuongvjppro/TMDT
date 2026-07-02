@@ -1,6 +1,7 @@
 import JobCard from "../components/job-card";
 import JobSearchForm from "../components/job-search-form";
 import { fetchJobs } from "../lib/api";
+import type { JobListResponse } from "../types";
 
 type HomePageProps = {
   searchParams: Promise<Record<string, string | undefined>>;
@@ -65,12 +66,22 @@ function includesIgnoreCase(value: string, query?: string) {
 
 export default async function HomePage({ searchParams }: HomePageProps) {
   const params = await searchParams;
-  const data = await fetchJobs({
-    q: params.q,
-    location: params.location,
-    type: params.type,
-    page: params.page,
-  });
+  let apiUnavailable = false;
+  let data: JobListResponse;
+  try {
+    data = await fetchJobs({
+      q: params.q,
+      location: params.location,
+      type: params.type,
+      page: params.page,
+    });
+  } catch {
+    apiUnavailable = true;
+    data = {
+      items: [],
+      pagination: { page: 1, pageSize: 10, total: 0, totalPages: 0 },
+    };
+  }
 
   const normalizedType = normalizeType(params.type);
   const filteredItems = data.items.filter((job) => {
@@ -134,6 +145,13 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       </div>
 
       <JobSearchForm />
+
+      {apiUnavailable ? (
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700 shadow-sm">
+          <p className="font-bold">The jobs API is temporarily unavailable.</p>
+          <p className="mt-1">Start the backend on port 4000, then refresh this page.</p>
+        </div>
+      ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>

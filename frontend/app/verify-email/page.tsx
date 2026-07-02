@@ -1,17 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { verifyEmail } from "../../lib/api";
 
 export default function VerifyEmailPage() {
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token") || "";
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [message, setMessage] = useState("Đang xác thực email...");
 
   useEffect(() => {
+    const token = new URLSearchParams(window.location.search).get("token") || "";
     async function runVerification() {
       if (!token) {
         setStatus("error");
@@ -34,7 +32,7 @@ export default function VerifyEmailPage() {
     }
 
     runVerification();
-  }, [token]);
+  }, []);
 
   return (
     <section className="mx-auto max-w-xl rounded-3xl bg-white p-6 text-[#191c21] shadow-lg">

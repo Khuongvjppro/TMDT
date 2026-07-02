@@ -8,29 +8,30 @@ import {
   updateJob,
 } from "../controllers/jobs.controller";
 import { requireAuth, requireRole } from "../middleware/auth";
+import { asyncHandler } from "../middleware/async-handler";
 
 const router = Router();
 
-router.get("/", listJobs);
-router.get("/:id", getJobById);
-router.post("/", requireAuth, requireRole(["EMPLOYER", "ADMIN"]), createJob);
+router.get("/", asyncHandler(listJobs));
+router.get("/:id", asyncHandler(getJobById));
+router.post("/", requireAuth, requireRole(["EMPLOYER", "ADMIN"]), asyncHandler(createJob));
 router.patch(
   "/:id",
   requireAuth,
   requireRole(["EMPLOYER", "ADMIN"]),
-  updateJob,
+  asyncHandler(updateJob),
 );
 router.patch(
   "/:id/active",
   requireAuth,
   requireRole(["EMPLOYER", "ADMIN"]),
-  setJobActive,
+  asyncHandler(setJobActive),
 );
 router.delete(
   "/:id",
   requireAuth,
   requireRole(["EMPLOYER", "ADMIN"]),
-  deleteJob,
+  asyncHandler(deleteJob),
 );
 
 export default router;

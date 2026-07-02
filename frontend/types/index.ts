@@ -8,7 +8,8 @@ export type ApplicationStatus =
   | "PENDING"
   | "REVIEWING"
   | "ACCEPTED"
-  | "REJECTED";
+  | "REJECTED"
+  | "WITHDRAWN";
 export type InterviewMode = "ONLINE" | "ONSITE" | "PHONE";
 export type UserRole = "GUEST" | "CANDIDATE" | "EMPLOYER" | "ADMIN";
 
@@ -47,6 +48,7 @@ export type Job = {
   location: string;
   salaryMin?: number | null;
   salaryMax?: number | null;
+  experienceYears: number;
   description: string;
   requirements: string;
   type: JobType;
@@ -166,4 +168,123 @@ export type EmployerTransaction = {
     credits: number;
     priceCents: number;
   };
+};
+
+export type CandidateApplication = {
+  id: number;
+  coverLetter?: string | null;
+  cvLink?: string | null;
+  status: ApplicationStatus;
+  createdAt: string;
+  updatedAt: string;
+  withdrawnAt?: string | null;
+  candidateId: number;
+  jobId: number;
+  job: {
+    id: number;
+    title: string;
+    companyName: string;
+    location: string;
+    type: JobType;
+  };
+};
+
+export type CandidateCv = {
+  id: number;
+  userId: number;
+  title: string;
+  fileUrl: string;
+  summary?: string | null;
+  isPrimary: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CandidateProfile = {
+  id: number;
+  fullName: string;
+  email: string;
+  candidateProfile?: {
+    id: number;
+    phone?: string | null;
+    bio?: string | null;
+    cvLink?: string | null;
+    jobTitle?: string | null;
+    address?: string | null;
+    skills?: string | null;
+    experienceYears: number;
+  } | null;
+  candidateCvs: CandidateCv[];
+};
+
+export type SavedJob = {
+  id: number;
+  candidateId: number;
+  jobId: number;
+  createdAt: string;
+  job: Job;
+};
+
+export type JobAlert = {
+  id: number;
+  name: string;
+  keywords?: string | null;
+  location?: string | null;
+  type?: JobType | null;
+  salaryMin?: number | null;
+  salaryMax?: number | null;
+  experienceMax?: number | null;
+  isActive: boolean;
+  lastNotifiedAt?: string | null;
+  createdAt: string;
+};
+
+export type CompanyReview = {
+  id: number;
+  employerId: number;
+  rating: number;
+  title?: string | null;
+  content?: string | null;
+  employer: {
+    id: number;
+    fullName: string;
+    employerProfile?: EmployerProfile | null;
+  };
+};
+
+export type CandidateCompany = {
+  id: number;
+  fullName: string;
+  companyName: string;
+  locations: string[];
+  openJobs: number;
+  employerProfile?: EmployerProfile | null;
+  reviewCount: number;
+  averageRating?: number | null;
+};
+
+export type ChatMessage = {
+  id: number;
+  conversationId: number;
+  senderId: number;
+  content: string;
+  readAt?: string | null;
+  createdAt: string;
+  sender: { id: number; fullName: string; role: UserRole };
+};
+
+export type Conversation = {
+  id: number;
+  candidateId: number;
+  employerId: number;
+  updatedAt: string;
+  candidate: { id: number; fullName: string; email: string };
+  employer: {
+    id: number;
+    fullName: string;
+    email: string;
+    employerProfile?: EmployerProfile | null;
+  };
+  messages: ChatMessage[];
+  _count: { messages: number };
 };

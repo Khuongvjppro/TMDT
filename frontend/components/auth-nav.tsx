@@ -63,10 +63,11 @@ export default function AuthNav() {
       setPendingCount(0);
       return;
     }
+    const token = auth.token;
 
     async function loadPendingCount() {
       try {
-        const data = await getEmployerPendingApplicationsCount(auth.token);
+        const data = await getEmployerPendingApplicationsCount(token);
         if (isMounted) {
           setPendingCount(data.pendingCount);
         }

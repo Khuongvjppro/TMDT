@@ -46,16 +46,45 @@ export async function applyToJob(req: Request, res: Response) {
     return res.status(409).json({ message: "You already applied to this job" });
   }
 
+  const primaryCv = parsed.data.cvLink
+    ? null
+    : await prisma.candidateCv.findFirst({
+        where: { userId: authUser.userId },
+        orderBy: [{ isPrimary: "desc" }, { updatedAt: "desc" }],
+      });
+
   const application = await prisma.application.create({
     data: {
       jobId,
       candidateId: authUser.userId,
       coverLetter: parsed.data.coverLetter,
-      cvLink: parsed.data.cvLink,
+      cvLink: parsed.data.cvLink || primaryCv?.fileUrl,
     },
   });
 
   return res.status(201).json({ item: application });
+}
+
+export async function withdrawApplication(req: Request, res: Response) {
+  const authUser = req.user;
+  if (!authUser) return res.status(401).json({ message: "Unauthorized" });
+  const applicationId = jobIdParamSchema.safeParse(req.params.applicationId);
+  if (!applicationId.success) return res.status(400).json({ message: "Invalid application id" });
+
+  const existing = await prisma.application.findFirst({
+    where: { id: applicationId.data, candidateId: authUser.userId },
+  });
+  if (!existing) return res.status(404).json({ message: "Application not found" });
+  if (!(["PENDING", "REVIEWING"] as const).includes(existing.status as "PENDING" | "REVIEWING")) {
+    return res.status(409).json({ message: "Only pending or reviewing applications can be withdrawn" });
+  }
+
+  const item = await prisma.application.update({
+    where: { id: existing.id },
+    data: { status: "WITHDRAWN", withdrawnAt: new Date() },
+    include: { job: true },
+  });
+  return res.status(200).json({ item });
 }
 
 export async function getMyApplications(req: Request, res: Response) {

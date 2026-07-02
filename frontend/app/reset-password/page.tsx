@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { resetPassword } from "../../lib/api";
 import { mapZodErrors, resetPasswordSchema } from "../../lib/validation";
@@ -30,8 +29,10 @@ function toVietnameseResetPasswordMessage(message: string) {
 }
 
 export default function ResetPasswordPage() {
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token") || "";
+  const [token, setToken] = useState("");
+  useEffect(() => {
+    setToken(new URLSearchParams(window.location.search).get("token") || "");
+  }, []);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);

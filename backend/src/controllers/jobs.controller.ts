@@ -18,6 +18,9 @@ const listJobsQuerySchema = z.object({
       return value.trim().toUpperCase().replace(/\s+/g, "_");
     }, z.enum(JOB_TYPES))
     .optional(),
+  salaryMin: z.coerce.number().int().min(0).optional(),
+  salaryMax: z.coerce.number().int().min(0).optional(),
+  experienceMax: z.coerce.number().int().min(0).max(60).optional(),
 });
 
 const jobPayloadSchema = z.object({
@@ -29,6 +32,7 @@ const jobPayloadSchema = z.object({
   description: z.string().min(10),
   requirements: z.string().min(10),
   type: z.enum(JOB_TYPES),
+  experienceYears: z.number().int().min(0).max(60).optional(),
 });
 
 const salaryRangeRefinement = (value: {
@@ -84,27 +88,30 @@ export async function listJobs(req: Request, res: Response) {
       .json({ message: "Invalid query", errors: parsedQuery.error.flatten() });
   }
 
-  const { page, pageSize, q, location, type } = parsedQuery.data;
+  const { page, pageSize, q, location, type, salaryMin, salaryMax, experienceMax } = parsedQuery.data;
 
   const andConditions: Array<Record<string, unknown>> = [];
   if (q) {
     andConditions.push({
       OR: [
-        { title: { contains: q, mode: "insensitive" } },
-        { companyName: { contains: q, mode: "insensitive" } },
+        { title: { contains: q } },
+        { companyName: { contains: q } },
       ],
     });
   }
 
   if (location) {
     andConditions.push({
-      location: { contains: location, mode: "insensitive" },
+      location: { contains: location },
     });
   }
 
   if (type) {
     andConditions.push({ type: type as JobType });
   }
+  if (salaryMin != null) andConditions.push({ salaryMax: { gte: salaryMin } });
+  if (salaryMax != null) andConditions.push({ salaryMin: { lte: salaryMax } });
+  if (experienceMax != null) andConditions.push({ experienceYears: { lte: experienceMax } });
 
   const where = {
     isActive: true,

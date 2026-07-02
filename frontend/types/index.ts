@@ -75,6 +75,7 @@ export type EmployerProfile = {
   companyWebsite?: string | null;
   companyLocation?: string | null;
   description?: string | null;
+  credits?: number;
   createdAt: string;
   updatedAt: string;
   fullName?: string;

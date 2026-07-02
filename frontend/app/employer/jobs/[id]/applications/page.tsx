@@ -137,8 +137,8 @@ export default function EmployerJobApplicationsPage({ params }: Props) {
         applicationId,
         {
           mode: form.mode,
-          startsAt: form.startsAt,
-          endsAt: form.endsAt,
+          startsAt: new Date(form.startsAt).toISOString(),
+          endsAt: new Date(form.endsAt).toISOString(),
           meetingLink: form.meetingLink,
           location: form.location,
           note: form.note,

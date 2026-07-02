@@ -1,38 +1,37 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { FormEvent, useState, Suspense } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { resetPassword } from "../../lib/api";
 import { mapZodErrors, resetPasswordSchema } from "../../lib/validation";
 
 type ResetPasswordField = "password" | "confirmPassword";
 
-function toVietnameseResetPasswordMessage(message: string) {
+function toEnglishResetPasswordMessage(message: string) {
   if (message === "Password reset successful") {
-    return "Đặt lại mật khẩu thành công. Bạn có thể đăng nhập bằng mật khẩu mới.";
+    return "Password reset successful. You can now sign in with your new password.";
   }
 
   if (message === "Invalid or expired reset password token") {
-    return "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.";
+    return "The reset password link is invalid or has expired.";
   }
 
   if (message === "Invalid reset password token") {
-    return "Mã đặt lại mật khẩu không hợp lệ.";
+    return "Invalid reset password token.";
   }
 
   if (message === "Password confirmation does not match") {
-    return "Mật khẩu xác nhận không khớp.";
+    return "Password confirmation does not match.";
   }
 
   return message;
 }
 
-export default function ResetPasswordPage() {
-  const [token, setToken] = useState("");
-  useEffect(() => {
-    setToken(new URLSearchParams(window.location.search).get("token") || "");
-  }, []);
+function ResetPasswordFormContent() {
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token") || "";
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -50,7 +49,7 @@ export default function ResetPasswordPage() {
     setFieldErrors({});
 
     if (!token) {
-      setMessage("Thiếu mã đặt lại mật khẩu. Vui lòng kiểm tra lại liên kết trong email.");
+      setMessage("Missing reset token. Please check the link in your email.");
       setMessageType("error");
       return;
     }
@@ -78,14 +77,14 @@ export default function ResetPasswordPage() {
       });
 
       setMessage(
-        toVietnameseResetPasswordMessage(data.message) ||
-          "Đặt lại mật khẩu thành công. Bạn có thể đăng nhập bằng mật khẩu mới.",
+        toEnglishResetPasswordMessage(data.message) ||
+          "Password reset successful. You can now sign in with your new password.",
       );
       setMessageType("success");
     } catch (error) {
       const rawMessage =
-        error instanceof Error ? error.message : "Đặt lại mật khẩu thất bại";
-      setMessage(toVietnameseResetPasswordMessage(rawMessage));
+        error instanceof Error ? error.message : "Password reset failed";
+      setMessage(toEnglishResetPasswordMessage(rawMessage));
       setMessageType("error");
     } finally {
       setIsSubmitting(false);
@@ -93,28 +92,18 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <section className="mx-auto max-w-xl rounded-3xl bg-white p-6 text-[#191c21] shadow-lg">
-      <div className="mb-6 space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0a66c2]">
-          Đặt lại mật khẩu
-        </p>
-        <h1 className="text-2xl font-bold text-[#191c21]">Tạo mật khẩu mới</h1>
-        <p className="text-sm text-[#414752]">
-          Nhập mật khẩu mới để hoàn tất quá trình khôi phục tài khoản.
-        </p>
-      </div>
-
+    <>
       <form noValidate className="space-y-4" onSubmit={onSubmit}>
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-[#191c21]" htmlFor="password">
-            Mật khẩu mới
+            New password
           </label>
           <div className="relative">
             <input
               id="password"
               name="password"
               type={showPassword ? "text" : "password"}
-              placeholder="Nhập mật khẩu mới"
+              placeholder="Enter a new password"
               className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 pr-12 text-sm text-[#191c21] outline-none transition focus:border-[#0a66c2] focus:ring-2 focus:ring-[#0a66c2]/20"
               required
               disabled={isSubmitting}
@@ -123,8 +112,8 @@ export default function ResetPasswordPage() {
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-800"
-              aria-label="Hiển thị mật khẩu mới"
-              title={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+              aria-label="Show new password"
+              title={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? <Eye /> : <EyeOff />}
             </button>
@@ -139,14 +128,14 @@ export default function ResetPasswordPage() {
             className="block text-sm font-semibold text-[#191c21]"
             htmlFor="confirmPassword"
           >
-            Xác nhận mật khẩu mới
+            Confirm new password
           </label>
           <div className="relative">
             <input
               id="confirmPassword"
               name="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
-              placeholder="Nhập lại mật khẩu mới"
+              placeholder="Confirm your new password"
               className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 pr-12 text-sm text-[#191c21] outline-none transition focus:border-[#0a66c2] focus:ring-2 focus:ring-[#0a66c2]/20"
               required
               disabled={isSubmitting}
@@ -155,8 +144,8 @@ export default function ResetPasswordPage() {
               type="button"
               onClick={() => setShowConfirmPassword((prev) => !prev)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-800"
-              aria-label="Hiển thị xác nhận mật khẩu mới"
-              title={showConfirmPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+              aria-label="Show confirmation password"
+              title={showConfirmPassword ? "Hide password" : "Show password"}
             >
               {showConfirmPassword ? <Eye /> : <EyeOff />}
             </button>
@@ -171,7 +160,7 @@ export default function ResetPasswordPage() {
           disabled={isSubmitting}
           className="w-full rounded-xl bg-gradient-to-r from-[#004e99] to-[#0a66c2] py-3.5 text-sm font-bold text-white transition active:scale-[0.99] disabled:opacity-60"
         >
-          {isSubmitting ? "Đang cập nhật mật khẩu..." : "Xác nhận mật khẩu mới"}
+          {isSubmitting ? "Updating password..." : "Confirm new password"}
         </button>
       </form>
 
@@ -184,10 +173,30 @@ export default function ResetPasswordPage() {
           {message}
         </p>
       ) : null}
+    </>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <section className="mx-auto max-w-xl rounded-3xl bg-white p-6 text-[#191c21] shadow-lg">
+      <div className="mb-6 space-y-2">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0a66c2]">
+          Reset password
+        </p>
+        <h1 className="text-2xl font-bold text-[#191c21]">Create a new password</h1>
+        <p className="text-sm text-[#414752]">
+          Enter a new password to finish restoring your account.
+        </p>
+      </div>
+
+      <Suspense fallback={<p className="text-center text-sm text-slate-500">Loading form...</p>}>
+        <ResetPasswordFormContent />
+      </Suspense>
 
       <p className="mt-6 text-center text-sm text-slate-600">
         <Link href="/login" className="font-semibold text-[#0a66c2] hover:underline">
-          Quay lại đăng nhập
+          Back to sign in
         </Link>
       </p>
     </section>

@@ -11,45 +11,57 @@ async function main() {
 
   const guest = await prisma.user.upsert({
     where: { email: "guest@demo.com" },
-    update: {},
+    update: {
+      emailVerifiedAt: new Date(),
+    },
     create: {
       fullName: "Demo Guest",
       email: "guest@demo.com",
       passwordHash: guestPassword,
       role: UserRole.GUEST,
+      emailVerifiedAt: new Date(),
     },
   });
 
   const employer = await prisma.user.upsert({
     where: { email: "employer@demo.com" },
-    update: {},
+    update: {
+      emailVerifiedAt: new Date(),
+    },
     create: {
       fullName: "Demo Employer",
       email: "employer@demo.com",
       passwordHash: employerPassword,
       role: UserRole.EMPLOYER,
+      emailVerifiedAt: new Date(),
     },
   });
 
   const candidate = await prisma.user.upsert({
     where: { email: "candidate@demo.com" },
-    update: {},
+    update: {
+      emailVerifiedAt: new Date(),
+    },
     create: {
       fullName: "Demo Candidate",
       email: "candidate@demo.com",
       passwordHash: candidatePassword,
       role: UserRole.CANDIDATE,
+      emailVerifiedAt: new Date(),
     },
   });
 
   const admin = await prisma.user.upsert({
     where: { email: "admin@demo.com" },
-    update: {},
+    update: {
+      emailVerifiedAt: new Date(),
+    },
     create: {
       fullName: "Demo Admin",
       email: "admin@demo.com",
       passwordHash: adminPassword,
       role: UserRole.ADMIN,
+      emailVerifiedAt: new Date(),
     },
   });
 
@@ -98,12 +110,15 @@ async function main() {
   for (const item of extraCandidates) {
     const user = await prisma.user.upsert({
       where: { email: item.email },
-      update: {},
+      update: {
+        emailVerifiedAt: new Date(),
+      },
       create: {
         fullName: item.fullName,
         email: item.email,
         passwordHash: candidatePassword,
         role: UserRole.CANDIDATE,
+        emailVerifiedAt: new Date(),
       },
     });
 
@@ -125,13 +140,16 @@ async function main() {
 
   await prisma.employerProfile.upsert({
     where: { userId: employer.id },
-    update: {},
+    update: {
+      credits: 100,
+    },
     create: {
       userId: employer.id,
       companyName: "TechNova",
       companyWebsite: "https://technova.example.com",
       companyLocation: "Ho Chi Minh City",
       description: "Demo employer profile for starter scaffold.",
+      credits: 100,
     },
   });
 

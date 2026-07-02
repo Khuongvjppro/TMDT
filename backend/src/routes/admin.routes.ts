@@ -13,6 +13,19 @@ import {
   getStats,
 } from "../controllers/admin.controller";
 import { requireAuth, requireRole, checkUserStatus } from "../middleware/auth";
+import {
+  getModerationQueue,
+  approveJob,
+  rejectJob
+} from "../controllers/moderation.controller";
+import {
+  listCategories,
+  getCategory,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+} from "../controllers/category.controller";
+
 
 const router = Router();
 
@@ -105,6 +118,73 @@ router.get(
   checkUserStatus,
   requireRole(["ADMIN"]),
   getStats
+
+);
+
+//Moderation Routes
+router.get(
+  "/moderation",
+  requireAuth,
+  checkUserStatus,
+  requireRole(["ADMIN"]),
+  getModerationQueue
+);
+
+router.post(
+  "/moderation/:id/approve",
+  requireAuth,
+  checkUserStatus,
+  requireRole(["ADMIN"]),
+  approveJob
+);
+
+router.post(
+  "/moderation/:id/reject",
+  requireAuth,
+  checkUserStatus,
+  requireRole(["ADMIN"]),
+  rejectJob
+);
+
+// Category Management Routes
+router.get(
+  "/categories",
+  requireAuth,
+  checkUserStatus,
+  requireRole(["ADMIN"]),
+  listCategories
+);
+
+router.get(
+  "/categories/:id",
+  requireAuth,
+  checkUserStatus,
+  requireRole(["ADMIN"]),
+  getCategory
+);
+
+router.post(
+  "/categories",
+  requireAuth,
+  checkUserStatus,
+  requireRole(["ADMIN"]),
+  createCategory
+);
+
+router.patch(
+  "/categories/:id",
+  requireAuth,
+  checkUserStatus,
+  requireRole(["ADMIN"]),
+  updateCategory
+);
+
+router.delete(
+  "/categories/:id",
+  requireAuth,
+  checkUserStatus,
+  requireRole(["ADMIN"]),
+  deleteCategory
 );
 
 export default router;

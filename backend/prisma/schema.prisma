@@ -47,12 +47,25 @@ enum UserStatus {
   DELETED
 }
 
+
+enum JobStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum AuditActionType {
   USER_LOCKED
   USER_UNLOCKED
   USER_DELETED
   ROLE_CHANGED
   STATUS_CHANGED
+  JOB_APPROVED
+  JOB_REJECTED
+  CATEGORY_CREATED
+  CATEGORY_UPDATED
+  CATEGORY_DELETED
+
 }
 
 model User {
@@ -141,16 +154,22 @@ model Job {
   requirements    String        @db.Text
   type            JobType
   isActive        Boolean       @default(true)
+ 
+  status       JobStatus     @default(PENDING) 
+  rejectReason String?       @db.Text          
+  publishedAt  DateTime?                       
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
   employerId      Int
   employer        User          @relation(fields: [employerId], references: [id], onDelete: Cascade)
   applications    Application[]
+  auditLogs    AuditLog[]
 
   @@index([title])
   @@index([companyName])
   @@index([location])
+  @@index([status])
 }
 
 model Application {
@@ -205,19 +224,41 @@ model EmployerTransaction {
   @@index([packageId])
 }
 
-model AuditLog {
-  id          Int                 @id @default(autoincrement())
-  action      AuditActionType
-  userId      Int
-  targetUserId Int?
-  details     String?             @db.Text
-  ipAddress   String?
-  userAgent   String?
-  createdAt   DateTime            @default(now())
 
-  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String
+  slug        String   @unique
+  description String?  @db.Text
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  auditLogs   AuditLog[]
+
+  @@index([name])
+  @@index([isDeleted])
+}
+
+model AuditLog {
+  id               Int                 @id @default(autoincrement())
+  action           AuditActionType
+  userId           Int
+  targetUserId     Int?
+  targetJobId      Int?
+  targetCategoryId Int?
+  details          String?             @db.Text
+  ipAddress        String?
+  userAgent        String?
+  createdAt        DateTime            @default(now())
+
+  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job              Job?                @relation(fields: [targetJobId], references: [id], onDelete: Cascade)
+  category         Category?           @relation(fields: [targetCategoryId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
   @@index([targetUserId, createdAt])
+  @@index([targetJobId, createdAt])
+  @@index([targetCategoryId, createdAt])
   @@index([action])
 }

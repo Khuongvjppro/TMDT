@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, Suspense, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { resetPassword } from "../../lib/api";
 import { mapZodErrors, resetPasswordSchema } from "../../lib/validation";
@@ -25,7 +25,7 @@ function toVietnameseInviteMessage(message: string) {
   return message;
 }
 
-export default function InvitePage() {
+function InviteForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";
 
@@ -184,5 +184,13 @@ export default function InvitePage() {
         </Link>
       </p>
     </section>
+  );
+}
+
+export default function InvitePage() {
+  return (
+    <Suspense fallback={<p className="text-center text-sm text-slate-500">Loading...</p>}>
+      <InviteForm />
+    </Suspense>
   );
 }

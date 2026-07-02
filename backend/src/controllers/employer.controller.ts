@@ -340,13 +340,13 @@ export async function purchaseBillingPackage(req: Request, res: Response) {
     where: { userId: authUser.userId },
     update: {
       credits: {
-        increment: selectedPackage.credits,
+        increment: selectedPackage.maxJobPosts,
       },
     },
     create: {
       userId: authUser.userId,
       companyName: `${authUser.email.split("@")[0]} Company`,
-      credits: selectedPackage.credits,
+      credits: selectedPackage.maxJobPosts,
     },
   });
 

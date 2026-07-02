@@ -65,6 +65,10 @@ enum AuditActionType {
   CATEGORY_CREATED
   CATEGORY_UPDATED
   CATEGORY_DELETED
+  PACKAGE_CREATED
+  PACKAGE_UPDATED
+  PACKAGE_DELETED
+  PACKAGE_STATUS_CHANGED
 
 }
 
@@ -96,15 +100,19 @@ model User {
 }
 
 model BillingPackage {
-  id         Int       @id @default(autoincrement())
-  name       String    @unique
-  credits    Int
-  priceCents Int
-  isActive   Boolean   @default(true)
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id           Int       @id @default(autoincrement())
+  name         String    @unique
+  price        Int
+  durationDays Int
+  maxJobPosts  Int
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   transactions EmployerTransaction[]
+  auditLogs    AuditLog[]
+
+  @@index([isActive])
 }
 
 model CandidateProfile {
@@ -247,6 +255,9 @@ model AuditLog {
   targetUserId     Int?
   targetJobId      Int?
   targetCategoryId Int?
+
+  targetPackageId  Int?
+
   details          String?             @db.Text
   ipAddress        String?
   userAgent        String?
@@ -256,9 +267,13 @@ model AuditLog {
   job              Job?                @relation(fields: [targetJobId], references: [id], onDelete: Cascade)
   category         Category?           @relation(fields: [targetCategoryId], references: [id], onDelete: Cascade)
 
+  billingPackage   BillingPackage?     @relation(fields: [targetPackageId], references: [id], onDelete: Cascade)
+
+
   @@index([userId, createdAt])
   @@index([targetUserId, createdAt])
   @@index([targetJobId, createdAt])
   @@index([targetCategoryId, createdAt])
+  @@index([targetPackageId, createdAt])
   @@index([action])
 }

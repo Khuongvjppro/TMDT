@@ -411,7 +411,6 @@ export async function getStats(req: Request, res: Response) {
       where: { isActive: true, status: "APPROVED" },
     });
     const pendingJobs = await prisma.job.count({ where: { status: "PENDING" } });
-
     const totalApplications = await prisma.application.count();
 
     return res.status(200).json({

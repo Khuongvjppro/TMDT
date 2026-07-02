@@ -20,6 +20,10 @@ export const AUDIT_ACTIONS = [
   "CATEGORY_CREATED",
   "CATEGORY_UPDATED",
   "CATEGORY_DELETED",
+  "PACKAGE_CREATED",
+  "PACKAGE_UPDATED",
+  "PACKAGE_DELETED",
+  "PACKAGE_STATUS_CHANGED",
 ] as const;
 
 export type AuditActionType = (typeof AUDIT_ACTIONS)[number];

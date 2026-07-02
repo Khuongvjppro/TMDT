@@ -147,33 +147,51 @@ async function main() {
 
   await prisma.billingPackage.upsert({
     where: { name: "Starter" },
-    update: { credits: 30, priceCents: 1900, isActive: true },
+    update: {
+      price: 190000,
+      durationDays: 30,
+      maxJobPosts: 30,
+      isActive: true,
+    },
     create: {
       name: "Starter",
-      credits: 30,
-      priceCents: 1900,
+      price: 190000,
+      durationDays: 30,
+      maxJobPosts: 30,
       isActive: true,
     },
   });
 
   await prisma.billingPackage.upsert({
     where: { name: "Growth" },
-    update: { credits: 80, priceCents: 4500, isActive: true },
+    update: {
+      price: 450000,
+      durationDays: 60,
+      maxJobPosts: 80,
+      isActive: true,
+    },
     create: {
       name: "Growth",
-      credits: 80,
-      priceCents: 4500,
+      price: 450000,
+      durationDays: 60,
+      maxJobPosts: 80,
       isActive: true,
     },
   });
 
   await prisma.billingPackage.upsert({
     where: { name: "Scale" },
-    update: { credits: 180, priceCents: 8900, isActive: true },
+    update: {
+      price: 890000,
+      durationDays: 90,
+      maxJobPosts: 180,
+      isActive: true,
+    },
     create: {
       name: "Scale",
-      credits: 180,
-      priceCents: 8900,
+      price: 890000,
+      durationDays: 90,
+      maxJobPosts: 180,
       isActive: true,
     },
   });
@@ -193,8 +211,8 @@ async function main() {
           transactionCode: `SEED-TXN-${pkg.id}-${Date.now()}`,
           employerId: employer.id,
           packageId: pkg.id,
-          amountCents: pkg.priceCents,
-          credits: pkg.credits,
+          amountCents: pkg.price,
+          credits: pkg.maxJobPosts,
           status: "SUCCESS",
         },
       });

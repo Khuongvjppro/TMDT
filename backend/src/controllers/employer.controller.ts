@@ -279,7 +279,17 @@ export async function listCandidates(req: Request, res: Response) {
 export async function listBillingPackages(_req: Request, res: Response) {
   const items = await prisma.billingPackage.findMany({
     where: { isActive: true },
-    orderBy: [{ credits: "asc" }, { id: "asc" }],
+    orderBy: [{ maxJobPosts: "asc" }, { id: "asc" }],
+    select: {
+      id: true,
+      name: true,
+      price: true,
+      durationDays: true,
+      maxJobPosts: true,
+      isActive: true,
+      createdAt: true,
+      updatedAt: true,
+    },
   });
 
   return res.status(200).json({ items });
@@ -309,8 +319,8 @@ export async function purchaseBillingPackage(req: Request, res: Response) {
       transactionCode: `TXN-${Date.now()}-${authUser.userId}`,
       employerId: authUser.userId,
       packageId: selectedPackage.id,
-      amountCents: selectedPackage.priceCents,
-      credits: selectedPackage.credits,
+      amountCents: selectedPackage.price,
+      credits: selectedPackage.maxJobPosts,
       status: "SUCCESS",
     },
     include: {
@@ -318,8 +328,9 @@ export async function purchaseBillingPackage(req: Request, res: Response) {
         select: {
           id: true,
           name: true,
-          credits: true,
-          priceCents: true,
+          price: true,
+          durationDays: true,
+          maxJobPosts: true,
         },
       },
     },
@@ -349,8 +360,9 @@ export async function listMyTransactions(req: Request, res: Response) {
           select: {
             id: true,
             name: true,
-            credits: true,
-            priceCents: true,
+            price: true,
+            durationDays: true,
+            maxJobPosts: true,
           },
         },
       },

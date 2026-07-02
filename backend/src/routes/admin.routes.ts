@@ -11,6 +11,10 @@ import {
   getUserAuditLogs,
   getAuditLogs,
   getStats,
+  getUserRoleStats,
+  getUserStatusStats,
+  getJobTypeStats,
+  getApplicationStatusStats,
 } from "../controllers/admin.controller";
 import { requireAuth, requireRole, checkUserStatus } from "../middleware/auth";
 
@@ -105,6 +109,39 @@ router.get(
   checkUserStatus,
   requireRole(["ADMIN"]),
   getStats
+);
+
+// Chart stats
+router.get(
+  "/stats/user-roles",
+  requireAuth,
+  checkUserStatus,
+  requireRole(["ADMIN"]),
+  getUserRoleStats
+);
+
+router.get(
+  "/stats/user-statuses",
+  requireAuth,
+  checkUserStatus,
+  requireRole(["ADMIN"]),
+  getUserStatusStats
+);
+
+router.get(
+  "/stats/job-types",
+  requireAuth,
+  checkUserStatus,
+  requireRole(["ADMIN"]),
+  getJobTypeStats
+);
+
+router.get(
+  "/stats/application-statuses",
+  requireAuth,
+  checkUserStatus,
+  requireRole(["ADMIN"]),
+  getApplicationStatusStats
 );
 
 export default router;

@@ -171,6 +171,23 @@ export function getRoleNavItems(role?: UserRole): NavItem[] {
           </svg>
         ),
       },
+      {
+        href: "/admin/stats",
+        label: "Statistics",
+        matchers: ["/admin/stats"],
+        icon: (
+          <svg
+            viewBox="0 0 24 24"
+            className="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.8}
+          >
+            <path d="M4 4v16h16" />
+            <path d="M7 14l3-3 3 3 4-5" />
+          </svg>
+        ),
+      },
     ];
   }
 

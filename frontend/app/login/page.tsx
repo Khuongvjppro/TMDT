@@ -34,7 +34,8 @@ export default function LoginPage() {
       });
       setMessage(`Đăng nhập thành công với vai trò ${data.user.role}`);
       setMessageType("success");
-      router.push("/");
+      const nextPath = data.user.role === "ADMIN" ? "/admin" : "/";
+      router.push(nextPath);
       router.refresh();
     } catch (error) {
       const rawMessage =

@@ -41,6 +41,20 @@ enum TransactionStatus {
   FAILED
 }
 
+enum UserStatus {
+  ACTIVE
+  LOCKED
+  DELETED
+}
+
+enum AuditActionType {
+  USER_LOCKED
+  USER_UNLOCKED
+  USER_DELETED
+  ROLE_CHANGED
+  STATUS_CHANGED
+}
+
 model User {
   id           Int           @id @default(autoincrement())
   fullName     String
@@ -48,6 +62,11 @@ model User {
   emailVerifiedAt DateTime?
   passwordHash String
   role         UserRole      @default(CANDIDATE)
+  status       UserStatus    @default(ACTIVE)
+  violationCount Int         @default(0)
+  lockedAt     DateTime?
+  lockedBy     Int?
+  deletedAt    DateTime?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
@@ -57,6 +76,10 @@ model User {
   candidateProfile CandidateProfile?
   employerProfile  EmployerProfile?
   adminProfile     AdminProfile?
+  auditLogs    AuditLog[]
+
+  @@index([status])
+  @@index([email])
 }
 
 model BillingPackage {
@@ -180,4 +203,21 @@ model EmployerTransaction {
 
   @@index([employerId, createdAt])
   @@index([packageId])
+}
+
+model AuditLog {
+  id          Int                 @id @default(autoincrement())
+  action      AuditActionType
+  userId      Int
+  targetUserId Int?
+  details     String?             @db.Text
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime            @default(now())
+
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([targetUserId, createdAt])
+  @@index([action])
 }

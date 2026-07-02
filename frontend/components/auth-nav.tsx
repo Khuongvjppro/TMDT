@@ -92,6 +92,57 @@ export default function AuthNav() {
     router.push("/");
   }
 
+  function closeLoginModal() {
+    setIsLoginModalOpen(false);
+    setLoginEmail("");
+    setLoginPassword("");
+    setLoginMessage("");
+    setLoginMessageType(null);
+    setLoginFieldErrors({});
+    setShowLoginPassword(false);
+  }
+
+  async function onLoginSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setLoginMessage("");
+    setLoginMessageType(null);
+    setLoginFieldErrors({});
+
+    const parsed = loginSchema.safeParse({
+      email: loginEmail.trim(),
+      password: loginPassword,
+    });
+
+    if (!parsed.success) {
+      setLoginFieldErrors(mapZodErrors(parsed.error.issues));
+      return;
+    }
+
+    setLoginSubmitting(true);
+    try {
+      const data = await login(parsed.data.email, parsed.data.password);
+      setAuthState({ token: data.accessToken, user: data.user });
+      const target = data.user.role === "ADMIN" ? "/admin" : "/";
+      setLoginMessage(`Đăng nhập thành công với vai trò ${data.user.role}`);
+      setLoginMessageType("success");
+      closeLoginModal();
+      router.push(target);
+      router.refresh();
+    } catch (error) {
+      const rawMessage = error instanceof Error ? error.message : "Đăng nhập thất bại";
+      const nextMessage =
+        rawMessage === "Invalid email or password"
+          ? "Email hoặc mật khẩu không đúng"
+          : rawMessage === "Email not verified"
+          ? "Email chưa được xác thực. Vui lòng kiểm tra hộp thư và xác thực trước khi đăng nhập."
+          : rawMessage;
+      setLoginMessage(nextMessage);
+      setLoginMessageType("error");
+    } finally {
+      setLoginSubmitting(false);
+    }
+  }
+
   return (
     <nav className="flex items-center gap-3 text-sm font-medium">
       {!isReady ? (

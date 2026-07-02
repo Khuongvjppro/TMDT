@@ -33,6 +33,13 @@ import {
   setPackageStatus,
   deletePackage,
 } from "../controllers/package.controller";
+import {
+  listAdminReviews,
+  getAdminReview,
+  hideReview,
+  restoreReview,
+} from "../controllers/review.controller";
+import { reviewModerationMiddleware } from "../middleware/review-moderation";
 
 
 const router = Router();
@@ -60,6 +67,7 @@ router.patch(
   checkUserStatus,
   requireRole(["ADMIN"]),
   updateUserRole
+
 );
 
 router.patch(
@@ -242,5 +250,11 @@ router.delete(
   requireRole(["ADMIN"]),
   deletePackage
 );
+
+// Review Management Routes
+router.get("/reviews", ...reviewModerationMiddleware, listAdminReviews);
+router.get("/reviews/:id", ...reviewModerationMiddleware, getAdminReview);
+router.post("/reviews/:id/hide", ...reviewModerationMiddleware, hideReview);
+router.post("/reviews/:id/restore", ...reviewModerationMiddleware, restoreReview);
 
 export default router;

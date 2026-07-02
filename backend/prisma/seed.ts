@@ -330,6 +330,58 @@ async function main() {
         cvLink: "https://example.com/cv/candidate",
       },
     });
+
+    const reviewCount = await prisma.review.count();
+    if (reviewCount === 0) {
+      const jobs = await prisma.job.findMany({
+        take: 3,
+        orderBy: { id: "asc" },
+      });
+
+      const seedReviews = [
+        {
+          jobId: jobs[0]?.id ?? firstJob.id,
+          rating: 5,
+          content:
+            "Great interview process and clear job description. Highly recommend applying here.",
+        },
+        {
+          jobId: jobs[1]?.id ?? firstJob.id,
+          rating: 2,
+          content:
+            "Slow response from HR team. The role description did not match the actual interview topics.",
+        },
+        {
+          jobId: jobs[2]?.id ?? firstJob.id,
+          rating: 1,
+          content:
+            "Inappropriate questions during interview. Would not recommend this company to others.",
+          isHidden: true,
+          hideReason: "Contains inappropriate content flagged during moderation",
+        },
+      ];
+
+      for (const item of seedReviews) {
+        await prisma.review.upsert({
+          where: {
+            authorId_jobId: {
+              authorId: candidate.id,
+              jobId: item.jobId,
+            },
+          },
+          update: {},
+          create: {
+            authorId: candidate.id,
+            jobId: item.jobId,
+            rating: item.rating,
+            content: item.content,
+            isHidden: item.isHidden ?? false,
+            hideReason: item.isHidden ? item.hideReason : null,
+            hiddenAt: item.isHidden ? new Date() : null,
+          },
+        });
+      }
+    }
   }
 }
 

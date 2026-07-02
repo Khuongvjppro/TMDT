@@ -188,6 +188,24 @@ export function getRoleNavItems(role?: UserRole): NavItem[] {
           </svg>
         ),
       },
+
+      {
+        href: "/admin/reviews",
+        label: "Reviews",
+        matchers: ["/admin/reviews"],
+        icon: (
+          <svg
+            viewBox="0 0 24 24"
+            className="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.8}
+          >
+            <path d="M7 8h10M7 12h6M7 16h8" />
+            <path d="M5 4h14v16H5z" />
+          </svg>
+        ),
+      },
     ];
   }
 

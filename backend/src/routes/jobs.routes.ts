@@ -7,11 +7,13 @@ import {
   setJobActive,
   updateJob,
 } from "../controllers/jobs.controller";
+import { listPublicJobReviews } from "../controllers/review.controller";
 import { requireAuth, requireRole } from "../middleware/auth";
 
 const router = Router();
 
 router.get("/", listJobs);
+router.get("/:id/reviews", listPublicJobReviews);
 router.get("/:id", getJobById);
 router.post("/", requireAuth, requireRole(["EMPLOYER", "ADMIN"]), createJob);
 router.patch(

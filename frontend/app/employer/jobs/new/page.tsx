@@ -1,16 +1,31 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { createJob } from "../../../../lib/api";
+import { FormEvent, useEffect, useState } from "react";
+import { createJob, getEmployerProfile } from "../../../../lib/api";
 import { useAuth } from "../../../../components/auth-provider";
 
 export default function NewJobPage() {
   const { auth, isReady } = useAuth();
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [profileCompanyName, setProfileCompanyName] = useState("");
 
   const currentRole = auth?.user.role;
   const canCreate = currentRole === "EMPLOYER" || currentRole === "ADMIN";
+
+  useEffect(() => {
+    async function loadProfile() {
+      if (auth?.token && currentRole === "EMPLOYER") {
+        try {
+          const profile = await getEmployerProfile(auth.token);
+          setProfileCompanyName(profile.item.companyName);
+        } catch {
+          // ignore
+        }
+      }
+    }
+    loadProfile();
+  }, [auth?.token, currentRole]);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -24,11 +39,16 @@ export default function NewJobPage() {
 
     const formData = new FormData(event.currentTarget);
 
+    const salaryMinVal = formData.get("salaryMin") ? Number(formData.get("salaryMin")) : undefined;
+    const salaryMaxVal = formData.get("salaryMax") ? Number(formData.get("salaryMax")) : undefined;
+
     const payload = {
       title: String(formData.get("title") || ""),
-      companyName: String(formData.get("companyName") || ""),
+      companyName: currentRole === "EMPLOYER" ? profileCompanyName : String(formData.get("companyName") || ""),
       location: String(formData.get("location") || ""),
       type: String(formData.get("type") || "FULL_TIME"),
+      salaryMin: salaryMinVal,
+      salaryMax: salaryMaxVal,
       description: String(formData.get("description") || ""),
       requirements: String(formData.get("requirements") || ""),
     };
@@ -113,18 +133,33 @@ export default function NewJobPage() {
                   disabled={!canCreate || isSubmitting}
                 />
               </label>
-              <label className="space-y-2">
-                <span className="text-xs font-semibold text-slate-600">
-                  Company name
-                </span>
-                <input
-                  name="companyName"
-                  placeholder="e.g. NexaSoft"
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none ring-brand-200 focus:ring"
-                  required
-                  disabled={!canCreate || isSubmitting}
-                />
-              </label>
+              {currentRole === "EMPLOYER" ? (
+                <label className="space-y-2">
+                  <span className="text-xs font-semibold text-slate-600">
+                    Company name
+                  </span>
+                  <input
+                    name="companyName"
+                    value={profileCompanyName}
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none cursor-not-allowed"
+                    readOnly
+                    required
+                  />
+                </label>
+              ) : (
+                <label className="space-y-2">
+                  <span className="text-xs font-semibold text-slate-600">
+                    Company name
+                  </span>
+                  <input
+                    name="companyName"
+                    placeholder="e.g. NexaSoft"
+                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none ring-brand-200 focus:ring"
+                    required
+                    disabled={!canCreate || isSubmitting}
+                  />
+                </label>
+              )}
               <label className="space-y-2">
                 <span className="text-xs font-semibold text-slate-600">
                   Location
@@ -152,6 +187,30 @@ export default function NewJobPage() {
                   <option value="FREELANCE">Freelance</option>
                   <option value="REMOTE">Remote</option>
                 </select>
+              </label>
+              <label className="space-y-2">
+                <span className="text-xs font-semibold text-slate-600">
+                  Minimum Salary
+                </span>
+                <input
+                  type="number"
+                  name="salaryMin"
+                  placeholder="e.g. 15"
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none ring-brand-200 focus:ring"
+                  disabled={!canCreate || isSubmitting}
+                />
+              </label>
+              <label className="space-y-2">
+                <span className="text-xs font-semibold text-slate-600">
+                  Maximum Salary
+                </span>
+                <input
+                  type="number"
+                  name="salaryMax"
+                  placeholder="e.g. 35"
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none ring-brand-200 focus:ring"
+                  disabled={!canCreate || isSubmitting}
+                />
               </label>
             </div>
           </section>

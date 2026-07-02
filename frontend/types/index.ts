@@ -142,8 +142,9 @@ export type EmployerCandidateListResponse = {
 export type BillingPackage = {
   id: number;
   name: string;
-  credits: number;
-  priceCents: number;
+  price: number;
+  durationDays: number;
+  maxJobPosts: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -164,8 +165,9 @@ export type EmployerTransaction = {
   package: {
     id: number;
     name: string;
-    credits: number;
-    priceCents: number;
+    price: number;
+    durationDays: number;
+    maxJobPosts: number;
   };
 };
 

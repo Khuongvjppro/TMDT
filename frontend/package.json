@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "axios": "^1.16.1",
+    "job-platform-monorepo": "file:..",
     "lucide-react": "^1.8.0",
     "next": "15.1.4",
     "react": "19.0.0",

@@ -188,6 +188,57 @@ export function getRoleNavItems(role?: UserRole): NavItem[] {
           </svg>
         ),
       },
+      {
+        href: "/admin/moderation",
+        label: "Moderation",
+        matchers: ["/admin/moderation"],
+        icon: (
+          <svg
+            viewBox="0 0 24 24"
+            className="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.8}
+          >
+            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+            <path d="M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2" />
+            <path d="M9 12h6M9 16h6" />
+          </svg>
+        ),
+      },
+      {
+        href: "/admin/categories",
+        label: "Categories",
+        matchers: ["/admin/categories"],
+        icon: (
+          <svg
+            viewBox="0 0 24 24"
+            className="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.8}
+          >
+            <path d="M4 7h16M4 12h10M4 17h16" />
+          </svg>
+        ),
+      },
+      {
+        href: "/admin/reviews",
+        label: "Reviews",
+        matchers: ["/admin/reviews"],
+        icon: (
+          <svg
+            viewBox="0 0 24 24"
+            className="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.8}
+          >
+            <path d="M7 8h10M7 12h6M7 16h8" />
+            <path d="M5 4h14v16H5z" />
+          </svg>
+        ),
+      },
     ];
   }
 

@@ -407,12 +407,16 @@ export async function getAuditLogs(req: Request, res: Response) {
 export async function getStats(req: Request, res: Response) {
   try {
     const totalUsers = await prisma.user.count({ where: { NOT: { status: "DELETED" } } });
-    const activeJobs = await prisma.job.count({ where: { isActive: true } });
+    const activeJobs = await prisma.job.count({
+      where: { isActive: true, status: "APPROVED" },
+    });
+    const pendingJobs = await prisma.job.count({ where: { status: "PENDING" } });
     const totalApplications = await prisma.application.count();
 
     return res.status(200).json({
       users: totalUsers,
       jobs: activeJobs,
+      pendingJobs,
       applications: totalApplications,
     });
   } catch (error) {

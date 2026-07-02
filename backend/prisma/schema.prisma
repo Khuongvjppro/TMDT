@@ -47,12 +47,31 @@ enum UserStatus {
   DELETED
 }
 
+
+enum JobStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum AuditActionType {
   USER_LOCKED
   USER_UNLOCKED
   USER_DELETED
   ROLE_CHANGED
   STATUS_CHANGED
+  JOB_APPROVED
+  JOB_REJECTED
+  CATEGORY_CREATED
+  CATEGORY_UPDATED
+  CATEGORY_DELETED
+  PACKAGE_CREATED
+  PACKAGE_UPDATED
+  PACKAGE_DELETED
+  PACKAGE_STATUS_CHANGED
+  REVIEW_HIDDEN
+  REVIEW_RESTORED
+
 }
 
 model User {
@@ -77,21 +96,28 @@ model User {
   employerProfile  EmployerProfile?
   adminProfile     AdminProfile?
   auditLogs    AuditLog[]
+  reviews      Review[]      @relation("ReviewAuthor")
+  hiddenReviews Review[]     @relation("ReviewHiddenBy")
+
 
   @@index([status])
   @@index([email])
 }
 
 model BillingPackage {
-  id         Int       @id @default(autoincrement())
-  name       String    @unique
-  credits    Int
-  priceCents Int
-  isActive   Boolean   @default(true)
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id           Int       @id @default(autoincrement())
+  name         String    @unique
+  price        Int
+  durationDays Int
+  maxJobPosts  Int
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   transactions EmployerTransaction[]
+  auditLogs    AuditLog[]
+
+  @@index([isActive])
 }
 
 model CandidateProfile {
@@ -142,16 +168,23 @@ model Job {
   requirements    String        @db.Text
   type            JobType
   isActive        Boolean       @default(true)
+ 
+  status       JobStatus     @default(PENDING) 
+  rejectReason String?       @db.Text          
+  publishedAt  DateTime?                       
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
   employerId      Int
   employer        User          @relation(fields: [employerId], references: [id], onDelete: Cascade)
   applications    Application[]
+  auditLogs    AuditLog[]
+  reviews         Review[]
 
   @@index([title])
   @@index([companyName])
   @@index([location])
+  @@index([status])
 }
 
 model Application {
@@ -206,19 +239,74 @@ model EmployerTransaction {
   @@index([packageId])
 }
 
-model AuditLog {
-  id          Int                 @id @default(autoincrement())
-  action      AuditActionType
-  userId      Int
-  targetUserId Int?
-  details     String?             @db.Text
-  ipAddress   String?
-  userAgent   String?
-  createdAt   DateTime            @default(now())
 
-  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String
+  slug        String   @unique
+  description String?  @db.Text
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  auditLogs   AuditLog[]
+
+  @@index([name])
+  @@index([isDeleted])
+}
+
+model Review {
+  id          Int       @id @default(autoincrement())
+  rating      Int
+  content     String    @db.Text
+  isHidden    Boolean   @default(false)
+  hideReason  String?   @db.Text
+  hiddenAt    DateTime?
+  hiddenBy    Int?
+  authorId    Int
+  jobId       Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  author      User      @relation("ReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  job         Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  hiddenByUser User?    @relation("ReviewHiddenBy", fields: [hiddenBy], references: [id], onDelete: SetNull)
+  auditLogs   AuditLog[]
+
+  @@unique([authorId, jobId])
+  @@index([isHidden])
+  @@index([jobId])
+  @@index([rating])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id               Int                 @id @default(autoincrement())
+  action           AuditActionType
+  userId           Int
+  targetUserId     Int?
+  targetJobId      Int?
+  targetCategoryId Int?
+  targetPackageId  Int?
+  targetReviewId   Int?
+
+  details          String?             @db.Text
+  ipAddress        String?
+  userAgent        String?
+  createdAt        DateTime            @default(now())
+
+  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job              Job?                @relation(fields: [targetJobId], references: [id], onDelete: Cascade)
+  category         Category?           @relation(fields: [targetCategoryId], references: [id], onDelete: Cascade)
+  billingPackage   BillingPackage?     @relation(fields: [targetPackageId], references: [id], onDelete: Cascade)
+  review           Review?             @relation(fields: [targetReviewId], references: [id], onDelete: Cascade)
+
 
   @@index([userId, createdAt])
   @@index([targetUserId, createdAt])
+  @@index([targetJobId, createdAt])
+  @@index([targetCategoryId, createdAt])
+  @@index([targetPackageId, createdAt])
+  @@index([targetReviewId, createdAt])
   @@index([action])
 }

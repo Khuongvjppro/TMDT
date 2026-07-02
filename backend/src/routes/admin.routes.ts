@@ -11,6 +11,10 @@ import {
   getUserAuditLogs,
   getAuditLogs,
   getStats,
+  getUserRoleStats,
+  getUserStatusStats,
+  getJobTypeStats,
+  getApplicationStatusStats,
 } from "../controllers/admin.controller";
 import { requireAuth, requireRole, checkUserStatus } from "../middleware/auth";
 import {
@@ -136,7 +140,40 @@ router.get(
   getStats
 );
 
-//Moderation Routes
+// Chart stats
+router.get(
+  "/stats/user-roles",
+  requireAuth,
+  checkUserStatus,
+  requireRole(["ADMIN"]),
+  getUserRoleStats
+);
+
+router.get(
+  "/stats/user-statuses",
+  requireAuth,
+  checkUserStatus,
+  requireRole(["ADMIN"]),
+  getUserStatusStats
+);
+
+router.get(
+  "/stats/job-types",
+  requireAuth,
+  checkUserStatus,
+  requireRole(["ADMIN"]),
+  getJobTypeStats
+);
+
+router.get(
+  "/stats/application-statuses",
+  requireAuth,
+  checkUserStatus,
+  requireRole(["ADMIN"]),
+  getApplicationStatusStats
+);
+
+// Moderation Routes
 router.get(
   "/moderation",
   requireAuth,
@@ -256,5 +293,4 @@ router.get("/reviews", ...reviewModerationMiddleware, listAdminReviews);
 router.get("/reviews/:id", ...reviewModerationMiddleware, getAdminReview);
 router.post("/reviews/:id/hide", ...reviewModerationMiddleware, hideReview);
 router.post("/reviews/:id/restore", ...reviewModerationMiddleware, restoreReview);
-
 export default router;

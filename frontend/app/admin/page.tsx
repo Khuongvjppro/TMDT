@@ -196,6 +196,14 @@ export default function AdminDashboardPage() {
           </Link>
 
           <Link
+            href="/admin/stats"
+            className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-slate-50"
+          >
+            <ChartBar className="h-5 w-5 text-slate-500" />
+            Statistics
+          </Link>
+
+          <Link
             href="/admin/reports"
             className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-slate-50"
           >

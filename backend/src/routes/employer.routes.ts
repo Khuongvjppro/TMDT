@@ -2,6 +2,9 @@ import { Router } from "express";
 import {
   deleteInterviewSchedule,
   getEmployerApplicationNotifications,
+  getEmployerApplicationStatusStats,
+  getEmployerInterviewModeStats,
+  getEmployerJobTypeStats,
   getMyEmployerProfile,
   listBillingPackages,
   listApplicationsByJob,
@@ -26,6 +29,9 @@ router.post("/billing/purchase", purchaseBillingPackage);
 router.get("/transactions", listMyTransactions);
 router.get("/candidates", listCandidates);
 router.get("/jobs", listMyJobs);
+router.get("/stats/job-types", getEmployerJobTypeStats);
+router.get("/stats/application-statuses", getEmployerApplicationStatusStats);
+router.get("/stats/interview-modes", getEmployerInterviewModeStats);
 router.get("/notifications/applications", getEmployerApplicationNotifications);
 router.get("/jobs/:jobId/applications", listApplicationsByJob);
 router.patch("/applications/:applicationId/status", updateApplicationStatus);

@@ -152,6 +152,32 @@ export const adminApi = {
     return response.data.items;
   },
 
+  // ── Stats endpoints ──────────────────────────────────────────────
+
+  // Get user role distribution stats
+  getUserRoleStats: async () => {
+    const response = await apiClient.get(`/admin/stats/user-roles`);
+    return response.data;
+  },
+
+  // Get user status distribution stats
+  getUserStatusStats: async () => {
+    const response = await apiClient.get(`/admin/stats/user-statuses`);
+    return response.data;
+  },
+
+  // Get job type distribution stats
+  getJobTypeStats: async () => {
+    const response = await apiClient.get(`/admin/stats/job-types`);
+    return response.data;
+  },
+
+  // Get application status distribution stats
+  getApplicationStatusStats: async () => {
+    const response = await apiClient.get(`/admin/stats/application-statuses`);
+    return response.data;
+  },
+
   // Get all audit logs
   getAuditLogs: async (filters?: {
     action?: string;

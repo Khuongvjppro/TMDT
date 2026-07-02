@@ -25,6 +25,14 @@ import {
   updateCategory,
   deleteCategory,
 } from "../controllers/category.controller";
+import {
+  listPackages,
+  getPackage,
+  createPackage,
+  updatePackage,
+  setPackageStatus,
+  deletePackage,
+} from "../controllers/package.controller";
 
 
 const router = Router();
@@ -118,7 +126,6 @@ router.get(
   checkUserStatus,
   requireRole(["ADMIN"]),
   getStats
-
 );
 
 //Moderation Routes
@@ -185,6 +192,55 @@ router.delete(
   checkUserStatus,
   requireRole(["ADMIN"]),
   deleteCategory
+);
+
+// Service Package Routes
+router.get(
+  "/packages",
+  requireAuth,
+  checkUserStatus,
+  requireRole(["ADMIN"]),
+  listPackages
+);
+
+router.get(
+  "/packages/:id",
+  requireAuth,
+  checkUserStatus,
+  requireRole(["ADMIN"]),
+  getPackage
+);
+
+router.post(
+  "/packages",
+  requireAuth,
+  checkUserStatus,
+  requireRole(["ADMIN"]),
+  createPackage
+);
+
+router.patch(
+  "/packages/:id",
+  requireAuth,
+  checkUserStatus,
+  requireRole(["ADMIN"]),
+  updatePackage
+);
+
+router.patch(
+  "/packages/:id/status",
+  requireAuth,
+  checkUserStatus,
+  requireRole(["ADMIN"]),
+  setPackageStatus
+);
+
+router.delete(
+  "/packages/:id",
+  requireAuth,
+  checkUserStatus,
+  requireRole(["ADMIN"]),
+  deletePackage
 );
 
 export default router;

@@ -162,6 +162,12 @@ export type EmployerTransaction = {
   amountCents: number;
   credits: number;
   status: EmployerTransactionStatus;
+  paymentGateway?: string | null;
+  gatewayTransactionNo?: string | null;
+  gatewayResponseCode?: string | null;
+  bankCode?: string | null;
+  expiresAt?: string | null;
+  paidAt?: string | null;
   createdAt: string;
   updatedAt: string;
   package: {
@@ -171,6 +177,11 @@ export type EmployerTransaction = {
     durationDays: number;
     maxJobPosts: number;
   };
+};
+
+export type VnpayPaymentResponse = {
+  paymentUrl: string;
+  item: EmployerTransaction;
 };
 
 export type CandidateApplication = {

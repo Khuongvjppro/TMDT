@@ -6,6 +6,7 @@ import adminRoutes from "./admin.routes";
 import employerRoutes from "./employer.routes";
 import candidateRoutes from "./candidate.routes";
 import chatRoutes from "./chat.routes";
+import paymentRoutes from "./payment.routes";
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use("/admin", adminRoutes);
 router.use("/employer", employerRoutes);
 router.use("/candidate", candidateRoutes);
 router.use("/chat", chatRoutes);
+router.use("/payments", paymentRoutes);
 
 export default router;

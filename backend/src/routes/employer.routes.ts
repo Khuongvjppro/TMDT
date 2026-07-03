@@ -5,17 +5,18 @@ import {
   getEmployerApplicationStatusStats,
   getEmployerInterviewModeStats,
   getEmployerJobTypeStats,
+  getMyTransaction,
   getMyEmployerProfile,
   listBillingPackages,
   listApplicationsByJob,
   listCandidates,
   listMyJobs,
   listMyTransactions,
-  purchaseBillingPackage,
   upsertInterviewSchedule,
   updateApplicationStatus,
   updateMyEmployerProfile,
 } from "../controllers/employer.controller";
+import { createVnpayPayment } from "../controllers/payment.controller";
 import { requireAuth, requireRole } from "../middleware/auth";
 import { asyncHandler } from "../middleware/async-handler";
 
@@ -26,8 +27,10 @@ router.use(requireAuth, requireRole(["EMPLOYER"]));
 router.get("/profile", asyncHandler(getMyEmployerProfile));
 router.patch("/profile", asyncHandler(updateMyEmployerProfile));
 router.get("/billing/packages", asyncHandler(listBillingPackages));
-router.post("/billing/purchase", asyncHandler(purchaseBillingPackage));
+router.post("/billing/purchase", asyncHandler(createVnpayPayment));
+router.post("/billing/vnpay/create", asyncHandler(createVnpayPayment));
 router.get("/transactions", asyncHandler(listMyTransactions));
+router.get("/transactions/:transactionCode", asyncHandler(getMyTransaction));
 router.get("/candidates", asyncHandler(listCandidates));
 router.get("/jobs", asyncHandler(listMyJobs));
 router.get("/stats/job-types", asyncHandler(getEmployerJobTypeStats));

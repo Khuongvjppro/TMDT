@@ -9,6 +9,7 @@ import {
   EmployerJobApplication,
   EmployerProfile,
   EmployerTransaction,
+  VnpayPaymentResponse,
   InterviewMode,
   Job,
   JobListResponse,
@@ -441,7 +442,7 @@ export async function purchaseEmployerBillingPackage(
     throw new Error(data.message || "Purchase package failed");
   }
 
-  return parseJsonResponse<{ item: EmployerTransaction }>(response);
+  return parseJsonResponse<VnpayPaymentResponse>(response);
 }
 
 export async function listEmployerTransactions(
@@ -477,6 +478,26 @@ export async function listEmployerTransactions(
       totalPages: number;
     };
   }>(response);
+}
+
+export async function getEmployerTransaction(
+  token: string,
+  transactionCode: string,
+) {
+  const response = await fetch(
+    `${API_BASE_URL}/employer/transactions/${encodeURIComponent(transactionCode)}`,
+    {
+      cache: "no-store",
+      headers: { Authorization: `Bearer ${token}` },
+    },
+  );
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Cannot load transaction");
+  }
+
+  return parseJsonResponse<{ item: EmployerTransaction }>(response);
 }
 
 export async function getEmployerJobTypeStats(token: string) {

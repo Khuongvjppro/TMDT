@@ -33,9 +33,7 @@ const listTransactionsQuerySchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(PAGE_SIZE_MAX).default(10),
 });
 
-const purchasePackageSchema = z.object({
-  packageId: z.coerce.number().int().positive(),
-});
+const transactionCodeSchema = z.string().trim().min(1).max(100);
 
 const interviewModeSchema = z.enum(["ONLINE", "ONSITE", "PHONE"]);
 
@@ -295,64 +293,6 @@ export async function listBillingPackages(_req: Request, res: Response) {
   return res.status(200).json({ items });
 }
 
-export async function purchaseBillingPackage(req: Request, res: Response) {
-  const authUser = getAuthUser(req, res);
-  if (!authUser) return;
-
-  const parsedBody = purchasePackageSchema.safeParse(req.body);
-  if (!parsedBody.success) {
-    return res
-      .status(400)
-      .json({ message: "Invalid payload", errors: parsedBody.error.flatten() });
-  }
-
-  const selectedPackage = await prisma.billingPackage.findFirst({
-    where: { id: parsedBody.data.packageId, isActive: true },
-  });
-
-  if (!selectedPackage) {
-    return res.status(404).json({ message: "Billing package not found" });
-  }
-
-  const item = await prisma.employerTransaction.create({
-    data: {
-      transactionCode: `TXN-${Date.now()}-${authUser.userId}`,
-      employerId: authUser.userId,
-      packageId: selectedPackage.id,
-      amountCents: selectedPackage.price,
-      credits: selectedPackage.maxJobPosts,
-      status: "SUCCESS",
-    },
-    include: {
-      package: {
-        select: {
-          id: true,
-          name: true,
-          price: true,
-          durationDays: true,
-          maxJobPosts: true,
-        },
-      },
-    },
-  });
-
-  await prisma.employerProfile.upsert({
-    where: { userId: authUser.userId },
-    update: {
-      credits: {
-        increment: selectedPackage.maxJobPosts,
-      },
-    },
-    create: {
-      userId: authUser.userId,
-      companyName: `${authUser.email.split("@")[0]} Company`,
-      credits: selectedPackage.maxJobPosts,
-    },
-  });
-
-  return res.status(201).json({ item });
-}
-
 export async function listMyTransactions(req: Request, res: Response) {
   const authUser = getAuthUser(req, res);
   if (!authUser) return;
@@ -398,6 +338,40 @@ export async function listMyTransactions(req: Request, res: Response) {
       totalPages: Math.ceil(total / pageSize),
     },
   });
+}
+
+export async function getMyTransaction(req: Request, res: Response) {
+  const authUser = getAuthUser(req, res);
+  if (!authUser) return;
+
+  const parsedCode = transactionCodeSchema.safeParse(req.params.transactionCode);
+  if (!parsedCode.success) {
+    return res.status(400).json({ message: "Invalid transaction code" });
+  }
+
+  const item = await prisma.employerTransaction.findFirst({
+    where: {
+      transactionCode: parsedCode.data,
+      employerId: authUser.userId,
+    },
+    include: {
+      package: {
+        select: {
+          id: true,
+          name: true,
+          price: true,
+          durationDays: true,
+          maxJobPosts: true,
+        },
+      },
+    },
+  });
+
+  if (!item) {
+    return res.status(404).json({ message: "Transaction not found" });
+  }
+
+  return res.status(200).json({ item });
 }
 
 export async function listApplicationsByJob(req: Request, res: Response) {

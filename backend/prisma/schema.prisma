@@ -236,21 +236,29 @@ model InterviewSchedule {
 }
 
 model EmployerTransaction {
-  id              Int               @id @default(autoincrement())
-  transactionCode String            @unique
-  employerId      Int
-  packageId       Int
-  amountCents     Int
-  credits         Int
-  status          TransactionStatus @default(SUCCESS)
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  id                   Int               @id @default(autoincrement())
+  transactionCode      String            @unique
+  employerId           Int
+  packageId            Int
+  amountCents          Int
+  credits              Int
+  status               TransactionStatus @default(PENDING)
+  paymentGateway       String?           @db.VarChar(20)
+  gatewayTransactionNo String?           @db.VarChar(100)
+  gatewayResponseCode  String?           @db.VarChar(10)
+  bankCode             String?           @db.VarChar(30)
+  expiresAt            DateTime?
+  paidAt               DateTime?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
 
   employer User           @relation(fields: [employerId], references: [id], onDelete: Cascade)
   package  BillingPackage @relation(fields: [packageId], references: [id], onDelete: Restrict)
 
   @@index([employerId, createdAt])
   @@index([packageId])
+  @@index([status])
+  @@index([gatewayTransactionNo])
 }
 
 model CandidateCv {

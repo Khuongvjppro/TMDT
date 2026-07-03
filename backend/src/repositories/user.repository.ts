@@ -1,9 +1,9 @@
 import { prisma } from "../lib/prisma";
-import { UserStatus } from "../constants/enums";
+import { UserRole, UserStatus } from "../constants/enums";
 
 export interface ListUsersQuery {
   search?: string; // email or name
-  role?: string;
+  role?: UserRole;
   status?: UserStatus;
   sortBy?: "createdAt" | "violationCount" | "role";
   sortOrder?: "asc" | "desc";
@@ -15,7 +15,7 @@ export interface UserWithStatus {
   id: number;
   fullName: string;
   email: string;
-  role: string;
+  role: UserRole;
   status: UserStatus;
   violationCount: number;
   lockedAt: Date | null;
@@ -49,7 +49,7 @@ export class UserRepository {
     });
   }
 
-  async updateUserRole(userId: number, newRole: string) {
+  async updateUserRole(userId: number, newRole: UserRole) {
     return prisma.user.update({
       where: { id: userId },
       data: { role: newRole },
@@ -72,7 +72,7 @@ export class UserRepository {
     fullName: string;
     email: string;
     passwordHash: string;
-    role: string;
+    role: UserRole;
     emailVerifiedAt?: Date | null;
   }) {
     return prisma.user.create({

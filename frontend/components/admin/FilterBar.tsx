@@ -89,7 +89,11 @@ export function FilterBar({
           </label>
           <select
             value={sortBy || ""}
-            onChange={(e) => onSortByChange(e.target.value || undefined)}
+            onChange={(e) =>
+              onSortByChange(
+                (e.target.value || undefined) as FilterBarProps["sortBy"]
+              )
+            }
             disabled={isLoading}
             className="w-full px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
           >

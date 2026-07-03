@@ -5,6 +5,10 @@ export interface AuditLogData {
   action: AuditActionType;
   userId: number;
   targetUserId?: number;
+  targetJobId?: number;
+  targetCategoryId?: number;
+  targetPackageId?: number;
+  targetReviewId?: number;
   details?: Record<string, any>;
   ipAddress?: string;
   userAgent?: string;
@@ -18,6 +22,10 @@ export class AuditLogService {
           action: data.action,
           userId: data.userId,
           targetUserId: data.targetUserId,
+          targetJobId: data.targetJobId,
+          targetCategoryId: data.targetCategoryId,
+          targetPackageId: data.targetPackageId,
+          targetReviewId: data.targetReviewId,
           details: data.details ? JSON.stringify(data.details) : null,
           ipAddress: data.ipAddress,
           userAgent: data.userAgent,
@@ -64,6 +72,10 @@ export class AuditLogService {
           userId: true,
           user: { select: { id: true, email: true, fullName: true } },
           targetUserId: true,
+          targetJobId: true,
+          targetCategoryId: true,
+          targetPackageId: true,
+          targetReviewId: true,
           details: true,
           ipAddress: true,
           createdAt: true,

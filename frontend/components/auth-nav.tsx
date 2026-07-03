@@ -63,10 +63,11 @@ export default function AuthNav() {
       setPendingCount(0);
       return;
     }
+    const token = auth.token;
 
     async function loadPendingCount() {
       try {
-        const data = await getEmployerPendingApplicationsCount(auth.token);
+        const data = await getEmployerPendingApplicationsCount(token);
         if (isMounted) {
           setPendingCount(data.pendingCount);
         }
@@ -90,57 +91,6 @@ export default function AuthNav() {
     setIsSidebarOpen(false);
     clearAuthState();
     router.push("/");
-  }
-
-  function closeLoginModal() {
-    setIsLoginModalOpen(false);
-    setLoginEmail("");
-    setLoginPassword("");
-    setLoginMessage("");
-    setLoginMessageType(null);
-    setLoginFieldErrors({});
-    setShowLoginPassword(false);
-  }
-
-  async function onLoginSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setLoginMessage("");
-    setLoginMessageType(null);
-    setLoginFieldErrors({});
-
-    const parsed = loginSchema.safeParse({
-      email: loginEmail.trim(),
-      password: loginPassword,
-    });
-
-    if (!parsed.success) {
-      setLoginFieldErrors(mapZodErrors(parsed.error.issues));
-      return;
-    }
-
-    setLoginSubmitting(true);
-    try {
-      const data = await login(parsed.data.email, parsed.data.password);
-      setAuthState({ token: data.accessToken, user: data.user });
-      const target = data.user.role === "ADMIN" ? "/admin" : "/";
-      setLoginMessage(`Đăng nhập thành công với vai trò ${data.user.role}`);
-      setLoginMessageType("success");
-      closeLoginModal();
-      router.push(target);
-      router.refresh();
-    } catch (error) {
-      const rawMessage = error instanceof Error ? error.message : "Đăng nhập thất bại";
-      const nextMessage =
-        rawMessage === "Invalid email or password"
-          ? "Email hoặc mật khẩu không đúng"
-          : rawMessage === "Email not verified"
-          ? "Email chưa được xác thực. Vui lòng kiểm tra hộp thư và xác thực trước khi đăng nhập."
-          : rawMessage;
-      setLoginMessage(nextMessage);
-      setLoginMessageType("error");
-    } finally {
-      setLoginSubmitting(false);
-    }
   }
 
   return (

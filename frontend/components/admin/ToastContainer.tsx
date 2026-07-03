@@ -1,8 +1,8 @@
 import React from "react";
-import { Toast } from "@/types/admin.types";
+import type { Toast as ToastData } from "../../types/admin.types";
 
 interface ToastContainerProps {
-  toasts: Toast[];
+  toasts: ToastData[];
   onRemove: (id: string) => void;
 }
 
@@ -21,7 +21,7 @@ export function ToastContainer({ toasts, onRemove }: ToastContainerProps) {
 }
 
 interface ToastProps {
-  toast: Toast;
+  toast: ToastData;
   onRemove: (id: string) => void;
 }
 

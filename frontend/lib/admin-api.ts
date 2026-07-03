@@ -154,6 +154,83 @@ export const adminApi = {
 
   // ── Stats endpoints ──────────────────────────────────────────────
 
+  getModerationQueue: async (filters: {
+    search?: string;
+    status?: string;
+    sortOrder?: "asc" | "desc";
+    page?: number;
+    pageSize?: number;
+  }) => {
+    const response = await apiClient.get("/admin/moderation", { params: filters });
+    return response.data;
+  },
+
+  approveJob: async (jobId: number) => {
+    const response = await apiClient.post(`/admin/moderation/${jobId}/approve`);
+    return response.data;
+  },
+
+  rejectJob: async (jobId: number, rejectReason: string) => {
+    const response = await apiClient.post(`/admin/moderation/${jobId}/reject`, {
+      rejectReason,
+    });
+    return response.data;
+  },
+
+  listCategories: async (filters: {
+    search?: string;
+    includeDeleted?: boolean;
+    page?: number;
+    pageSize?: number;
+  }) => {
+    const response = await apiClient.get("/admin/categories", { params: filters });
+    return response.data;
+  },
+
+  createCategory: async (payload: { name: string; description?: string | null }) => {
+    const response = await apiClient.post("/admin/categories", payload);
+    return response.data;
+  },
+
+  updateCategory: async (
+    categoryId: number,
+    payload: { name?: string; description?: string | null }
+  ) => {
+    const response = await apiClient.patch(`/admin/categories/${categoryId}`, payload);
+    return response.data;
+  },
+
+  deleteCategory: async (categoryId: number) => {
+    const response = await apiClient.delete(`/admin/categories/${categoryId}`);
+    return response.data;
+  },
+
+  listReviews: async (filters: {
+    search?: string;
+    visibility?: "all" | "visible" | "hidden";
+    minRating?: number;
+    maxRating?: number;
+    page?: number;
+    pageSize?: number;
+  }) => {
+    const response = await apiClient.get("/admin/reviews", { params: filters });
+    return response.data;
+  },
+
+  hideReview: async (reviewId: number, hideReason: string) => {
+    const response = await apiClient.post(`/admin/reviews/${reviewId}/hide`, {
+      hideReason,
+    });
+    return response.data;
+  },
+
+  restoreReview: async (reviewId: number, note?: string) => {
+    const response = await apiClient.post(`/admin/reviews/${reviewId}/restore`, {
+      note,
+    });
+    return response.data;
+  },
+
   // Get user role distribution stats
   getUserRoleStats: async () => {
     const response = await apiClient.get(`/admin/stats/user-roles`);

@@ -46,6 +46,12 @@ JWT_EMAIL_VERIFY_EXPIRES_IN=1h
 JWT_RESET_PASSWORD_EXPIRES_IN=15m
 FRONTEND_ORIGIN=http://localhost:3000
 
+# VNPAY Sandbox
+VNPAY_TMN_CODE=your_sandbox_tmn_code
+VNPAY_HASH_SECRET=your_sandbox_hash_secret
+VNPAY_PAYMENT_URL=https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+VNPAY_RETURN_URL=http://localhost:4000/api/payments/vnpay/return
+
 # Nodemailer SMTP
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
@@ -53,6 +59,11 @@ SMTP_USER=your_email@gmail.com
 SMTP_PASS=your_app_password
 EMAIL_FROM=your_email@gmail.com
 ```
+
+For VNPAY IPN, register this public endpoint in the VNPAY Sandbox merchant
+portal: `https://your-public-backend/api/payments/vnpay/ipn`. A tunnel is
+required when testing IPN from a local machine. The browser Return URL can use
+localhost, and both callbacks are safe to call repeatedly.
 
 ## 4) Local run (inside backend)
 

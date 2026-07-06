@@ -174,7 +174,7 @@ export default function EmployerCandidatesPage() {
               <div className="mt-5 flex flex-wrap items-center gap-2">
                 {hasCv ? (
                   <a
-                    href={item.candidateProfile?.cvLink || undefined}
+                    href={item.candidateProfile?.cvLink ?? undefined}
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"

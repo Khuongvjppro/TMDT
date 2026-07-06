@@ -63,9 +63,8 @@ export default function EmployerBillingPage() {
     setMessage("");
     try {
       const data = await purchaseEmployerBillingPackage(auth.token, packageId);
-      setMessage(
-        `Purchase success: ${data.item.package.name} (${data.item.credits} job posts) - ${data.item.transactionCode}`,
-      );
+      setMessage("Redirecting to VNPAY Sandbox...");
+      window.location.assign(data.paymentUrl);
     } catch (error) {
       const nextMessage =
         error instanceof Error ? error.message : "Purchase package failed";
@@ -199,7 +198,9 @@ export default function EmployerBillingPage() {
                     : "bg-slate-900 text-white hover:bg-slate-800"
                 }`}
               >
-                {isPurchasingId === pkg.id ? "Processing..." : "Buy Package"}
+                {isPurchasingId === pkg.id
+                  ? "Opening VNPAY..."
+                  : "Pay with VNPAY"}
               </button>
             </article>
           );
@@ -217,6 +218,11 @@ export default function EmployerBillingPage() {
           {message}
         </div>
       ) : null}
+
+      <p className="mt-4 text-xs text-slate-500">
+        Payments are processed by VNPAY Sandbox. Job-post credits are added
+        only after VNPAY confirms a successful transaction.
+      </p>
     </section>
   );
 }

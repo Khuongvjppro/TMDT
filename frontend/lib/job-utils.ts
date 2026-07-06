@@ -14,8 +14,11 @@ export function getCompanyLogoUrl(name: string) {
   return SAMPLE_LOGOS[hash % SAMPLE_LOGOS.length];
 }
 
-export function formatSalaryRange(_min?: number | null, _max?: number | null) {
-  return "10 - 50 triệu";
+export function formatSalaryRange(min?: number | null, max?: number | null) {
+  if (min != null && max != null) return `${min}–${max}M VND`;
+  if (min != null) return `From ${min}M VND`;
+  if (max != null) return `Up to ${max}M VND`;
+  return "Negotiable";
 }
 
 export function formatTimeAgo(dateString?: string | Date) {

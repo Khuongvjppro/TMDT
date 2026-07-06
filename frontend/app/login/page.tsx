@@ -34,8 +34,15 @@ export default function LoginPage() {
       });
       setMessage(`Signed in successfully with role ${data.user.role}`);
       setMessageType("success");
-      const nextPath = data.user.role === "ADMIN" ? "/admin" : "/";
-      router.push(nextPath);
+      const landingPage =
+        data.user.role === "CANDIDATE"
+          ? "/candidate/jobs"
+          : data.user.role === "EMPLOYER"
+            ? "/employer/jobs"
+            : data.user.role === "ADMIN"
+              ? "/admin/users"
+              : "/";
+      router.push(landingPage);
       router.refresh();
     } catch (error) {
       const rawMessage =

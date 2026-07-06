@@ -10,6 +10,7 @@ import {
   AuthorizationError,
   NotFoundError,
 } from "../lib/errors";
+import { UserRole } from "../constants/enums";
 
 export class AdminUserManagementService {
   async listUsers(query: ListUsersQuery) {

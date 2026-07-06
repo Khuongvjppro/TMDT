@@ -1,3 +1,4 @@
+import { UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { userRepository, ListUsersQuery } from "../repositories/user.repository";
@@ -20,7 +21,7 @@ export class AdminUserManagementService {
     fullName: string,
     email: string,
     password: string | undefined,
-    role: string,
+    role: UserRole,
     invite: boolean,
     adminId: number,
     ipAddress?: string,
@@ -248,7 +249,7 @@ export class AdminUserManagementService {
 
   async updateUserRole(
     userId: number,
-    newRole: string,
+    newRole: UserRole,
     adminId: number,
     ipAddress?: string,
     userAgent?: string
@@ -302,7 +303,7 @@ export class AdminUserManagementService {
 
   async bulkUpdateUserRoles(
     userIds: number[],
-    newRole: string,
+    newRole: UserRole,
     adminId: number,
     ipAddress?: string,
     userAgent?: string

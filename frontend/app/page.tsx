@@ -12,12 +12,6 @@ const HERO_TAGS = [
   "Fast applications",
 ];
 
-const HERO_STATS = [
-  { label: "Jobs available", value: "1,200+" },
-  { label: "Average hire time", value: "48 hours" },
-  { label: "Verified employers", value: "200+" },
-];
-
 const TRUSTED_BRANDS = [
   "Lumen Studio",
   "Skyline Labs",
@@ -83,134 +77,217 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   });
 
   return (
-    <section className="space-y-8">
-      <div className="relative overflow-hidden rounded-3xl bg-slate-900 p-8 text-white shadow-2xl">
-        <div className="pointer-events-none absolute -right-20 -top-16 h-48 w-48 rounded-full bg-brand-500/30 blur-3xl" />
-        <div className="pointer-events-none absolute -left-24 bottom-0 h-52 w-52 rounded-full bg-slate-500/30 blur-3xl" />
+    <section className="space-y-16 relative">
+      {/* Background Ambient Glows */}
+      <div className="pointer-events-none absolute -top-40 right-10 -z-10 h-[500px] w-[500px] rounded-full bg-brand-500/10 blur-3xl animate-pulse" />
+      <div className="pointer-events-none absolute top-40 left-10 -z-10 h-[400px] w-[400px] rounded-full bg-accent/5 blur-3xl" />
 
-        <div className="relative grid gap-8 md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-brand-200">
-              Starter Job Platform
-            </p>
-            <h1 className="mt-3 text-4xl font-black leading-tight md:text-5xl">
-              Find your next
-              <span className="text-brand-200"> opportunity</span> faster
-            </h1>
-            <p className="mt-4 max-w-2xl text-sm text-slate-200 md:text-base">
-              Monorepo starter with Next.js frontend and Node.js backend. Search
-              jobs, view details, and apply with clean architecture ready for
-              teamwork.
-            </p>
-            <div className="mt-5 flex flex-wrap gap-2 text-xs">
-              {HERO_TAGS.map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-full bg-white/10 px-3 py-1 text-slate-100"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
+      {/* Upgraded Premium Split Hero Section */}
+      <div className="grid gap-12 lg:grid-cols-[1.2fr_0.8fr] items-center pt-0">
+        {/* Left Side: Typography & Action */}
+        <div className="space-y-6">
+          <div className="inline-flex items-center gap-2 rounded-full border border-brand-100 bg-brand-50/50 px-4 py-1.5 text-xs font-bold text-brand-700 shadow-sm backdrop-blur-sm">
+            <span className="flex h-2 w-2 rounded-full bg-brand-500 animate-ping" />
+            <span>The Next-Gen Career Matching Engine</span>
           </div>
 
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-200">
-              At a Glance
-            </p>
-            <div className="mt-4 grid gap-4">
-              {HERO_STATS.map((stat) => (
-                <div
-                  key={stat.label}
-                  className="rounded-2xl bg-white/10 px-4 py-3"
-                >
-                  <p className="text-xs text-slate-200">{stat.label}</p>
-                  <p className="mt-1 text-2xl font-black">{stat.value}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.1]">
+            Find your next{" "}
+            <span className="bg-gradient-to-r from-brand-600 via-indigo-600 to-accent bg-clip-text text-transparent">
+              dream opportunity
+            </span>{" "}
+            faster
+          </h1>
 
-      <JobSearchForm />
-
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-2xl font-black text-slate-900">Open Positions</h2>
-          <p className="text-sm text-slate-600">
-            Discover roles matched to your skills.
+          <p className="text-base sm:text-lg text-slate-600 max-w-xl leading-relaxed">
+            Discover a better way to search for jobs. We connect talented professionals with forward-thinking employers through structured profiles, interactive pipelines, and verified database matches.
           </p>
-        </div>
-        <span className="rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-slate-700 shadow">
-          {filteredItems.length} jobs found
-        </span>
-      </div>
 
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-        {filteredItems.map((job) => (
-          <JobCard key={job.id} job={job} />
-        ))}
-      </div>
-
-      <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-lg backdrop-blur">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">
-              Trusted by teams
-            </p>
-            <h2 className="mt-2 text-2xl font-black text-slate-900">
-              Companies hiring with JobFinder
-            </h2>
-            <p className="mt-2 text-sm text-slate-600">
-              From fast-moving startups to global brands.
-            </p>
+          {/* Interactive Hero Tags */}
+          <div className="flex flex-wrap gap-2 pt-2">
+            {HERO_TAGS.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full border border-slate-200 bg-white/60 px-4 py-1.5 text-xs font-semibold text-slate-600 backdrop-blur-sm shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-200 hover:bg-brand-50/20 hover:text-brand-700"
+              >
+                {tag}
+              </span>
+            ))}
           </div>
-          <span className="rounded-full border border-slate-200 bg-white px-4 py-1.5 text-xs font-semibold text-slate-700 shadow-sm">
-            200+ verified employers
-          </span>
         </div>
 
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Right Side: Hand-crafted Mockup Dashboard Widget */}
+        <div className="relative hidden lg:block">
+          {/* Main Applicant Match Card */}
+          <div className="relative z-10 w-[350px] rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl transition-all duration-500 hover:scale-[1.02]">
+            <div className="flex items-center justify-between">
+              <span className="rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-700">
+                Match Recommendation
+              </span>
+              <div className="flex gap-1">
+                <span className="h-2 w-2 rounded-full bg-slate-200" />
+                <span className="h-2 w-2 rounded-full bg-slate-200" />
+                <span className="h-2 w-2 rounded-full bg-slate-200" />
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-center gap-4">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-indigo-600 text-lg font-black text-white shadow-lg">
+                MK
+              </div>
+              <div>
+                <h3 className="font-extrabold text-slate-900">Minh Khoa</h3>
+                <p className="text-xs text-slate-500 font-semibold">Full Stack Developer</p>
+              </div>
+            </div>
+
+            <div className="mt-6 grid grid-cols-2 gap-4 rounded-2xl bg-slate-50 p-4 border border-slate-100">
+              <div>
+                <p className="text-[10px] uppercase font-bold text-slate-400">Match score</p>
+                <p className="mt-1 text-2xl font-black text-emerald-600">98%</p>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase font-bold text-slate-400">Response rate</p>
+                <p className="mt-1 text-2xl font-black text-brand-600">Fast</p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-wrap gap-1.5">
+              <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">React</span>
+              <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">Node.js</span>
+              <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">TypeScript</span>
+            </div>
+          </div>
+
+          {/* Layered Decorative Overlay Card */}
+          <div className="absolute -bottom-6 -right-6 z-20 w-[240px] rounded-2xl border border-slate-200 bg-white p-4 shadow-xl animate-bounce [animation-duration:8s]">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent/10">
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-4 w-4 text-accent"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-[11px] font-extrabold text-slate-900">Interview Scheduled</p>
+                <p className="text-[9px] text-slate-400 font-bold">TechNova Corp — 10:00 AM</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Decorative Back Gradients */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-brand-100 to-indigo-100 rounded-3xl -rotate-3 scale-[0.98] -z-10 shadow" />
+        </div>
+      </div>
+
+      {/* Floating Glassmorphic Search Bar wrapper */}
+      <div className="relative z-20 -mt-6">
+        <div className="rounded-3xl border border-slate-200/50 bg-white/40 p-2 shadow-2xl backdrop-blur-md">
+          <JobSearchForm />
+        </div>
+      </div>
+
+      {/* Modern minimalist brands area */}
+      <section className="space-y-6">
+        <div className="flex items-center justify-between">
+          <span className="h-px bg-slate-200 flex-grow" />
+          <h2 className="px-4 text-xs font-bold uppercase tracking-[0.3em] text-slate-400 text-center">
+            Trusted by verified employers
+          </h2>
+          <span className="h-px bg-slate-200 flex-grow" />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-8">
           {TRUSTED_BRANDS.map((brand) => (
             <div
               key={brand}
-              className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 shadow-sm"
+              className="flex items-center justify-center rounded-xl border border-slate-200/60 bg-white/50 px-4 py-3 text-center text-xs font-extrabold text-slate-500 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white hover:text-slate-900"
             >
-              <span>{brand}</span>
-              <span className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-500">
-                Hiring
-              </span>
+              {brand}
             </div>
           ))}
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-[1.1fr_0.9fr]">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
-            Featured employers
-          </p>
-          <h2 className="mt-2 text-2xl font-black text-slate-900">
-            Spotlight companies this week
-          </h2>
-          <p className="mt-2 text-sm text-slate-600">
-            Explore roles from employers actively interviewing right now.
-          </p>
+      {/* Open Positions Grid */}
+      <section className="space-y-8">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 className="text-3xl font-extrabold text-slate-900">Open Positions</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Discover verified career listings matched to your skill profile.
+            </p>
+          </div>
+          <span className="rounded-full bg-slate-900 px-4 py-1.5 text-xs font-bold text-white shadow">
+            {filteredItems.length} jobs active
+          </span>
+        </div>
 
-          <div className="mt-5 grid gap-3">
-            {FEATURED_COMPANIES.map((company) => (
+        {filteredItems.length > 0 ? (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredItems.map((job) => (
+              <JobCard key={job.id} job={job} />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border-2 border-dashed border-slate-200 p-12 text-center">
+            <p className="text-slate-500 font-medium">No positions match your search query.</p>
+            <p className="text-xs text-slate-400 mt-1">Try resetting the keyword or location filters.</p>
+          </div>
+        )}
+      </section>
+
+      {/* Spotlight and Brand Story Row (Upgraded to look human-designed) */}
+      <section className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+        {/* Left Column: Premium Featured Employer spotlight */}
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl space-y-6">
+          <div>
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-bold text-indigo-700">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-3.5 w-3.5 text-indigo-700"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              >
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </svg>
+              <span>Spotlight</span>
+            </div>
+            <h2 className="mt-3 text-2xl font-extrabold text-slate-900">
+              Featured Employers this week
+            </h2>
+            <p className="text-xs text-slate-500 mt-1">
+              Explore companies actively screening candidates right now.
+            </p>
+          </div>
+
+          <div className="grid gap-4">
+            {FEATURED_COMPANIES.map((company, index) => (
               <div
                 key={company.name}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
+                className="group flex items-center justify-between gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 transition-all duration-300 hover:bg-white hover:border-brand-100 hover:shadow-md"
               >
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">
-                    {company.name}
-                  </p>
-                  <p className="text-xs text-slate-500">{company.focus}</p>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-sm font-black text-white">
+                    {company.name.charAt(0)}
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-slate-900 group-hover:text-brand-600 transition">
+                      {company.name}
+                    </h4>
+                    <p className="text-[11px] text-slate-500">{company.focus}</p>
+                  </div>
                 </div>
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 shadow-sm">
+                <span className="rounded-full bg-white border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600">
                   {company.roles}
                 </span>
               </div>
@@ -218,27 +295,30 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           </div>
         </div>
 
-        <div className="rounded-3xl border border-slate-200 bg-slate-900 p-6 text-white shadow-lg">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-200">
-            Brand story
-          </p>
-          <h2 className="mt-2 text-2xl font-black">
-            Build an employer brand that stands out
-          </h2>
-          <p className="mt-2 text-sm text-slate-200">
-            Share your culture, post roles with clarity, and move candidates
-            through a fast, clean hiring flow.
-          </p>
-          <div className="mt-4 space-y-3">
+        {/* Right Column: Dynamic Dark Card with checkmarks */}
+        <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6 text-white shadow-xl space-y-6 flex flex-col justify-between">
+          <div className="space-y-4">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-brand-500">
+              Employer Branding
+            </span>
+            <h2 className="text-2xl font-extrabold leading-tight">
+              Build a hiring brand that candidates trust
+            </h2>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Showcase company values, highlight benefits, and move applicants through a fast, automated pipeline. Get access to matched portfolios instantly.
+            </p>
+          </div>
+
+          <div className="space-y-3 pt-4">
             {BRAND_STORY_POINTS.map((item) => (
               <div
                 key={item}
-                className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm"
+                className="group flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-800/40 px-4 py-3 text-xs transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-800/80 hover:border-slate-700"
               >
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-500/30 text-brand-200">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-500/20 text-brand-400 font-bold">
                   ✓
                 </span>
-                <span>{item}</span>
+                <span className="font-semibold text-slate-200">{item}</span>
               </div>
             ))}
           </div>

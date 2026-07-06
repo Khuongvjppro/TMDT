@@ -71,7 +71,7 @@ async function main() {
     create: {
       userId: candidate.id,
       phone: "0900000001",
-      bio: "Starter candidate profile for demo.",
+      bio: "Passionate software developer with experience in full-stack web applications, eager to solve complex problems and learn new technologies.",
       cvLink: "https://example.com/cv/candidate",
     },
   });
@@ -148,7 +148,7 @@ async function main() {
       companyName: "TechNova",
       companyWebsite: "https://technova.example.com",
       companyLocation: "Ho Chi Minh City",
-      description: "Demo employer profile for starter scaffold.",
+      description: "A leading technology solutions provider specializing in professional software development and IT consulting services.",
       credits: 100,
     },
   });
@@ -252,6 +252,7 @@ async function main() {
           requirements: "At least 1 year with React/Next.js.",
           type: JobType.FULL_TIME,
           employerId: employer.id,
+          status: "APPROVED",
         },
         {
           title: "Node.js Backend Engineer",
@@ -263,6 +264,7 @@ async function main() {
           requirements: "Experience with Express, MySQL, and REST APIs.",
           type: JobType.FULL_TIME,
           employerId: employer.id,
+          status: "APPROVED",
         },
       ],
     });
@@ -325,10 +327,16 @@ async function main() {
         data: {
           ...job,
           employerId: employer.id,
+          status: "APPROVED",
         },
       });
     }
   }
+
+  // Force update all existing jobs to APPROVED so they show up on the public homepage
+  await prisma.job.updateMany({
+    data: { status: "APPROVED" },
+  });
 
   const firstJob = await prisma.job.findFirst({ orderBy: { id: "asc" } });
   if (firstJob) {

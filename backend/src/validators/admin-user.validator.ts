@@ -3,8 +3,8 @@ import { USER_ROLES, USER_STATUSES } from "../constants/enums";
 
 export const listUsersQuerySchema = z.object({
   search: z.string().optional(),
-  role: z.enum(USER_ROLES as [string, ...string[]]).optional(),
-  status: z.enum(USER_STATUSES as [string, ...string[]]).optional(),
+  role: z.enum(USER_ROLES).optional(),
+  status: z.enum(USER_STATUSES).optional(),
   sortBy: z.enum(["createdAt", "violationCount", "role"] as const).optional(),
   sortOrder: z.enum(["asc", "desc"] as const).optional(),
   page: z.coerce.number().int().positive().default(1),
@@ -28,12 +28,12 @@ export const restoreUserSchema = z.object({
 });
 
 export const updateUserRoleSchema = z.object({
-  role: z.enum(USER_ROLES as [string, ...string[]]),
+  role: z.enum(USER_ROLES),
 });
 
 export const bulkUpdateUserRolesSchema = z.object({
   userIds: z.array(z.coerce.number().int().positive()).min(1),
-  role: z.enum(USER_ROLES as [string, ...string[]]),
+  role: z.enum(USER_ROLES),
 });
 
 export const createUserSchema = z
@@ -41,7 +41,7 @@ export const createUserSchema = z
     fullName: z.string().min(2),
     email: z.string().email(),
     password: z.string().min(6).optional(),
-    role: z.enum(USER_ROLES as [string, ...string[]]),
+    role: z.enum(USER_ROLES),
     invite: z.boolean().optional().default(false),
   })
   .superRefine((data, context) => {

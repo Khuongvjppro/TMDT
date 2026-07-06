@@ -1,10 +1,14 @@
+import { AuditActionType } from "@prisma/client";
 import { prisma } from "../lib/prisma";
-import { AuditActionType } from "../constants/enums";
 
 export interface AuditLogData {
   action: AuditActionType;
   userId: number;
   targetUserId?: number;
+  targetJobId?: number;
+  targetCategoryId?: number;
+  targetPackageId?: number;
+  targetReviewId?: number;
   details?: Record<string, any>;
   ipAddress?: string;
   userAgent?: string;
@@ -18,6 +22,10 @@ export class AuditLogService {
           action: data.action,
           userId: data.userId,
           targetUserId: data.targetUserId,
+          targetJobId: data.targetJobId,
+          targetCategoryId: data.targetCategoryId,
+          targetPackageId: data.targetPackageId,
+          targetReviewId: data.targetReviewId,
           details: data.details ? JSON.stringify(data.details) : null,
           ipAddress: data.ipAddress,
           userAgent: data.userAgent,

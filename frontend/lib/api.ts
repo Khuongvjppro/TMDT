@@ -445,6 +445,27 @@ export async function purchaseEmployerBillingPackage(
   return parseJsonResponse<VnpayPaymentResponse>(response);
 }
 
+export async function purchaseEmployerBillingPackageInstant(
+  token: string,
+  packageId: number,
+) {
+  const response = await fetch(`${API_BASE_URL}/employer/billing/purchase-instant`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ packageId }),
+  });
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Purchase package failed");
+  }
+
+  return parseJsonResponse<{ item: { credits: number; package: { name: string }; transactionCode: string } }>(response);
+}
+
 export async function listEmployerTransactions(
   token: string,
   query?: {
@@ -884,4 +905,22 @@ export function listMessages(token: string, conversationId: number) {
 
 export function sendMessage(token: string, conversationId: number, content: string) {
   return candidateRequest<{ item: ChatMessage }>(token, `/chat/conversations/${conversationId}/messages`, { method: "POST", body: JSON.stringify({ content }) });
+}
+
+export async function boostJob(token: string, jobId: number, targetLevel: number) {
+  const response = await fetch(`${API_BASE_URL}/employer/jobs/${jobId}/boost`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ targetLevel }),
+  });
+
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Failed to boost job");
+  }
+
+  return parseJsonResponse<{ item: Job }>(response);
 }

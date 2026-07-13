@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { createJob, getEmployerProfile } from "../../../../lib/api";
 import { useAuth } from "../../../../components/auth-provider";
@@ -9,6 +10,7 @@ export default function NewJobPage() {
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [profileCompanyName, setProfileCompanyName] = useState("");
+  const [credits, setCredits] = useState<number | null>(null);
 
   const currentRole = auth?.user.role;
   const canCreate = currentRole === "EMPLOYER" || currentRole === "ADMIN";
@@ -19,6 +21,7 @@ export default function NewJobPage() {
         try {
           const profile = await getEmployerProfile(auth.token);
           setProfileCompanyName(profile.item.companyName);
+          setCredits(profile.item.credits ?? 0);
         } catch {
           // ignore
         }
@@ -34,6 +37,11 @@ export default function NewJobPage() {
       return;
     }
 
+    if (currentRole === "EMPLOYER" && credits !== null && credits < 1) {
+      setMessage("Insufficient credits to post a job. Please buy a package first.");
+      return;
+    }
+
     setIsSubmitting(true);
     setMessage("");
 
@@ -43,19 +51,23 @@ export default function NewJobPage() {
     const salaryMaxVal = formData.get("salaryMax") ? Number(formData.get("salaryMax")) : undefined;
 
     const payload = {
-      title: String(formData.get("title") || ""),
-      companyName: currentRole === "EMPLOYER" ? profileCompanyName : String(formData.get("companyName") || ""),
-      location: String(formData.get("location") || ""),
+      title: String(formData.get("title") || "").trim(),
+      companyName: currentRole === "EMPLOYER" ? profileCompanyName : String(formData.get("companyName") || "").trim(),
+      location: String(formData.get("location") || "").trim(),
       type: String(formData.get("type") || "FULL_TIME"),
       salaryMin: salaryMinVal,
       salaryMax: salaryMaxVal,
-      description: String(formData.get("description") || ""),
-      requirements: String(formData.get("requirements") || ""),
+      description: String(formData.get("description") || "").trim(),
+      requirements: String(formData.get("requirements") || "").trim(),
     };
 
     try {
       await createJob(auth.token, payload);
       setMessage("Create job success.");
+      // Decrement credits in local state
+      if (credits !== null) {
+        setCredits((prev) => (prev !== null ? Math.max(0, prev - 1) : 0));
+      }
       event.currentTarget.reset();
     } catch (error) {
       const nextMessage =
@@ -65,6 +77,9 @@ export default function NewJobPage() {
       setIsSubmitting(false);
     }
   }
+
+  const hasInsufficientCredits = currentRole === "EMPLOYER" && credits !== null && credits < 1;
+  const isButtonDisabled = !canCreate || isSubmitting || hasInsufficientCredits;
 
   return (
     <section className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl bg-white/90 p-6 shadow-2xl ring-1 ring-slate-100 backdrop-blur">
@@ -85,14 +100,17 @@ export default function NewJobPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {credits !== null ? (
+            <span className="rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-xs font-bold text-amber-800">
+              Credits: {credits}
+            </span>
+          ) : null}
           <span className="rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700">
             Role allowed: EMPLOYER or ADMIN
           </span>
-          <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
-            Step 1 of 2
-          </span>
         </div>
       </div>
+
       {!isReady ? (
         <p className="mt-2 text-sm text-slate-600">Loading session...</p>
       ) : null}
@@ -103,6 +121,22 @@ export default function NewJobPage() {
         <p className="mt-2 text-sm text-rose-700">
           Current role {auth.user.role} is forbidden to create jobs.
         </p>
+      ) : null}
+
+      {/* Insufficient Credits Alert Banner */}
+      {isReady && currentRole === "EMPLOYER" && credits !== null && credits < 1 ? (
+        <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-800 shadow-sm flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span>⚠️</span>
+            <span>Insufficient credits! You have 0 credits left. You need at least 1 credit to publish a job.</span>
+          </div>
+          <Link
+            href="/employer/billing"
+            className="rounded-full bg-red-600 px-4 py-1.5 text-xs font-bold text-white transition hover:bg-red-700 shadow-sm"
+          >
+            Buy Credits
+          </Link>
+        </div>
       ) : null}
 
       <form
@@ -130,7 +164,7 @@ export default function NewJobPage() {
                   placeholder="e.g. Senior Product Manager"
                   className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none ring-brand-200 focus:ring"
                   required
-                  disabled={!canCreate || isSubmitting}
+                  disabled={!canCreate || isSubmitting || hasInsufficientCredits}
                 />
               </label>
               {currentRole === "EMPLOYER" ? (
@@ -169,7 +203,7 @@ export default function NewJobPage() {
                   placeholder="e.g. Ha Noi"
                   className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none ring-brand-200 focus:ring"
                   required
-                  disabled={!canCreate || isSubmitting}
+                  disabled={!canCreate || isSubmitting || hasInsufficientCredits}
                 />
               </label>
               <label className="space-y-2">
@@ -179,7 +213,7 @@ export default function NewJobPage() {
                 <select
                   name="type"
                   className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none ring-brand-200 focus:ring"
-                  disabled={!canCreate || isSubmitting}
+                  disabled={!canCreate || isSubmitting || hasInsufficientCredits}
                 >
                   <option value="FULL_TIME">Full time</option>
                   <option value="PART_TIME">Part time</option>
@@ -197,7 +231,7 @@ export default function NewJobPage() {
                   name="salaryMin"
                   placeholder="e.g. 15"
                   className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none ring-brand-200 focus:ring"
-                  disabled={!canCreate || isSubmitting}
+                  disabled={!canCreate || isSubmitting || hasInsufficientCredits}
                 />
               </label>
               <label className="space-y-2">
@@ -209,7 +243,7 @@ export default function NewJobPage() {
                   name="salaryMax"
                   placeholder="e.g. 35"
                   className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none ring-brand-200 focus:ring"
-                  disabled={!canCreate || isSubmitting}
+                  disabled={!canCreate || isSubmitting || hasInsufficientCredits}
                 />
               </label>
             </div>
@@ -229,7 +263,7 @@ export default function NewJobPage() {
                 placeholder="Summarize responsibilities, scope, and goals. Use bullet points for clarity."
                 className="h-40 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none ring-brand-200 focus:ring"
                 required
-                disabled={!canCreate || isSubmitting}
+                disabled={!canCreate || isSubmitting || hasInsufficientCredits}
               />
             </label>
 
@@ -242,7 +276,7 @@ export default function NewJobPage() {
                 placeholder="List must-have skills, experience, and qualifications."
                 className="h-40 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none ring-brand-200 focus:ring"
                 required
-                disabled={!canCreate || isSubmitting}
+                disabled={!canCreate || isSubmitting || hasInsufficientCredits}
               />
             </label>
           </section>
@@ -250,7 +284,7 @@ export default function NewJobPage() {
           <div className="flex flex-wrap items-center gap-3">
             <button
               type="submit"
-              disabled={!canCreate || isSubmitting}
+              disabled={isButtonDisabled}
               className="rounded-full bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-brand-700 disabled:opacity-60"
             >
               {isSubmitting ? "Creating..." : "Create Job"}

@@ -125,7 +125,10 @@ export async function listJobs(req: Request, res: Response) {
       include: {
         employer: { select: employerSelect },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: [
+        { boostLevel: "desc" },
+        { createdAt: "desc" },
+      ],
       skip: (page - 1) * pageSize,
       take: pageSize,
     }),

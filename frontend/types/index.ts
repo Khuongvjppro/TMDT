@@ -53,6 +53,7 @@ export type Job = {
   requirements: string;
   type: JobType;
   isActive: boolean;
+  boostLevel: number;
   employerId: number;
   createdAt: string;
   applicationsCount?: number;
@@ -76,6 +77,7 @@ export type EmployerProfile = {
   companyLocation?: string | null;
   description?: string | null;
   credits?: number;
+  maxUnlockedLevel?: number;
   createdAt: string;
   updatedAt: string;
   fullName?: string;

@@ -15,6 +15,8 @@ import {
   upsertInterviewSchedule,
   updateApplicationStatus,
   updateMyEmployerProfile,
+  purchaseBillingPackage,
+  boostJob,
 } from "../controllers/employer.controller";
 import { createVnpayPayment } from "../controllers/payment.controller";
 import { requireAuth, requireRole } from "../middleware/auth";
@@ -28,11 +30,13 @@ router.get("/profile", asyncHandler(getMyEmployerProfile));
 router.patch("/profile", asyncHandler(updateMyEmployerProfile));
 router.get("/billing/packages", asyncHandler(listBillingPackages));
 router.post("/billing/purchase", asyncHandler(createVnpayPayment));
+router.post("/billing/purchase-instant", asyncHandler(purchaseBillingPackage));
 router.post("/billing/vnpay/create", asyncHandler(createVnpayPayment));
 router.get("/transactions", asyncHandler(listMyTransactions));
 router.get("/transactions/:transactionCode", asyncHandler(getMyTransaction));
 router.get("/candidates", asyncHandler(listCandidates));
 router.get("/jobs", asyncHandler(listMyJobs));
+router.post("/jobs/:jobId/boost", asyncHandler(boostJob));
 router.get("/stats/job-types", asyncHandler(getEmployerJobTypeStats));
 router.get("/stats/application-statuses", asyncHandler(getEmployerApplicationStatusStats));
 router.get("/stats/interview-modes", asyncHandler(getEmployerInterviewModeStats));

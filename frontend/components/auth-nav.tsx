@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { useAuth } from "./auth-provider";
 import { getRoleNavItems } from "./nav-config";
 import { getEmployerPendingApplicationsCount } from "../lib/api";
@@ -50,24 +51,28 @@ export default function AuthNav() {
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
-  const navItems = getRoleNavItems(auth?.user.role);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  const navItems = getRoleNavItems(auth?.user?.role);
   const userShortName = useMemo(() => {
-    const source = auth?.user.fullName || auth?.user.email || "U";
+    const source = auth?.user?.fullName || auth?.user?.email || "U";
     return source.charAt(0).toUpperCase();
-  }, [auth?.user.fullName, auth?.user.email]);
+  }, [auth?.user?.fullName, auth?.user?.email]);
 
   useEffect(() => {
     let isMounted = true;
 
-    if (!auth?.token || auth.user.role !== "EMPLOYER") {
+    if (!auth?.token || auth?.user?.role !== "EMPLOYER") {
       setPendingCount(0);
       return;
     }
-    const token = auth.token;
 
     async function loadPendingCount() {
       try {
-        const data = await getEmployerPendingApplicationsCount(token);
+        const data = await getEmployerPendingApplicationsCount(auth!.token);
         if (isMounted) {
           setPendingCount(data.pendingCount);
         }
@@ -85,13 +90,15 @@ export default function AuthNav() {
       isMounted = false;
       window.clearInterval(intervalId);
     };
-  }, [auth?.token, auth?.user.role]);
+  }, [auth?.token, auth?.user?.role]);
 
   function onLogout() {
     setIsSidebarOpen(false);
     clearAuthState();
     router.push("/");
   }
+
+
 
   return (
     <nav className="flex items-center gap-3 text-sm font-medium">
@@ -106,7 +113,7 @@ export default function AuthNav() {
           <button
             type="button"
             onClick={() => setIsSidebarOpen(true)}
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-900 text-sm font-bold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-slate-700"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-sm font-bold text-slate-900 shadow-md transition hover:-translate-y-0.5 hover:bg-slate-100"
             aria-label="Open sidebar menu"
           >
             {userShortName}
@@ -119,7 +126,7 @@ export default function AuthNav() {
           className={
             pathname === "/login"
               ? "rounded-full bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-brand-700"
-              : "rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-slate-700"
+              : "rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 shadow-md transition hover:bg-slate-100"
           }
           href="/login"
         >
@@ -127,12 +134,12 @@ export default function AuthNav() {
         </Link>
       ) : null}
 
-      {isReady && auth ? (
+      {mounted && auth ? createPortal(
         <>
           <button
             type="button"
             onClick={() => setIsSidebarOpen(false)}
-            className={`fixed inset-0 z-40 bg-slate-900/45 backdrop-blur-[1px] transition-opacity duration-300 ${
+            className={`fixed inset-0 z-50 bg-slate-900/45 backdrop-blur-[1px] transition-opacity duration-300 ${
               isSidebarOpen
                 ? "pointer-events-auto opacity-100"
                 : "pointer-events-none opacity-0"
@@ -152,15 +159,15 @@ export default function AuthNav() {
                 </div>
                 <div>
                   <p className="text-base font-black text-slate-900">
-                    {auth.user.fullName}
+                    {auth?.user?.fullName}
                   </p>
-                  <p className="text-xs text-slate-500">{auth.user.email}</p>
+                  <p className="text-xs text-slate-500">{auth?.user?.email}</p>
                 </div>
               </div>
               <p
-                className={`mt-3 inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide ${roleClassName(auth.user.role)}`}
+                className={`mt-3 inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide ${roleClassName(auth?.user?.role || "")}`}
               >
-                {auth.user.role}
+                {auth?.user?.role}
               </p>
             </div>
 
@@ -246,7 +253,8 @@ export default function AuthNav() {
               </button>
             </div>
           </aside>
-        </>
+        </>,
+        document.body
       ) : null}
     </nav>
   );

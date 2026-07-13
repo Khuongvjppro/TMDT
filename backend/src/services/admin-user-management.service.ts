@@ -1,3 +1,4 @@
+import { UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { userRepository, ListUsersQuery } from "../repositories/user.repository";
@@ -9,7 +10,7 @@ import {
   AuthorizationError,
   NotFoundError,
 } from "../lib/errors";
-import { UserRole } from "../constants/enums";
+
 
 export class AdminUserManagementService {
   async listUsers(query: ListUsersQuery) {

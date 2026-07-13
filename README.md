@@ -1,6 +1,6 @@
-# Job Platform Monorepo
+# JobFinder - Professional Job Search & Recruitment Platform
 
-Starter project for a job portal platform with clear backend/frontend/database separation.
+A web application for job search and recruiter-candidate connection designed for the E-Commerce (TMDT) course.
 
 ## 1) Tech stack
 
@@ -50,7 +50,7 @@ TMDT/
 
 Backend keeps one API prefix (`/api`) and composes role routers inside `backend/src/routes/index.ts`.
 
-## 3) Features included in this starter
+## 3) Features included in this project
 
 - JWT authentication: register, login, current user
 - Roles scaffold: GUEST, CANDIDATE, EMPLOYER, ADMIN
@@ -169,4 +169,4 @@ After setup, verify:
 
 ## 14) Scope note
 
-This repository is an intentionally clean starter scaffold for team collaboration and incremental feature development.
+This project is designed with a clean architecture for academic and practical development in the E-Commerce course.

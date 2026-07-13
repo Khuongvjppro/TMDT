@@ -1,5 +1,5 @@
+import { UserRole, UserStatus } from "@prisma/client";
 import { prisma } from "../lib/prisma";
-import { UserRole, UserStatus } from "../constants/enums";
 
 export interface ListUsersQuery {
   search?: string; // email or name

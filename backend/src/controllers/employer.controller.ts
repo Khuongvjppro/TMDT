@@ -35,6 +35,10 @@ const listTransactionsQuerySchema = z.object({
 
 const transactionCodeSchema = z.string().trim().min(1).max(100);
 
+const purchasePackageSchema = z.object({
+  packageId: z.coerce.number().int().positive(),
+});
+
 const interviewModeSchema = z.enum(["ONLINE", "ONSITE", "PHONE"]);
 
 const upsertInterviewScheduleSchema = z
@@ -118,11 +122,39 @@ export async function getMyEmployerProfile(req: Request, res: Response) {
     },
   });
 
+  const now = new Date();
+  const activeTransactions = await prisma.employerTransaction.findMany({
+    where: {
+      employerId: authUser.userId,
+      status: "SUCCESS",
+    },
+    include: {
+      package: true,
+    },
+  });
+
+  let maxUnlockedLevel = 0;
+  for (const tx of activeTransactions) {
+    const paidAtDate = tx.paidAt || tx.createdAt;
+    const durationMs = tx.package.durationDays * 24 * 60 * 60 * 1000;
+    if (paidAtDate.getTime() + durationMs > now.getTime()) {
+      let level = 0;
+      if (tx.package.name === "Starter") level = 1;
+      else if (tx.package.name === "Growth") level = 2;
+      else if (tx.package.name === "Scale") level = 3;
+
+      if (level > maxUnlockedLevel) {
+        maxUnlockedLevel = level;
+      }
+    }
+  }
+
   return res.status(200).json({
     item: {
       ...profile,
       fullName: user.fullName,
       email: user.email,
+      maxUnlockedLevel,
     },
   });
 }
@@ -291,6 +323,64 @@ export async function listBillingPackages(_req: Request, res: Response) {
   });
 
   return res.status(200).json({ items });
+}
+
+export async function purchaseBillingPackage(req: Request, res: Response) {
+  const authUser = getAuthUser(req, res);
+  if (!authUser) return;
+
+  const parsedBody = purchasePackageSchema.safeParse(req.body);
+  if (!parsedBody.success) {
+    return res
+      .status(400)
+      .json({ message: "Invalid payload", errors: parsedBody.error.flatten() });
+  }
+
+  const selectedPackage = await prisma.billingPackage.findFirst({
+    where: { id: parsedBody.data.packageId, isActive: true },
+  });
+
+  if (!selectedPackage) {
+    return res.status(404).json({ message: "Billing package not found" });
+  }
+
+  const item = await prisma.employerTransaction.create({
+    data: {
+      transactionCode: `TXN-${Date.now()}-${authUser.userId}`,
+      employerId: authUser.userId,
+      packageId: selectedPackage.id,
+      amountCents: selectedPackage.price,
+      credits: selectedPackage.maxJobPosts,
+      status: "SUCCESS",
+    },
+    include: {
+      package: {
+        select: {
+          id: true,
+          name: true,
+          price: true,
+          durationDays: true,
+          maxJobPosts: true,
+        },
+      },
+    },
+  });
+
+  await prisma.employerProfile.upsert({
+    where: { userId: authUser.userId },
+    update: {
+      credits: {
+        increment: selectedPackage.maxJobPosts,
+      },
+    },
+    create: {
+      userId: authUser.userId,
+      companyName: `${authUser.email.split("@")[0]} Company`,
+      credits: selectedPackage.maxJobPosts,
+    },
+  });
+
+  return res.status(201).json({ item });
 }
 
 export async function listMyTransactions(req: Request, res: Response) {
@@ -624,4 +714,115 @@ export async function deleteInterviewSchedule(req: Request, res: Response) {
   });
 
   return res.status(204).send();
+}
+
+const boostJobSchema = z.object({
+  targetLevel: z.number().int().min(1).max(3),
+});
+
+export async function boostJob(req: Request, res: Response) {
+  const authUser = getAuthUser(req, res);
+  if (!authUser) return;
+
+  const parsedId = idParamSchema.safeParse(req.params.jobId);
+  if (!parsedId.success) {
+    return res.status(400).json({ message: "Invalid job id" });
+  }
+  const jobId = parsedId.data;
+
+  const parsedBody = boostJobSchema.safeParse(req.body);
+  if (!parsedBody.success) {
+    return res
+      .status(400)
+      .json({ message: "Invalid payload", errors: parsedBody.error.flatten() });
+  }
+  const { targetLevel } = parsedBody.data;
+
+  const job = await prisma.job.findUnique({
+    where: { id: jobId },
+  });
+
+  if (!job) {
+    return res.status(404).json({ message: "Job not found" });
+  }
+
+  if (job.employerId !== authUser.userId) {
+    return res
+      .status(403)
+      .json({ message: "You can only boost your own jobs" });
+  }
+
+  if (!job.isActive || job.status !== "APPROVED") {
+    return res
+      .status(400)
+      .json({ message: "You can only boost active, approved jobs" });
+  }
+
+  if (job.boostLevel >= targetLevel) {
+    return res
+      .status(400)
+      .json({ message: `Job is already boosted at level ${job.boostLevel} or higher` });
+  }
+
+  const now = new Date();
+  const activeTransactions = await prisma.employerTransaction.findMany({
+    where: {
+      employerId: authUser.userId,
+      status: "SUCCESS",
+    },
+    include: {
+      package: true,
+    },
+  });
+
+  let maxUnlockedLevel = 0;
+  for (const tx of activeTransactions) {
+    const paidAtDate = tx.paidAt || tx.createdAt;
+    const durationMs = tx.package.durationDays * 24 * 60 * 60 * 1000;
+    if (paidAtDate.getTime() + durationMs > now.getTime()) {
+      let level = 0;
+      if (tx.package.name === "Starter") level = 1;
+      else if (tx.package.name === "Growth") level = 2;
+      else if (tx.package.name === "Scale") level = 3;
+
+      if (level > maxUnlockedLevel) {
+        maxUnlockedLevel = level;
+      }
+    }
+  }
+
+  if (targetLevel > maxUnlockedLevel) {
+    return res.status(403).json({
+      message: `You need to purchase the corresponding package (Starter, Growth, or Scale) to unlock boost level ${targetLevel}. Your current max unlocked boost level is ${maxUnlockedLevel}.`,
+    });
+  }
+
+  const cost = targetLevel - job.boostLevel;
+
+  const profile = await prisma.employerProfile.findUnique({
+    where: { userId: authUser.userId },
+  });
+
+  if (!profile || profile.credits < cost) {
+    return res.status(403).json({
+      message: `Insufficient credits. Boosting from level ${job.boostLevel} to ${targetLevel} requires ${cost} credits, but you have ${profile?.credits ?? 0} credits.`,
+    });
+  }
+
+  const [updatedJob] = await prisma.$transaction([
+    prisma.job.update({
+      where: { id: jobId },
+      data: { boostLevel: targetLevel },
+    }),
+    prisma.employerProfile.update({
+      where: { userId: authUser.userId },
+      data: {
+        credits: {
+          decrement: cost,
+        },
+      },
+    }),
+  ]);
+
+  return res.status(200).json({ item: updatedJob });
 }

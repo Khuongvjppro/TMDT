@@ -1,5 +1,5 @@
 {
-  "name": "job-platform-monorepo",
+  "name": "tmdt-jobfinder",
   "private": true,
   "version": "0.1.0",
   "workspaces": [
@@ -7,7 +7,7 @@
     "frontend"
   ],
   "scripts": {
-    "dev": "npm run dev -w frontend",
+    "dev": "concurrently -n backend,frontend \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "npm run dev -w backend",
     "dev:frontend": "npm run dev -w frontend",
     "build": "npm run build -w backend && npm run build -w frontend",

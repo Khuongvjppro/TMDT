@@ -1,5 +1,5 @@
+import { AuditActionType } from "@prisma/client";
 import { prisma } from "../lib/prisma";
-import { AuditActionType } from "../constants/enums";
 
 export interface AuditLogData {
   action: AuditActionType;

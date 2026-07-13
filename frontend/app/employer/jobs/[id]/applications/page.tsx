@@ -124,10 +124,13 @@ export default function EmployerJobApplicationsPage({ params }: Props) {
     if (!auth?.token) return;
 
     const form = interviewForms[applicationId];
-    if (!form?.startsAt || !form?.endsAt) {
-      setMessage("Please fill interview start/end date-time.");
+    if (!form?.startsAt) {
+      setMessage("Please select interview time.");
       return;
     }
+
+    const startsDate = new Date(form.startsAt);
+    const endsDate = new Date(startsDate.getTime() + 60 * 60 * 1000); // 1 giờ sau
 
     setInterviewUpdatingId(applicationId);
     setMessage("");
@@ -137,10 +140,10 @@ export default function EmployerJobApplicationsPage({ params }: Props) {
         applicationId,
         {
           mode: form.mode,
-          startsAt: new Date(form.startsAt).toISOString(),
-          endsAt: new Date(form.endsAt).toISOString(),
-          meetingLink: form.meetingLink,
-          location: form.location,
+          startsAt: startsDate.toISOString(),
+          endsAt: endsDate.toISOString(),
+          meetingLink: form.mode === "ONLINE" ? form.meetingLink : "",
+          location: form.mode === "ONSITE" ? form.location : "",
           note: form.note,
         },
       );
@@ -346,79 +349,103 @@ export default function EmployerJobApplicationsPage({ params }: Props) {
                 Interview Schedule
               </p>
               {item.interviewSchedule ? (
-                <p className="mt-1 text-xs text-emerald-700">
-                  Scheduled:{" "}
-                  {new Date(item.interviewSchedule.startsAt).toLocaleString()} -{" "}
-                  {new Date(item.interviewSchedule.endsAt).toLocaleString()}
-                </p>
+                <div className="mt-1 text-xs text-emerald-700 space-y-0.5">
+                  <p>
+                    <strong>Time:</strong>{" "}
+                    {new Date(item.interviewSchedule.startsAt).toLocaleString()}
+                  </p>
+                  <p>
+                    <strong>Mode:</strong> {item.interviewSchedule.mode}
+                  </p>
+                  {item.interviewSchedule.mode === "ONLINE" && item.interviewSchedule.meetingLink && (
+                    <p>
+                      <strong>Meeting Link:</strong>{" "}
+                      <a href={item.interviewSchedule.meetingLink} target="_blank" rel="noreferrer" className="underline hover:text-emerald-800 break-all">
+                        {item.interviewSchedule.meetingLink}
+                      </a>
+                    </p>
+                  )}
+                  {item.interviewSchedule.mode === "ONSITE" && item.interviewSchedule.location && (
+                    <p>
+                      <strong>Location:</strong> {item.interviewSchedule.location}
+                    </p>
+                  )}
+                </div>
               ) : (
                 <p className="mt-1 text-xs text-slate-500">
                   No interview schedule yet.
                 </p>
               )}
 
-              <div className="mt-3 grid gap-2 md:grid-cols-2">
-                <select
-                  className="rounded-lg border border-slate-300 px-2 py-1 text-sm"
-                  value={interviewForms[item.id]?.mode || "ONLINE"}
-                  onChange={(event) =>
-                    updateInterviewField(item.id, "mode", event.target.value)
-                  }
-                >
-                  {INTERVIEW_MODE_OPTIONS.map((mode) => (
-                    <option key={mode} value={mode}>
-                      {mode}
-                    </option>
-                  ))}
-                </select>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                <div className="flex flex-col gap-1">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Interview Mode</label>
+                  <select
+                    className="rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white"
+                    value={interviewForms[item.id]?.mode || "ONLINE"}
+                    onChange={(event) =>
+                      updateInterviewField(item.id, "mode", event.target.value)
+                    }
+                  >
+                    {INTERVIEW_MODE_OPTIONS.map((mode) => (
+                      <option key={mode} value={mode}>
+                        {mode}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-                <input
-                  type="datetime-local"
-                  className="rounded-lg border border-slate-300 px-2 py-1 text-sm"
-                  value={interviewForms[item.id]?.startsAt || ""}
-                  onChange={(event) =>
-                    updateInterviewField(
-                      item.id,
-                      "startsAt",
-                      event.target.value,
-                    )
-                  }
-                />
+                <div className="flex flex-col gap-1">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Interview Time</label>
+                  <input
+                    type="datetime-local"
+                    className="rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white"
+                    value={interviewForms[item.id]?.startsAt || ""}
+                    onChange={(event) =>
+                      updateInterviewField(
+                        item.id,
+                        "startsAt",
+                        event.target.value,
+                      )
+                    }
+                  />
+                </div>
 
-                <input
-                  type="datetime-local"
-                  className="rounded-lg border border-slate-300 px-2 py-1 text-sm"
-                  value={interviewForms[item.id]?.endsAt || ""}
-                  onChange={(event) =>
-                    updateInterviewField(item.id, "endsAt", event.target.value)
-                  }
-                />
+                {interviewForms[item.id]?.mode === "ONLINE" && (
+                  <div className="flex flex-col gap-1 md:col-span-2">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Meeting Link</label>
+                    <input
+                      placeholder="https://meet.google.com/..."
+                      className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      value={interviewForms[item.id]?.meetingLink || ""}
+                      onChange={(event) =>
+                        updateInterviewField(
+                          item.id,
+                          "meetingLink",
+                          event.target.value,
+                        )
+                      }
+                    />
+                  </div>
+                )}
 
-                <input
-                  placeholder="Meeting link"
-                  className="rounded-lg border border-slate-300 px-2 py-1 text-sm"
-                  value={interviewForms[item.id]?.meetingLink || ""}
-                  onChange={(event) =>
-                    updateInterviewField(
-                      item.id,
-                      "meetingLink",
-                      event.target.value,
-                    )
-                  }
-                />
-
-                <input
-                  placeholder="Location"
-                  className="rounded-lg border border-slate-300 px-2 py-1 text-sm"
-                  value={interviewForms[item.id]?.location || ""}
-                  onChange={(event) =>
-                    updateInterviewField(
-                      item.id,
-                      "location",
-                      event.target.value,
-                    )
-                  }
-                />
+                {interviewForms[item.id]?.mode === "ONSITE" && (
+                  <div className="flex flex-col gap-1 md:col-span-2">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Location</label>
+                    <input
+                      placeholder="Building, street address, city..."
+                      className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      value={interviewForms[item.id]?.location || ""}
+                      onChange={(event) =>
+                        updateInterviewField(
+                          item.id,
+                          "location",
+                          event.target.value,
+                        )
+                      }
+                    />
+                  </div>
+                )}
               </div>
 
               <textarea

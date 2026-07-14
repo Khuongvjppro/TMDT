@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { fetchJobDetail, updateJob } from "../../../../../lib/api";
@@ -122,114 +123,247 @@ export default function EmployerEditJobPage({ params }: Props) {
   }
 
   return (
-    <section className="mx-auto max-w-3xl rounded-3xl bg-white p-6 shadow-lg">
-      <h1 className="text-2xl font-black text-slate-900">Edit Job</h1>
-      <p className="mt-1 text-sm text-slate-600">
-        Employer white feature: update own job.
-      </p>
+    <section className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl bg-white/90 p-6 shadow-2xl ring-1 ring-slate-100 backdrop-blur">
+      <div className="pointer-events-none absolute -right-16 -top-16 h-32 w-32 rounded-full bg-brand-100/70 blur-3xl" />
+      <div className="pointer-events-none absolute -left-10 bottom-0 h-28 w-28 rounded-full bg-slate-100 blur-3xl" />
+
+      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-600">
+            Employer Workspace
+          </p>
+          <h1 className="mt-2 text-3xl font-black text-slate-900">
+            Edit Job Listing
+          </h1>
+          <p className="mt-2 text-sm text-slate-600">
+            Update job details and requirements for Job #{jobId}.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/employer/jobs"
+            className="rounded-full border border-slate-200 bg-white px-4 py-1.5 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
+          >
+            ← Back to Jobs
+          </Link>
+        </div>
+      </div>
 
       {isLoading ? (
-        <p className="mt-3 text-sm text-slate-600">Loading job...</p>
-      ) : null}
-
-      <form className="mt-6 space-y-3" onSubmit={onSubmit}>
-        <input
-          name="title"
-          placeholder="Job title"
-          className="w-full rounded-xl border px-3 py-2 text-sm"
-          required
-          value={form.title}
-          onChange={(event) =>
-            setForm((prev) => ({ ...prev, title: event.target.value }))
-          }
-          disabled={isLoading || isSaving}
-        />
-        <input
-          name="companyName"
-          placeholder="Company name"
-          className="w-full rounded-xl border px-3 py-2 text-sm bg-slate-50 cursor-not-allowed"
-          required
-          value={form.companyName}
-          disabled
-        />
-        <input
-          name="location"
-          placeholder="Location"
-          className="w-full rounded-xl border px-3 py-2 text-sm"
-          required
-          value={form.location}
-          onChange={(event) =>
-            setForm((prev) => ({ ...prev, location: event.target.value }))
-          }
-          disabled={isLoading || isSaving}
-        />
-        <select
-          name="type"
-          className="w-full rounded-xl border px-3 py-2 text-sm"
-          value={form.type}
-          onChange={(event) =>
-            setForm((prev) => ({ ...prev, type: event.target.value }))
-          }
-          disabled={isLoading || isSaving}
-        >
-          <option value="FULL_TIME">Full time</option>
-          <option value="PART_TIME">Part time</option>
-          <option value="INTERN">Intern</option>
-          <option value="FREELANCE">Freelance</option>
-          <option value="REMOTE">Remote</option>
-        </select>
-        <div className="grid gap-3 md:grid-cols-2">
-          <input
-            type="number"
-            placeholder="Minimum Salary"
-            className="w-full rounded-xl border px-3 py-2 text-sm"
-            value={form.salaryMin}
-            onChange={(event) =>
-              setForm((prev) => ({ ...prev, salaryMin: event.target.value }))
-            }
-            disabled={isLoading || isSaving}
-          />
-          <input
-            type="number"
-            placeholder="Maximum Salary"
-            className="w-full rounded-xl border px-3 py-2 text-sm"
-            value={form.salaryMax}
-            onChange={(event) =>
-              setForm((prev) => ({ ...prev, salaryMax: event.target.value }))
-            }
-            disabled={isLoading || isSaving}
-          />
+        <div className="flex flex-col items-center justify-center py-20 space-y-4">
+          <svg className="animate-spin h-8 w-8 text-brand-500" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+          <p className="text-xs text-slate-400 font-bold uppercase tracking-wider animate-pulse">Loading listing details...</p>
         </div>
-        <textarea
-          name="description"
-          placeholder="Description"
-          className="h-32 w-full rounded-xl border px-3 py-2 text-sm"
-          required
-          value={form.description}
-          onChange={(event) =>
-            setForm((prev) => ({ ...prev, description: event.target.value }))
-          }
-          disabled={isLoading || isSaving}
-        />
-        <textarea
-          name="requirements"
-          placeholder="Requirements"
-          className="h-32 w-full rounded-xl border px-3 py-2 text-sm"
-          required
-          value={form.requirements}
-          onChange={(event) =>
-            setForm((prev) => ({ ...prev, requirements: event.target.value }))
-          }
-          disabled={isLoading || isSaving}
-        />
-        <button
-          type="submit"
-          disabled={isLoading || isSaving}
-          className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+      ) : (
+        <form
+          className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]"
+          onSubmit={onSubmit}
         >
-          {isSaving ? "Saving..." : "Save Job"}
-        </button>
-      </form>
+          <div className="space-y-6">
+            <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-500">
+                  Basic Information
+                </h2>
+                <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
+                  Required
+                </span>
+              </div>
+
+              <div className="mt-4 grid gap-4 md:grid-cols-2">
+                <label className="space-y-2">
+                  <span className="text-xs font-semibold text-slate-600">
+                    Job title
+                  </span>
+                  <input
+                    name="title"
+                    value={form.title}
+                    onChange={(event) =>
+                      setForm((prev) => ({ ...prev, title: event.target.value }))
+                    }
+                    placeholder="e.g. Senior Product Manager"
+                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none ring-brand-200 focus:ring"
+                    required
+                    disabled={isSaving}
+                  />
+                </label>
+
+                <label className="space-y-2">
+                  <span className="text-xs font-semibold text-slate-600">
+                    Company name
+                  </span>
+                  <input
+                    name="companyName"
+                    value={form.companyName}
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none cursor-not-allowed"
+                    readOnly
+                    required
+                  />
+                </label>
+
+                <label className="space-y-2">
+                  <span className="text-xs font-semibold text-slate-600">
+                    Location
+                  </span>
+                  <input
+                    name="location"
+                    value={form.location}
+                    onChange={(event) =>
+                      setForm((prev) => ({ ...prev, location: event.target.value }))
+                    }
+                    placeholder="e.g. Ha Noi"
+                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none ring-brand-200 focus:ring"
+                    required
+                    disabled={isSaving}
+                  />
+                </label>
+
+                <label className="space-y-2">
+                  <span className="text-xs font-semibold text-slate-600">
+                    Job type
+                  </span>
+                  <select
+                    name="type"
+                    value={form.type}
+                    onChange={(event) =>
+                      setForm((prev) => ({ ...prev, type: event.target.value }))
+                    }
+                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none ring-brand-200 focus:ring"
+                    disabled={isSaving}
+                  >
+                    <option value="FULL_TIME">Full time</option>
+                    <option value="PART_TIME">Part time</option>
+                    <option value="INTERN">Intern</option>
+                    <option value="FREELANCE">Freelance</option>
+                    <option value="REMOTE">Remote</option>
+                  </select>
+                </label>
+
+                <label className="space-y-2">
+                  <span className="text-xs font-semibold text-slate-600">
+                    Minimum Salary
+                  </span>
+                  <input
+                    type="number"
+                    name="salaryMin"
+                    value={form.salaryMin}
+                    onChange={(event) =>
+                      setForm((prev) => ({ ...prev, salaryMin: event.target.value }))
+                    }
+                    placeholder="e.g. 15"
+                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none ring-brand-200 focus:ring"
+                    disabled={isSaving}
+                  />
+                </label>
+
+                <label className="space-y-2">
+                  <span className="text-xs font-semibold text-slate-600">
+                    Maximum Salary
+                  </span>
+                  <input
+                    type="number"
+                    name="salaryMax"
+                    value={form.salaryMax}
+                    onChange={(event) =>
+                      setForm((prev) => ({ ...prev, salaryMax: event.target.value }))
+                    }
+                    placeholder="e.g. 35"
+                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none ring-brand-200 focus:ring"
+                    disabled={isSaving}
+                  />
+                </label>
+              </div>
+            </section>
+
+            <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+              <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-500">
+                Role Details
+              </h2>
+
+              <label className="mt-4 block space-y-2">
+                <span className="text-xs font-semibold text-slate-600">
+                  Description
+                </span>
+                <textarea
+                  name="description"
+                  value={form.description}
+                  onChange={(event) =>
+                    setForm((prev) => ({ ...prev, description: event.target.value }))
+                  }
+                  placeholder="Summarize responsibilities, scope, and goals. Use bullet points for clarity."
+                  className="h-40 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none ring-brand-200 focus:ring"
+                  required
+                  disabled={isSaving}
+                />
+              </label>
+
+              <label className="mt-4 block space-y-2">
+                <span className="text-xs font-semibold text-slate-600">
+                  Requirements
+                </span>
+                <textarea
+                  name="requirements"
+                  value={form.requirements}
+                  onChange={(event) =>
+                    setForm((prev) => ({ ...prev, requirements: event.target.value }))
+                  }
+                  placeholder="List must-have skills, experience, and qualifications."
+                  className="h-40 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none ring-brand-200 focus:ring"
+                  required
+                  disabled={isSaving}
+                />
+              </label>
+            </section>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="submit"
+                disabled={isSaving}
+                className="rounded-full bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-brand-700 disabled:opacity-60"
+              >
+                {isSaving ? "Saving..." : "Save Job Changes"}
+              </button>
+              <p className="text-xs text-slate-500">
+                Tip: Updating details will reflect instantly to all active applicants.
+              </p>
+            </div>
+          </div>
+
+          <aside className="space-y-4">
+            <article className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+              <h3 className="text-sm font-semibold text-slate-900">
+                Posting Checklist
+              </h3>
+              <ul className="mt-3 space-y-2 text-sm text-slate-600">
+                <li>Use specific titles (role + level).</li>
+                <li>List 5-7 responsibilities.</li>
+                <li>Highlight must-have skills.</li>
+                <li>Mention location or remote policy.</li>
+              </ul>
+            </article>
+            <article className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+              <h3 className="text-sm font-semibold text-slate-900">
+                Quality Score
+              </h3>
+              <div className="mt-3 rounded-2xl bg-slate-100 p-3">
+                <div className="flex items-center justify-between text-xs text-slate-600">
+                  <span>Completeness</span>
+                  <span>Good</span>
+                </div>
+                <div className="mt-2 h-2 rounded-full bg-white">
+                  <div className="h-2 w-3/4 rounded-full bg-brand-500" />
+                </div>
+              </div>
+              <p className="mt-2 text-xs text-slate-500">
+                Add clear requirements to boost visibility.
+              </p>
+            </article>
+          </aside>
+        </form>
+      )}
 
       {message ? (
         <p className="mt-4 text-sm font-medium text-slate-700">{message}</p>

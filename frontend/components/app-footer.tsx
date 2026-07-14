@@ -82,13 +82,19 @@ export default function AppFooter() {
             <h3 className="text-sm font-bold text-white">Company</h3>
             <ul className="mt-4 space-y-2 text-xs text-slate-400">
               <li>
-                <span className="text-slate-500">About Us</span>
+                <Link href="/about" className="hover:text-white transition">
+                  About Us
+                </Link>
               </li>
               <li>
-                <span className="text-slate-500">Contact Support</span>
+                <Link href="/contact" className="hover:text-white transition">
+                  Contact Support
+                </Link>
               </li>
               <li>
-                <span className="text-slate-500">Terms & Privacy</span>
+                <Link href="/terms-privacy" className="hover:text-white transition">
+                  Terms & Privacy
+                </Link>
               </li>
             </ul>
           </div>

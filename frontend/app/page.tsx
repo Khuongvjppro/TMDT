@@ -7,36 +7,36 @@ type HomePageProps = {
 };
 
 const HERO_TAGS = [
-  "Remote-friendly roles",
-  "Curated employers",
-  "Fast applications",
+  "E-Commerce Careers",
+  "Digital Marketing",
+  "Retail & Supply Chain",
 ];
 
 const TRUSTED_BRANDS = [
-  "Lumen Studio",
-  "Skyline Labs",
-  "Nova Commerce",
-  "Aurora Health",
-  "Pulse Energy",
-  "Atlas Mobility",
-  "Beacon Tech",
-  "Evergreen Finance",
+  "NovaCommerce",
+  "EcoMart Group",
+  "Shopify Solutions",
+  "RetailHub VNPAY",
+  "Tiki Logistics",
+  "Momo Delivery",
+  "GigaStore VN",
+  "Lazada Vietnam",
 ];
 
 const FEATURED_COMPANIES = [
   {
-    name: "Apex Studio",
-    focus: "Product design & branding",
+    name: "EcoCommerce Co.",
+    focus: "E-Commerce storefronts & marketing",
     roles: "12 open roles",
   },
   {
-    name: "Orbit Systems",
-    focus: "Cloud infrastructure",
+    name: "RetailHub Logistics",
+    focus: "Supply chain & distribution platforms",
     roles: "8 open roles",
   },
   {
-    name: "Lumina Health",
-    focus: "Healthcare analytics",
+    name: "CommerceData Inc",
+    focus: "Retail customer behavior analytics",
     roles: "5 open roles",
   },
 ];
@@ -88,19 +88,19 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <div className="space-y-6">
           <div className="inline-flex items-center gap-2 rounded-full border border-brand-100 bg-brand-50/50 px-4 py-1.5 text-xs font-bold text-brand-700 shadow-sm backdrop-blur-sm">
             <span className="flex h-2 w-2 rounded-full bg-brand-500 animate-ping" />
-            <span>The Next-Gen Career Matching Engine</span>
+            <span>E-Commerce & Digital Commerce Career Engine</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.1]">
             Find your next{" "}
             <span className="bg-gradient-to-r from-brand-600 via-indigo-600 to-accent bg-clip-text text-transparent">
-              dream opportunity
+              e-commerce opportunity
             </span>{" "}
             faster
           </h1>
 
           <p className="text-base sm:text-lg text-slate-600 max-w-xl leading-relaxed">
-            Discover a better way to search for jobs. We connect talented professionals with forward-thinking employers through structured profiles, interactive pipelines, and verified database matches.
+            Discover a better way to search for e-commerce jobs. We connect talented professionals with forward-thinking retailers and digital commerce agencies through structured profiles and verified database matches.
           </p>
 
           {/* Interactive Hero Tags */}
@@ -137,7 +137,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               </div>
               <div>
                 <h3 className="font-extrabold text-slate-900">Minh Khoa</h3>
-                <p className="text-xs text-slate-500 font-semibold">Full Stack Developer</p>
+                <p className="text-xs text-slate-500 font-semibold">E-Commerce Developer</p>
               </div>
             </div>
 
@@ -153,9 +153,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             </div>
 
             <div className="mt-6 flex flex-wrap gap-1.5">
-              <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">React</span>
-              <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">Node.js</span>
-              <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">TypeScript</span>
+              <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">Shopify</span>
+              <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">Next.js</span>
+              <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">Google Ads</span>
             </div>
           </div>
 
@@ -178,7 +178,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               </div>
               <div>
                 <p className="text-[11px] font-extrabold text-slate-900">Interview Scheduled</p>
-                <p className="text-[9px] text-slate-400 font-bold">TechNova Corp — 10:00 AM</p>
+                <p className="text-[9px] text-slate-400 font-bold">EcoCommerce Co. — 10:00 AM</p>
               </div>
             </div>
           </div>

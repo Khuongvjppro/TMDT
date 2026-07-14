@@ -5,8 +5,12 @@ import { useAuth } from "../../../components/auth-provider";
 import { listEmployerTransactions } from "../../../lib/api";
 import { EmployerTransaction } from "../../../types";
 
-function formatUsdFromCents(value: number) {
-  return `$${(value / 100).toFixed(2)}`;
+function formatVnd(value: number) {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 0,
+  }).format(value);
 }
 
 function getStatusStyle(status: EmployerTransaction["status"]) {
@@ -132,7 +136,7 @@ export default function EmployerTransactionsPage() {
             Total Spent
           </p>
           <p className="mt-2 text-2xl font-black text-slate-900">
-            {formatUsdFromCents(totalSpent)}
+            {formatVnd(totalSpent)}
           </p>
           <p className="mt-1 text-xs text-slate-500">This page</p>
         </article>
@@ -183,7 +187,7 @@ export default function EmployerTransactionsPage() {
                     {item.package.name}
                   </td>
                   <td className="px-4 py-3 font-semibold text-slate-900">
-                    {formatUsdFromCents(item.amountCents)}
+                    {formatVnd(item.amountCents)}
                   </td>
                   <td className="px-4 py-3 text-slate-700">{item.credits}</td>
                   <td className="px-4 py-3">

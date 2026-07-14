@@ -21,6 +21,24 @@ function formatFileSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+// Get the Cloudinary URL with fl_attachment flag for forced download
+function getDownloadUrl(url: string): string {
+  if (!url.includes("cloudinary.com")) return url;
+  // Add fl_attachment flag to force download
+  return url.includes("?") ? `${url}&fl_attachment` : `${url}?fl_attachment`;
+}
+
+// Get Google Docs Viewer URL for PDF preview
+function getPreviewUrl(url: string): string {
+  if (!url.includes("cloudinary.com")) return url;
+  const ext = url.split(".").pop()?.toLowerCase();
+  if (ext === "pdf") {
+    return `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
+  }
+  // For non-PDF files, just open the raw URL (will trigger download)
+  return getDownloadUrl(url);
+}
+
 function getFileIcon(format: string) {
   switch (format?.toLowerCase()) {
     case "pdf":
@@ -326,7 +344,7 @@ export default function CvUploadManager() {
               {/* Actions */}
               <div className="shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <a
-                  href={cv.fileUrl}
+                  href={getPreviewUrl(cv.fileUrl)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 rounded-xl text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
@@ -338,8 +356,7 @@ export default function CvUploadManager() {
                   </svg>
                 </a>
                 <a
-                  href={cv.fileUrl}
-                  download
+                  href={getDownloadUrl(cv.fileUrl)}
                   className="p-2 rounded-xl text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
                   title="Download"
                 >

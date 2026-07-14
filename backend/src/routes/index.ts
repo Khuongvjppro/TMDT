@@ -7,6 +7,7 @@ import employerRoutes from "./employer.routes";
 import candidateRoutes from "./candidate.routes";
 import chatRoutes from "./chat.routes";
 import paymentRoutes from "./payment.routes";
+import uploadRoutes from "./upload.routes";
 
 const router = Router();
 
@@ -22,5 +23,6 @@ router.use("/employer", employerRoutes);
 router.use("/candidate", candidateRoutes);
 router.use("/chat", chatRoutes);
 router.use("/payments", paymentRoutes);
+router.use("/upload", uploadRoutes);
 
 export default router;

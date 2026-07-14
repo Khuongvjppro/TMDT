@@ -835,6 +835,56 @@ export function deleteCandidateCv(token: string, id: number) {
   return candidateRequest<void>(token, `/candidate/cvs/${id}`, { method: "DELETE" });
 }
 
+export async function uploadCvFile(token: string, file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/upload/cv`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+  } catch {
+    throw new Error("Backend API is offline. Start the full app with: npm run dev");
+  }
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Upload failed");
+  }
+  return parseJsonResponse<{
+    item: {
+      url: string;
+      publicId: string;
+      format: string;
+      size: number;
+      originalName: string;
+    };
+  }>(response);
+}
+
+export async function deleteCvFile(token: string, url: string) {
+  const params = new URLSearchParams({ url });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/upload/cv?${params.toString()}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch {
+    throw new Error("Backend API is offline. Start the full app with: npm run dev");
+  }
+  if (!response.ok) {
+    const data = await parseJsonResponse<{ message?: string }>(response);
+    throw new Error(data.message || "Delete failed");
+  }
+}
+
 export function listSavedJobs(token: string) {
   return candidateRequest<{ items: SavedJob[] }>(token, "/candidate/saved-jobs");
 }

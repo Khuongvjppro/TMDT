@@ -15,26 +15,18 @@ export default function AppHeader() {
   return (
     <header className="sticky top-0 z-30 w-full border-b border-slate-800 bg-slate-900/95 backdrop-blur-md shadow-sm">
       <div className="mx-auto grid grid-cols-3 items-center max-w-6xl px-4 py-4">
-        {/* User Icon Left */}
-        <div className="flex justify-start">
+        {/* Left Column: User Icon & Search Link */}
+        <div className="flex items-center gap-6 justify-start">
           <AuthNav />
+          <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-300">
+            <Link href="/" className="hover:text-white transition-colors">
+              Search Jobs
+            </Link>
+          </div>
         </div>
 
-        {/* Navigation Links Center */}
-        <div className="flex justify-center gap-6 text-sm font-semibold text-slate-300">
-          <Link href="/" className="hover:text-white transition-colors">
-            Find Jobs
-          </Link>
-          <Link href="/candidate/saved" className="hover:text-white transition-colors">
-            Saved Jobs
-          </Link>
-          <Link href="/candidate/profile" className="hover:text-white transition-colors">
-            Profile
-          </Link>
-        </div>
-
-        {/* Logo Right */}
-        <div className="flex justify-end">
+        {/* Center Column: Logo */}
+        <div className="flex justify-center">
           <Link
             href="/"
             className="flex items-center gap-2 text-xl font-extrabold tracking-tight text-white md:text-2xl"
@@ -46,6 +38,21 @@ export default function AppHeader() {
               JF
             </span>
           </Link>
+        </div>
+
+        {/* Right Column: Company Links */}
+        <div className="flex justify-end">
+          <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-300">
+            <Link href="/about" className="hover:text-white transition-colors">
+              About Us
+            </Link>
+            <Link href="/contact" className="hover:text-white transition-colors">
+              Contact Support
+            </Link>
+            <Link href="/terms-privacy" className="hover:text-white transition-colors text-nowrap">
+              Terms & Privacy
+            </Link>
+          </div>
         </div>
       </div>
     </header>

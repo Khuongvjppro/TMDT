@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const FAQ_ITEMS = [
   {
@@ -32,6 +32,7 @@ const CATEGORIES = [
 export default function ContactPage() {
   // FAQ Accordion State
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+  const [faqs, setFaqs] = useState<typeof FAQ_ITEMS>([]);
 
   // Form State
   const [form, setForm] = useState({
@@ -46,6 +47,17 @@ export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [ticketId, setTicketId] = useState("");
+
+  useEffect(() => {
+    async function loadFaqs() {
+      // Simulate fetching FAQs asynchronously
+      const data = await new Promise<typeof FAQ_ITEMS>((resolve) => {
+        setTimeout(() => resolve(FAQ_ITEMS), 100);
+      });
+      setFaqs(data);
+    }
+    loadFaqs();
+  }, []);
 
   const toggleFaq = (index: number) => {
     setOpenFaqIndex(openFaqIndex === index ? null : index);
@@ -82,7 +94,7 @@ export default function ContactPage() {
     return newErrors;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
@@ -92,9 +104,10 @@ export default function ContactPage() {
 
     setIsSubmitting(true);
 
-    // Simulate database delay
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      // Simulate database delay asynchronously using await
+      await new Promise<void>((resolve) => setTimeout(resolve, 1500));
+
       setSubmitSuccess(true);
       setTicketId(`JF-${Math.floor(100000 + Math.random() * 900000)}`);
       setForm({
@@ -104,7 +117,11 @@ export default function ContactPage() {
         subject: "",
         message: "",
       });
-    }, 1500);
+    } catch {
+      setErrors({ message: "An unexpected error occurred. Please try again." });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -185,7 +202,7 @@ export default function ContactPage() {
           <div className="space-y-4">
             <h2 className="text-xl font-extrabold text-slate-900">Frequently Asked Questions</h2>
             <div className="space-y-3">
-              {FAQ_ITEMS.map((faq, index) => {
+              {faqs.map((faq, index) => {
                 const isOpen = openFaqIndex === index;
                 return (
                   <div

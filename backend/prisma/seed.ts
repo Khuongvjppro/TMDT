@@ -67,11 +67,13 @@ async function main() {
 
   await prisma.candidateProfile.upsert({
     where: { userId: candidate.id },
-    update: {},
+    update: {
+      bio: "Passionate E-Commerce Developer with 2+ years of experience building scalable Shopify apps, Next.js storefronts, and optimizing sales conversions.",
+    },
     create: {
       userId: candidate.id,
       phone: "0900000001",
-      bio: "Passionate software developer with experience in full-stack web applications, eager to solve complex problems and learn new technologies.",
+      bio: "Passionate E-Commerce Developer with 2+ years of experience building scalable Shopify apps, Next.js storefronts, and optimizing sales conversions.",
       cvLink: "https://example.com/cv/candidate",
     },
   });
@@ -81,28 +83,28 @@ async function main() {
       fullName: "Minh Tran",
       email: "minh.tran@demo.com",
       phone: "0900000002",
-      bio: "Frontend developer with React and Tailwind experience.",
+      bio: "Frontend developer specializing in building dynamic, accessible user interfaces for e-commerce shopping carts and payment checkouts.",
       cvLink: "https://example.com/cv/minh-tran",
     },
     {
       fullName: "Linh Nguyen",
       email: "linh.nguyen@demo.com",
       phone: "0900000003",
-      bio: "Backend engineer focused on Node.js and MySQL.",
+      bio: "Backend engineer focusing on e-commerce transaction APIs, MySQL catalog optimization, and webhooks integration.",
       cvLink: "https://example.com/cv/linh-nguyen",
     },
     {
       fullName: "Huy Pham",
       email: "huy.pham@demo.com",
       phone: "0900000004",
-      bio: "QA automation with Playwright and Cypress.",
+      bio: "QA engineer specialized in automated testing for retail checkouts, discount logic, and payment gateway flows.",
       cvLink: "https://example.com/cv/huy-pham",
     },
     {
       fullName: "Trang Vo",
       email: "trang.vo@demo.com",
       phone: "0900000005",
-      bio: "Product designer with Figma and UX research background.",
+      bio: "UI/UX Designer with a strong track record of reducing checkout friction and increasing retail page conversion rates.",
       cvLink: "https://example.com/cv/trang-vo",
     },
   ];
@@ -141,14 +143,18 @@ async function main() {
   await prisma.employerProfile.upsert({
     where: { userId: employer.id },
     update: {
+      companyName: "EcoCommerce Co. (NovaCommerce)",
+      companyWebsite: "https://novacommerce.example.com",
+      companyLocation: "Ho Chi Minh City",
+      description: "NovaCommerce is a leading digital commerce agency specializing in retail automation, headless e-commerce solutions, payment gateways, and conversion rate optimization (CRO) for international retail brands.",
       credits: 100,
     },
     create: {
       userId: employer.id,
-      companyName: "TechNova",
-      companyWebsite: "https://technova.example.com",
+      companyName: "EcoCommerce Co. (NovaCommerce)",
+      companyWebsite: "https://novacommerce.example.com",
       companyLocation: "Ho Chi Minh City",
-      description: "A leading technology solutions provider specializing in professional software development and IT consulting services.",
+      description: "NovaCommerce is a leading digital commerce agency specializing in retail automation, headless e-commerce solutions, payment gateways, and conversion rate optimization (CRO) for international retail brands.",
       credits: 100,
     },
   });
@@ -237,100 +243,93 @@ async function main() {
     }
   }
 
-  const count = await prisma.job.count();
-  if (count === 0) {
-    await prisma.job.createMany({
-      data: [
-        {
-          title: "Frontend Developer (Next.js)",
-          companyName: "TechNova",
-          location: "Ho Chi Minh City",
-          salaryMin: 10,
-          salaryMax: 50,
-          description:
-            "Build and maintain modern web applications with Next.js.",
-          requirements: "At least 1 year with React/Next.js.",
-          type: JobType.FULL_TIME,
-          employerId: employer.id,
-          status: "APPROVED",
-        },
-        {
-          title: "Node.js Backend Engineer",
-          companyName: "CloudWorks",
-          location: "Ha Noi",
-          salaryMin: 10,
-          salaryMax: 50,
-          description: "Develop APIs and optimize database performance.",
-          requirements: "Experience with Express, MySQL, and REST APIs.",
-          type: JobType.FULL_TIME,
-          employerId: employer.id,
-          status: "APPROVED",
-        },
-      ],
-    });
-  }
+  // Clean up old IT seed data to make room for E-commerce specialized data
+  await prisma.review.deleteMany({});
+  await prisma.interviewSchedule.deleteMany({});
+  await prisma.application.deleteMany({});
+  await prisma.job.deleteMany({});
+
+  await prisma.job.createMany({
+    data: [
+      {
+        title: "E-Commerce Frontend Developer (Next.js & Shopify)",
+        companyName: "EcoCommerce Co. (NovaCommerce)",
+        location: "Ho Chi Minh City",
+        salaryMin: 15,
+        salaryMax: 60,
+        description:
+          "Develop fast headless commerce storefronts, cart systems, and payment gateway integrations using Next.js, Tailwind CSS, and Shopify Storefront API.",
+        requirements: "At least 1-2 years with React/Next.js. Experience with e-commerce cart/checkout flows is a major plus.",
+        type: JobType.FULL_TIME,
+        employerId: employer.id,
+        status: "APPROVED",
+      },
+      {
+        title: "SEO & Digital Marketing Specialist",
+        companyName: "EcoCommerce Co. (NovaCommerce)",
+        location: "Ha Noi",
+        salaryMin: 12,
+        salaryMax: 45,
+        description: "Optimize product listing pages (PLP), manage search engine marketing campaigns, track conversion rates, and build retention funnels.",
+        requirements: "Experience with Google Analytics, Ads, SEO tools, and conversion rate optimization (CRO).",
+        type: JobType.FULL_TIME,
+        employerId: employer.id,
+        status: "APPROVED",
+      },
+    ],
+  });
 
   const extraJobs = [
     {
-      title: "UI/UX Designer",
-      companyName: "BrightLabs",
+      title: "E-Commerce Product Manager",
+      companyName: "NovaCommerce Partners",
       location: "Da Nang",
-      salaryMin: 10,
-      salaryMax: 50,
-      description: "Design user flows, wireframes, and polished UI systems.",
-      requirements: "2+ years in product design, strong Figma skills.",
+      salaryMin: 20,
+      salaryMax: 70,
+      description: "Own the digital shopping experience roadmap, lead checkout optimization initiatives, A/B test landing pages, and analyze sales funnels.",
+      requirements: "2+ years of experience in product management, specifically in e-commerce or marketplace products.",
       type: JobType.FULL_TIME,
     },
     {
-      title: "QA Automation Engineer",
-      companyName: "QualityHub",
+      title: "Supply Chain & Order Operations Specialist",
+      companyName: "RetailHub Logistics",
       location: "Ho Chi Minh City",
       salaryMin: 10,
-      salaryMax: 50,
-      description: "Build E2E tests and maintain automation pipelines.",
-      requirements: "Playwright/Cypress experience, CI/CD familiarity.",
+      salaryMax: 30,
+      description: "Coordinate order fulfillment, manage inventory synchronization APIs, and collaborate with shipping API partners (GHTK, ViettelPost).",
+      requirements: "Knowledge of logistics operations, inventory control, and digital supply chain workflows.",
       type: JobType.FULL_TIME,
     },
     {
-      title: "Product Manager",
-      companyName: "NexaSoft",
+      title: "Data Analyst (E-Commerce Sales)",
+      companyName: "CommerceData Inc",
       location: "Ha Noi",
-      salaryMin: 10,
-      salaryMax: 50,
-      description: "Own product roadmap, align stakeholders, ship features.",
-      requirements: "3+ years PM, strong communication and analytics.",
+      salaryMin: 14,
+      salaryMax: 55,
+      description: "Analyze purchase patterns, cart abandonment rates, customer lifetime value (LTV), and marketing campaign performance.",
+      requirements: "Proficient in SQL, Python, Excel, and BI tools (PowerBI, Tableau).",
       type: JobType.FULL_TIME,
     },
     {
-      title: "DevOps Engineer",
-      companyName: "CloudWorks",
+      title: "Customer Success & Live Chat Representative",
+      companyName: "EcoCommerce Co. (NovaCommerce)",
       location: "Remote",
-      salaryMin: 10,
-      salaryMax: 50,
-      description: "Manage cloud infrastructure and deployment pipelines.",
-      requirements: "AWS/GCP, Docker, Kubernetes, monitoring tools.",
+      salaryMin: 8,
+      salaryMax: 25,
+      description: "Manage client order inquiries, process refund requests, and support customers via live chat channels.",
+      requirements: "Excellent communication skills and experience with CRM or live chat support tools.",
       type: JobType.REMOTE,
     },
   ];
 
   for (const job of extraJobs) {
-    const exists = await prisma.job.findFirst({
-      where: {
-        title: job.title,
-        companyName: job.companyName,
-        location: job.location,
+    await prisma.job.create({
+      data: {
+        ...job,
+        employerId: employer.id,
+        status: "APPROVED",
       },
     });
-
-    if (!exists) {
-      await prisma.job.create({
-        data: {
-          ...job,
-          employerId: employer.id,
-          status: "APPROVED",
-        },
-      });
-    }
   }
 
   // Force update all existing jobs to APPROVED so they show up on the public homepage
@@ -352,7 +351,7 @@ async function main() {
         candidateId: candidate.id,
         jobId: firstJob.id,
         coverLetter:
-          "I am interested in this role and available for interview.",
+          "I am highly interested in this E-commerce developer role. I have extensive experience with Next.js storefront integrations and payment gateways.",
         cvLink: "https://example.com/cv/candidate",
       },
     });
@@ -369,21 +368,13 @@ async function main() {
           jobId: jobs[0]?.id ?? firstJob.id,
           rating: 5,
           content:
-            "Great interview process and clear job description. Highly recommend applying here.",
+            "Great interview process and clear job description. Highly recommend applying here for e-commerce developers.",
         },
         {
           jobId: jobs[1]?.id ?? firstJob.id,
-          rating: 2,
+          rating: 4,
           content:
-            "Slow response from HR team. The role description did not match the actual interview topics.",
-        },
-        {
-          jobId: jobs[2]?.id ?? firstJob.id,
-          rating: 1,
-          content:
-            "Inappropriate questions during interview. Would not recommend this company to others.",
-          isHidden: true,
-          hideReason: "Contains inappropriate content flagged during moderation",
+            "Responsive recruitment team and clear task requirements during screening.",
         },
       ];
 
@@ -401,9 +392,7 @@ async function main() {
             jobId: item.jobId,
             rating: item.rating,
             content: item.content,
-            isHidden: item.isHidden ?? false,
-            hideReason: item.isHidden ? item.hideReason : null,
-            hiddenAt: item.isHidden ? new Date() : null,
+            isHidden: false,
           },
         });
       }

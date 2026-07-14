@@ -213,23 +213,7 @@ export default function AuthNav() {
             </div>
 
             <div className="mt-8 flex flex-col gap-3">
-              <button
-                type="button"
-                className="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  className="h-4 w-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={1.8}
-                >
-                  <circle cx="12" cy="12" r="9" />
-                  <path d="M12 8v5" />
-                  <circle cx="12" cy="16.5" r="0.9" fill="currentColor" />
-                </svg>
-                Support
-              </button>
+
 
               <button
                 type="button"

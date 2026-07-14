@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   deleteEmployerInterviewSchedule,
   listEmployerJobApplications,
@@ -130,7 +131,7 @@ export default function EmployerJobApplicationsPage({ params }: Props) {
     }
 
     const startsDate = new Date(form.startsAt);
-    const endsDate = new Date(startsDate.getTime() + 60 * 60 * 1000); // 1 giờ sau
+    const endsDate = new Date(startsDate.getTime() + 60 * 60 * 1000); // 1 hour duration
 
     setInterviewUpdatingId(applicationId);
     setMessage("");
@@ -269,119 +270,164 @@ export default function EmployerJobApplicationsPage({ params }: Props) {
   }
 
   return (
-    <section className="space-y-4 rounded-3xl bg-white p-6 shadow-lg">
-      <h1 className="text-2xl font-black text-slate-900">Job Applications</h1>
-      <p className="text-sm text-slate-600">
-        Employer white feature: view applications and update basic status.
-      </p>
-      {jobId ? (
-        <p className="text-xs font-semibold text-slate-500">Job ID: #{jobId}</p>
+    <section className="relative overflow-hidden rounded-3xl bg-white/90 p-6 shadow-2xl ring-1 ring-slate-100 backdrop-blur space-y-6">
+      <div className="pointer-events-none absolute -right-16 -top-20 h-40 w-40 rounded-full bg-brand-100/70 blur-3xl" />
+      <div className="pointer-events-none absolute -left-10 bottom-0 h-36 w-36 rounded-full bg-slate-100 blur-3xl" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-brand-500 via-brand-300 to-transparent" />
+
+      <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between border-b border-slate-100 pb-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-600">
+            Recruitment Funnel
+          </p>
+          <h1 className="mt-2 text-3xl font-black text-slate-900">
+            Job Applications
+          </h1>
+          <p className="mt-2 max-w-xl text-sm text-slate-600">
+            Review applicant profiles, manage pipeline statuses, and schedule structured interview dates.
+          </p>
+          {jobId ? (
+            <p className="mt-2 text-xs font-bold text-slate-400">Job ID: #{jobId}</p>
+          ) : null}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href="/employer/jobs"
+            className="rounded-full border border-slate-200 bg-white px-5 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 shadow-sm"
+          >
+            ← Back to Jobs
+          </Link>
+          <button
+            type="button"
+            onClick={() => (jobId ? loadData(jobId) : undefined)}
+            disabled={isLoading || !jobId}
+            className="rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60 shadow-sm"
+          >
+            {isLoading ? "Refreshing..." : "Refresh List"}
+          </button>
+        </div>
+      </header>
+
+      {message ? (
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm">
+          {message}
+        </div>
       ) : null}
 
-      <button
-        type="button"
-        onClick={() => (jobId ? loadData(jobId) : undefined)}
-        disabled={isLoading || !jobId}
-        className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
-      >
-        {isLoading ? "Refreshing..." : "Refresh Applications"}
-      </button>
-
-      <div className="space-y-3">
+      <div className="space-y-6">
         {items.map((item) => (
           <article
             key={item.id}
-            className="rounded-2xl border border-slate-200 p-4"
+            className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md"
           >
-            <p className="text-xs font-semibold text-slate-500">
-              Application #{item.id}
-            </p>
-            <h2 className="mt-1 text-base font-bold text-slate-900">
-              {item.candidate.fullName}
-            </h2>
-            <p className="text-sm text-slate-600">{item.candidate.email}</p>
-            <p className="text-xs text-slate-500">
-              Phone: {item.candidate.candidateProfile?.phone || "N/A"}
-            </p>
-            <p className="mt-2 text-sm text-slate-700">
-              {item.coverLetter || "No cover letter"}
-            </p>
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+              <div>
+                <span className="inline-block rounded bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">
+                  Application #{item.id}
+                </span>
+                <h2 className="mt-2 text-xl font-bold text-slate-900">
+                  {item.candidate.fullName}
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">{item.candidate.email}</p>
+                {item.candidate.candidateProfile?.phone ? (
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Phone: <span className="font-semibold text-slate-700">{item.candidate.candidateProfile.phone}</span>
+                  </p>
+                ) : null}
+              </div>
 
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <span className="text-xs font-semibold text-slate-600">
-                Status
-              </span>
-              <select
-                className="rounded-lg border border-slate-300 px-2 py-1 text-sm"
-                value={item.status}
-                disabled={updatingId === item.id}
-                onChange={(event) =>
-                  onChangeStatus(
-                    item.id,
-                    event.target.value as ApplicationStatus,
-                  )
-                }
-              >
-                {STATUS_OPTIONS.map((status) => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </select>
-              {item.cvLink || item.candidate.candidateProfile?.cvLink ? (
-                <a
-                  href={
-                    item.cvLink ||
-                    item.candidate.candidateProfile?.cvLink ||
-                    "#"
-                  }
-                  target="_blank"
-                  rel="noreferrer"
-                  className="rounded-lg border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-700"
-                >
-                  Open CV Link
-                </a>
-              ) : null}
+              <div className="flex flex-wrap items-center gap-3">
+                <label className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-slate-600">Pipeline Status:</span>
+                  <select
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 outline-none ring-brand-200 focus:ring"
+                    value={item.status}
+                    disabled={updatingId === item.id}
+                    onChange={(event) =>
+                      onChangeStatus(
+                        item.id,
+                        event.target.value as ApplicationStatus,
+                      )
+                    }
+                  >
+                    {STATUS_OPTIONS.map((status) => (
+                      <option key={status} value={status}>
+                        {status}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                {item.cvLink || item.candidate.candidateProfile?.cvLink ? (
+                  <a
+                    href={
+                      item.cvLink ||
+                      item.candidate.candidateProfile?.cvLink ||
+                      "#"
+                    }
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-full border border-slate-300 bg-white px-4 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
+                  >
+                    View CV ↗
+                  </a>
+                ) : null}
+              </div>
             </div>
 
-            <div className="mt-4 rounded-xl border border-slate-200 p-3">
-              <p className="text-xs font-semibold text-slate-600">
-                Interview Schedule
+            {/* Cover letter Section */}
+            <div className="mt-4 rounded-2xl bg-slate-50 p-4 border border-slate-100">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Cover Letter</p>
+              <p className="mt-2 text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+                {item.coverLetter || "No cover letter provided."}
               </p>
+            </div>
+
+            {/* Interview scheduling card section */}
+            <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm space-y-4">
+              <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">
+                Interview Coordination
+              </h3>
+
               {item.interviewSchedule ? (
-                <div className="mt-1 text-xs text-emerald-700 space-y-0.5">
+                <div className="rounded-xl bg-emerald-50/50 border border-emerald-100 p-3 text-xs text-emerald-800 space-y-1">
                   <p>
-                    <strong>Time:</strong>{" "}
+                    <strong>📅 Scheduled Time:</strong>{" "}
                     {new Date(item.interviewSchedule.startsAt).toLocaleString()}
                   </p>
                   <p>
-                    <strong>Mode:</strong> {item.interviewSchedule.mode}
+                    <strong>⚡ Mode:</strong> {item.interviewSchedule.mode}
                   </p>
                   {item.interviewSchedule.mode === "ONLINE" && item.interviewSchedule.meetingLink && (
                     <p>
-                      <strong>Meeting Link:</strong>{" "}
-                      <a href={item.interviewSchedule.meetingLink} target="_blank" rel="noreferrer" className="underline hover:text-emerald-800 break-all">
+                      <strong>🔗 Meeting URL:</strong>{" "}
+                      <a href={item.interviewSchedule.meetingLink} target="_blank" rel="noreferrer" className="underline hover:text-emerald-900 break-all">
                         {item.interviewSchedule.meetingLink}
                       </a>
                     </p>
                   )}
                   {item.interviewSchedule.mode === "ONSITE" && item.interviewSchedule.location && (
                     <p>
-                      <strong>Location:</strong> {item.interviewSchedule.location}
+                      <strong>📍 Location:</strong> {item.interviewSchedule.location}
                     </p>
                   )}
+                  {item.interviewSchedule.note ? (
+                    <p>
+                      <strong>📝 Recruiter Note:</strong> {item.interviewSchedule.note}
+                    </p>
+                  ) : null}
                 </div>
               ) : (
-                <p className="mt-1 text-xs text-slate-500">
-                  No interview schedule yet.
+                <p className="text-xs text-slate-500">
+                  No interview details scheduled for this applicant yet.
                 </p>
               )}
 
-              <div className="mt-3 grid gap-3 md:grid-cols-2">
-                <div className="flex flex-col gap-1">
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Interview Mode</label>
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="space-y-1.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Interview Mode</span>
                   <select
-                    className="rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs outline-none ring-brand-200 focus:ring"
                     value={interviewForms[item.id]?.mode || "ONLINE"}
                     onChange={(event) =>
                       updateInterviewField(item.id, "mode", event.target.value)
@@ -393,13 +439,13 @@ export default function EmployerJobApplicationsPage({ params }: Props) {
                       </option>
                     ))}
                   </select>
-                </div>
+                </label>
 
-                <div className="flex flex-col gap-1">
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Interview Time</label>
+                <label className="space-y-1.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Interview Time</span>
                   <input
                     type="datetime-local"
-                    className="rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs outline-none ring-brand-200 focus:ring"
                     value={interviewForms[item.id]?.startsAt || ""}
                     onChange={(event) =>
                       updateInterviewField(
@@ -409,14 +455,14 @@ export default function EmployerJobApplicationsPage({ params }: Props) {
                       )
                     }
                   />
-                </div>
+                </label>
 
                 {interviewForms[item.id]?.mode === "ONLINE" && (
-                  <div className="flex flex-col gap-1 md:col-span-2">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Meeting Link</label>
+                  <label className="space-y-1.5 md:col-span-2">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Meeting Link</span>
                     <input
-                      placeholder="https://meet.google.com/..."
-                      className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      placeholder="e.g. https://meet.google.com/xyz-pdqr-abc"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs outline-none ring-brand-200 focus:ring"
                       value={interviewForms[item.id]?.meetingLink || ""}
                       onChange={(event) =>
                         updateInterviewField(
@@ -426,15 +472,15 @@ export default function EmployerJobApplicationsPage({ params }: Props) {
                         )
                       }
                     />
-                  </div>
+                  </label>
                 )}
 
                 {interviewForms[item.id]?.mode === "ONSITE" && (
-                  <div className="flex flex-col gap-1 md:col-span-2">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Location</label>
+                  <label className="space-y-1.5 md:col-span-2">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Location Address</span>
                     <input
-                      placeholder="Building, street address, city..."
-                      className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      placeholder="e.g. Floor 12, EcoCommerce Tower, HCMC"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs outline-none ring-brand-200 focus:ring"
                       value={interviewForms[item.id]?.location || ""}
                       onChange={(event) =>
                         updateInterviewField(
@@ -444,36 +490,39 @@ export default function EmployerJobApplicationsPage({ params }: Props) {
                         )
                       }
                     />
-                  </div>
+                  </label>
                 )}
               </div>
 
-              <textarea
-                placeholder="Interview note"
-                className="mt-2 h-20 w-full rounded-lg border border-slate-300 px-2 py-1 text-sm"
-                value={interviewForms[item.id]?.note || ""}
-                onChange={(event) =>
-                  updateInterviewField(item.id, "note", event.target.value)
-                }
-              />
+              <label className="block space-y-1.5">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Interview Note</span>
+                <textarea
+                  placeholder="Provide interview instructions (e.g. bring ID card, preparation topics)..."
+                  className="h-20 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs outline-none ring-brand-200 focus:ring resize-none"
+                  value={interviewForms[item.id]?.note || ""}
+                  onChange={(event) =>
+                    updateInterviewField(item.id, "note", event.target.value)
+                  }
+                />
+              </label>
 
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => onSaveInterview(item.id)}
                   disabled={interviewUpdatingId === item.id}
-                  className="rounded-lg bg-slate-900 px-3 py-1 text-xs font-semibold text-white disabled:opacity-60"
+                  className="rounded-full bg-slate-900 px-5 py-2 text-xs font-bold text-white hover:bg-slate-800 disabled:opacity-60 transition shadow-sm"
                 >
                   {interviewUpdatingId === item.id
-                    ? "Saving..."
-                    : "Save Interview"}
+                    ? "Saving Details..."
+                    : "Save Schedule"}
                 </button>
                 {item.interviewSchedule ? (
                   <button
                     type="button"
                     onClick={() => onDeleteInterview(item.id)}
                     disabled={interviewUpdatingId === item.id}
-                    className="rounded-lg border border-rose-300 px-3 py-1 text-xs font-semibold text-rose-700 disabled:opacity-60"
+                    className="rounded-full border border-rose-200 px-5 py-2 text-xs font-bold text-rose-700 hover:bg-rose-50 disabled:opacity-60 transition"
                   >
                     Delete Interview
                   </button>
@@ -485,13 +534,9 @@ export default function EmployerJobApplicationsPage({ params }: Props) {
       </div>
 
       {!isLoading && items.length === 0 ? (
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-slate-500 text-center py-10">
           No applications for this job yet.
         </p>
-      ) : null}
-
-      {message ? (
-        <p className="text-sm font-medium text-slate-700">{message}</p>
       ) : null}
     </section>
   );

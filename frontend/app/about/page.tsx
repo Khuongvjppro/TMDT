@@ -74,7 +74,28 @@ const TIMELINE = [
   },
 ];
 
-export default function AboutPage() {
+// Simulated asynchronous database/API fetch function
+async function fetchAboutData() {
+  return new Promise<{
+    stats: typeof STATS;
+    values: typeof VALUES;
+    timeline: typeof TIMELINE;
+  }>((resolve) => {
+    // Simulating minor network latency
+    setTimeout(() => {
+      resolve({
+        stats: STATS,
+        values: VALUES,
+        timeline: TIMELINE,
+      });
+    }, 150);
+  });
+}
+
+export default async function AboutPage() {
+  // Fetching mock data asynchronously using async/await
+  const { stats, values, timeline } = await fetchAboutData();
+
   return (
     <section className="space-y-16 py-8 relative">
       {/* Background Ambient Glows */}
@@ -99,7 +120,7 @@ export default function AboutPage() {
 
       {/* Stats Board */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-8 rounded-3xl bg-slate-950 text-white shadow-xl border border-slate-900">
-        {STATS.map((stat) => (
+        {stats.map((stat) => (
           <div key={stat.label} className="text-center space-y-1">
             <p className="text-3xl sm:text-4xl font-black text-brand-500">{stat.value}</p>
             <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{stat.label}</p>
@@ -154,7 +175,7 @@ export default function AboutPage() {
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {VALUES.map((val) => (
+          {values.map((val) => (
             <div
               key={val.title}
               className="group p-6 rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-md"
@@ -179,7 +200,7 @@ export default function AboutPage() {
         </div>
 
         <div className="relative border-l border-slate-200 ml-4 md:ml-auto md:max-w-2xl space-y-8">
-          {TIMELINE.map((item) => (
+          {timeline.map((item) => (
             <div key={item.year} className="relative pl-8 group">
               {/* Bullet indicator */}
               <div className="absolute -left-[9px] top-1 h-4.5 w-4.5 rounded-full border-4 border-white bg-slate-200 group-hover:bg-brand-500 group-hover:scale-110 transition-all duration-300" />

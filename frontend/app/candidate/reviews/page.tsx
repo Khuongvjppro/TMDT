@@ -74,7 +74,13 @@ export default function ReviewsPage() {
           );
         })}
       </div>
-      {message ? <p className="rounded-2xl bg-white p-4 text-center font-semibold text-blue-700">{message}</p> : null}
+      {message ? (
+          <div className="fixed bottom-5 right-5 z-50 animate-slide-in flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl max-w-sm pointer-events-auto">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-600">ℹ</span>
+            <p className="text-sm font-semibold text-slate-700">{message}</p>
+            <button type="button" onClick={() => setMessage("")} className="text-slate-400 hover:text-slate-800 ml-2 font-bold">✕</button>
+          </div>
+        ) : null}
     </CandidateShell>
   );
 }

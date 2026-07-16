@@ -18,6 +18,12 @@ export default function SavedJobsPage() {
       {items.map(({ id, job, createdAt }) => <article key={id} className="rounded-3xl bg-white p-5 shadow-lg"><h2 className="text-lg font-black">{job.title}</h2><p className="font-semibold text-blue-700">{job.companyName}</p><p className="mt-2 text-sm text-slate-600">{job.location} · {formatSalaryRange(job.salaryMin, job.salaryMax)}</p><p className="mt-1 text-xs text-slate-400">Saved on {new Date(createdAt).toLocaleString("en-US")}</p><div className="mt-4 flex gap-2"><Link href={`/jobs/${job.id}`} className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white">View & Apply</Link><button onClick={() => remove(job.id)} className="rounded-xl bg-rose-50 px-4 py-2 text-sm font-bold text-rose-700">Remove</button></div></article>)}
     </div>
     {!items.length ? <p className="rounded-3xl bg-white p-8 text-center text-slate-500 shadow">You have not saved any jobs yet.</p> : null}
-    {message ? <p className="rounded-2xl bg-white p-4 text-center font-semibold text-blue-700">{message}</p> : null}
+    {message ? (
+          <div className="fixed bottom-5 right-5 z-50 animate-slide-in flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl max-w-sm pointer-events-auto">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-600">ℹ</span>
+            <p className="text-sm font-semibold text-slate-700">{message}</p>
+            <button type="button" onClick={() => setMessage("")} className="text-slate-400 hover:text-slate-800 ml-2 font-bold">✕</button>
+          </div>
+        ) : null}
   </CandidateShell>;
 }

@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { listEmployerCandidates } from "../../../lib/api";
 import { useAuth } from "../../../components/auth-provider";
 import { EmployerCandidate } from "../../../types";
+import { Mail, Phone, FileText, Calendar, X } from "lucide-react";
 
 export default function EmployerCandidatesPage() {
   const { auth, isReady } = useAuth();
@@ -11,6 +12,7 @@ export default function EmployerCandidatesPage() {
   const [q, setQ] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedCandidate, setSelectedCandidate] = useState<EmployerCandidate | null>(null);
   const [pageInfo, setPageInfo] = useState({
     page: 1,
     pageSize: 10,
@@ -189,9 +191,13 @@ export default function EmployerCandidatesPage() {
                     No CV link
                   </span>
                 )}
-                <span className="rounded-full bg-slate-900 px-4 py-1.5 text-xs font-semibold text-white transition group-hover:bg-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setSelectedCandidate(item)}
+                  className="rounded-full bg-slate-900 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-800"
+                >
                   View profile
-                </span>
+                </button>
               </div>
             </article>
           );
@@ -229,8 +235,96 @@ export default function EmployerCandidatesPage() {
       </div>
 
       {message ? (
-        <p className="text-sm font-medium text-slate-700">{message}</p>
-      ) : null}
+          <div className="fixed bottom-5 right-5 z-50 animate-slide-in flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl max-w-sm pointer-events-auto">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-600">ℹ</span>
+            <p className="text-sm font-semibold text-slate-700">{message}</p>
+            <button type="button" onClick={() => setMessage("")} className="text-slate-400 hover:text-slate-800 ml-2 font-bold">✕</button>
+          </div>
+        ) : null}
+
+      {/* Candidate Profile Details Modal */}
+      {selectedCandidate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+          <div className="relative w-full max-w-lg overflow-hidden rounded-3xl bg-white p-6 shadow-2xl ring-1 ring-slate-100 animate-slide-in">
+            <button
+              type="button"
+              onClick={() => setSelectedCandidate(null)}
+              className="absolute right-4 top-4 rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="flex items-center gap-4">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-xl font-bold text-white shadow-md">
+                {getInitials(selectedCandidate.fullName)}
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-2xl font-black text-slate-900 truncate">
+                  {selectedCandidate.fullName}
+                </h2>
+                <p className="flex items-center gap-1.5 text-sm text-slate-500 mt-1">
+                  <Mail className="h-3.5 w-3.5" />
+                  {selectedCandidate.email}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 space-y-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3.5">
+                  <p className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    <Phone className="h-3.5 w-3.5 text-slate-500" />
+                    Số điện thoại
+                  </p>
+                  <p className="mt-1 text-sm font-bold text-slate-800">
+                    {selectedCandidate.candidateProfile?.phone || "Chưa cập nhật"}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3.5">
+                  <p className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    <Calendar className="h-3.5 w-3.5 text-slate-500" />
+                    Ngày gia nhập
+                  </p>
+                  <p className="mt-1 text-sm font-bold text-slate-800">
+                    {new Date(selectedCandidate.createdAt).toLocaleDateString("vi-VN")}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Giới thiệu bản thân</h3>
+                <div className="rounded-2xl border border-slate-100 bg-slate-50/50 p-4 text-sm text-slate-700 leading-relaxed max-h-44 overflow-y-auto italic">
+                  "{selectedCandidate.candidateProfile?.bio || "Không có thông tin giới thiệu."}"
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-xs font-bold text-amber-800">
+                    {selectedCandidate._count.applications} Lượt ứng tuyển
+                  </span>
+                </div>
+                {selectedCandidate.candidateProfile?.cvLink ? (
+                  <a
+                    href={selectedCandidate.candidateProfile.cvLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 rounded-full bg-brand-600 px-5 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-brand-700"
+                  >
+                    <FileText className="h-3.5 w-3.5" />
+                    Mở CV ứng viên
+                    <span className="text-xs">↗</span>
+                  </a>
+                ) : (
+                  <span className="rounded-full bg-slate-100 border border-slate-200 px-4 py-2 text-xs font-bold text-slate-400">
+                    Chưa tải lên CV
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

@@ -10,7 +10,7 @@ const JWT_RESET_PASSWORD_SECRET =
   process.env.JWT_RESET_PASSWORD_SECRET || BASE_SECRET;
 const ACCESS_TOKEN_EXPIRES_IN: jwt.SignOptions["expiresIn"] =
   (process.env.JWT_ACCESS_EXPIRES_IN as jwt.SignOptions["expiresIn"]) ||
-  "15m";
+  "30m";
 const REFRESH_TOKEN_EXPIRES_IN: jwt.SignOptions["expiresIn"] =
   (process.env.JWT_REFRESH_EXPIRES_IN as jwt.SignOptions["expiresIn"]) ||
   "7d";
@@ -19,7 +19,7 @@ const EMAIL_VERIFY_EXPIRES_IN: jwt.SignOptions["expiresIn"] =
   "1h";
 const RESET_PASSWORD_EXPIRES_IN: jwt.SignOptions["expiresIn"] =
   (process.env.JWT_RESET_PASSWORD_EXPIRES_IN as jwt.SignOptions["expiresIn"]) ||
-  "15m";
+  "30m";
 
 export type AccessTokenPayload = {
   userId: number;

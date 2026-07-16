@@ -56,6 +56,12 @@ export default function CandidateJobsPage() {
         <div className="mt-4 flex flex-wrap gap-2"><Link href={`/jobs/${job.id}`} className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white">View & Apply</Link><SaveJobButton jobId={job.id} /><button onClick={() => chat(job.employerId)} className="rounded-xl bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-700">💬 Chat with Employer</button></div>
       </article>)}
     </div>
-    {message ? <p className="rounded-2xl bg-white p-4 text-center font-semibold text-blue-700 shadow">{message}</p> : null}
+    {message ? (
+          <div className="fixed bottom-5 right-5 z-50 animate-slide-in flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl max-w-sm pointer-events-auto">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-600">ℹ</span>
+            <p className="text-sm font-semibold text-slate-700">{message}</p>
+            <button type="button" onClick={() => setMessage("")} className="text-slate-400 hover:text-slate-800 ml-2 font-bold">✕</button>
+          </div>
+        ) : null}
   </CandidateShell>;
 }

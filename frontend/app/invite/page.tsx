@@ -169,14 +169,14 @@ function InviteForm() {
       </form>
 
       {message ? (
-        <p
-          className={`mt-4 text-sm font-medium ${
-            messageType === "error" ? "text-red-600" : "text-slate-700"
-          }`}
-        >
-          {message}
-        </p>
-      ) : null}
+          <div className="fixed bottom-5 right-5 z-50 animate-slide-in flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl max-w-sm pointer-events-auto">
+            <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+              messageType === "error" ? "bg-red-100 text-red-600" : "bg-emerald-100 text-emerald-600"
+            }`}>ℹ</span>
+            <p className="text-sm font-semibold text-slate-700">{message}</p>
+            <button type="button" onClick={() => { setMessage(""); setMessageType(null); }} className="text-slate-400 hover:text-slate-800 ml-2 font-bold">✕</button>
+          </div>
+        ) : null}
 
       <p className="mt-6 text-center text-sm text-slate-600">
         <Link href="/login" className="font-semibold text-[#0a66c2] hover:underline">

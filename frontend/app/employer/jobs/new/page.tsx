@@ -105,9 +105,6 @@ export default function NewJobPage() {
               Credits: {credits}
             </span>
           ) : null}
-          <span className="rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700">
-            Role allowed: EMPLOYER or ADMIN
-          </span>
         </div>
       </div>
 
@@ -328,8 +325,12 @@ export default function NewJobPage() {
       </form>
 
       {message ? (
-        <p className="mt-4 text-sm font-medium text-slate-700">{message}</p>
-      ) : null}
+          <div className="fixed bottom-5 right-5 z-50 animate-slide-in flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl max-w-sm pointer-events-auto">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-600">ℹ</span>
+            <p className="text-sm font-semibold text-slate-700">{message}</p>
+            <button type="button" onClick={() => setMessage("")} className="text-slate-400 hover:text-slate-800 ml-2 font-bold">✕</button>
+          </div>
+        ) : null}
     </section>
   );
 }

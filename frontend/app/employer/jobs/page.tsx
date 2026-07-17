@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { deleteJob, getEmployerProfile, listEmployerJobs, setJobActive, boostJob } from "../../../lib/api";
 import { useAuth } from "../../../components/auth-provider";
 import { Job } from "../../../types";
 import { formatSalaryRange } from "../../../lib/job-utils";
+import { AlertTriangle, Coins, Trash2, X } from "lucide-react";
 
 export default function EmployerJobsPage() {
   const { auth, isReady } = useAuth();
@@ -17,6 +19,21 @@ export default function EmployerJobsPage() {
   const [statusUpdatingId, setStatusUpdatingId] = useState<number | null>(null);
   const [boostingId, setBoostingId] = useState<number | null>(null);
   const [maxUnlockedLevel, setMaxUnlockedLevel] = useState<number>(0);
+  const [mounted, setMounted] = useState(false);
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: "confirm" | "alert" | "delete";
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm?: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "alert",
+  });
 
   const canAccess = auth?.user.role === "EMPLOYER";
   const totalJobs = items.length;
@@ -29,35 +46,62 @@ export default function EmployerJobsPage() {
     if (!job) return;
 
     if (targetLevel > maxUnlockedLevel) {
-      alert(`Tính năng đẩy tin cấp độ này chưa được mở khóa. Bạn cần mua gói dịch vụ tương ứng (hoặc cao hơn) để mở khóa!`);
+      setModalConfig({
+        isOpen: true,
+        title: "Tính năng chưa được mở khóa",
+        message: "Tính năng đẩy tin cấp độ này chưa được mở khóa. Bạn cần mua gói dịch vụ tương ứng (hoặc cao hơn) để mở khóa!",
+        type: "alert",
+        confirmText: "Đóng",
+      });
       return;
     }
 
     const cost = targetLevel - (job.boostLevel || 0);
+    if (credits !== null && credits < cost) {
+      setModalConfig({
+        isOpen: true,
+        title: "Không đủ credit",
+        message: `Bạn không đủ credit để đẩy ưu tiên tin tuyển dụng này lên cấp độ ${
+          targetLevel === 3 ? "Scale (Premium)" : targetLevel === 2 ? "Growth (Priority)" : "Starter (Basic Boost)"
+        }. Số credit hiện tại của bạn là ${credits}, cần thêm ${cost - credits} credit.`,
+        type: "alert",
+        confirmText: "Đóng",
+      });
+      return;
+    }
+
     const confirmMsg = `Bạn có chắc chắn muốn dùng ${cost} credit để đẩy ưu tiên tin tuyển dụng này lên cấp độ ${
       targetLevel === 3 ? "Scale (Premium)" : targetLevel === 2 ? "Growth (Priority)" : "Starter (Basic Boost)"
     }?`;
 
-    if (!window.confirm(confirmMsg)) return;
-
-    setBoostingId(jobId);
-    setMessage("");
-    try {
-      const data = await boostJob(auth.token, jobId, targetLevel);
-      setItems((prev) =>
-        prev.map((item) =>
-          item.id === jobId ? { ...item, boostLevel: data.item.boostLevel } : item,
-        ),
-      );
-      setCredits((prev) => (prev !== null ? Math.max(0, prev - cost) : 0));
-      setMessage(`Đẩy ưu tiên thành công cho tin tuyển dụng #${jobId}!`);
-    } catch (error) {
-      const nextMessage =
-        error instanceof Error ? error.message : "Đẩy ưu tiên thất bại";
-      setMessage(nextMessage);
-    } finally {
-      setBoostingId(null);
-    }
+    setModalConfig({
+      isOpen: true,
+      title: "Xác nhận đẩy ưu tiên",
+      message: confirmMsg,
+      type: "confirm",
+      confirmText: "Đồng ý",
+      cancelText: "Hủy bỏ",
+      onConfirm: async () => {
+        setBoostingId(jobId);
+        setMessage("");
+        try {
+          const data = await boostJob(auth.token, jobId, targetLevel);
+          setItems((prev) =>
+            prev.map((item) =>
+              item.id === jobId ? { ...item, boostLevel: data.item.boostLevel } : item,
+            ),
+          );
+          setCredits((prev) => (prev !== null ? Math.max(0, prev - cost) : 0));
+          setMessage(`Đẩy ưu tiên thành công cho tin tuyển dụng #${jobId}!`);
+        } catch (error) {
+          const nextMessage =
+            error instanceof Error ? error.message : "Đẩy ưu tiên thất bại";
+          setMessage(nextMessage);
+        } finally {
+          setBoostingId(null);
+        }
+      },
+    });
   }
 
   async function loadData() {
@@ -82,24 +126,38 @@ export default function EmployerJobsPage() {
   }
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     loadData();
   }, [auth?.token, canAccess]);
 
   async function onDelete(jobId: number) {
     if (!auth?.token) return;
-    setDeletingId(jobId);
-    setMessage("");
-    try {
-      await deleteJob(auth.token, jobId);
-      setItems((prev) => prev.filter((item) => item.id !== jobId));
-      setMessage(`Deleted job #${jobId}`);
-    } catch (error) {
-      const nextMessage =
-        error instanceof Error ? error.message : "Delete job failed";
-      setMessage(nextMessage);
-    } finally {
-      setDeletingId(null);
-    }
+    setModalConfig({
+      isOpen: true,
+      title: "Xác nhận xóa tin tuyển dụng",
+      message: `Bạn có chắc chắn muốn xóa tin tuyển dụng #${jobId}? Hành động này không thể hoàn tác và toàn bộ dữ liệu ứng tuyển liên quan cũng sẽ bị xóa.`,
+      type: "delete",
+      confirmText: "Xóa tin",
+      cancelText: "Hủy bỏ",
+      onConfirm: async () => {
+        setDeletingId(jobId);
+        setMessage("");
+        try {
+          await deleteJob(auth.token, jobId);
+          setItems((prev) => prev.filter((item) => item.id !== jobId));
+          setMessage(`Đã xóa tin tuyển dụng #${jobId}`);
+        } catch (error) {
+          const nextMessage =
+            error instanceof Error ? error.message : "Xóa tin tuyển dụng thất bại";
+          setMessage(nextMessage);
+        } finally {
+          setDeletingId(null);
+        }
+      },
+    });
   }
 
   async function onToggleActive(jobId: number, nextStatus: boolean) {
@@ -344,7 +402,7 @@ export default function EmployerJobsPage() {
                     <button
                       type="button"
                       onClick={() => onBoost(job.id, 1)}
-                      disabled={boostingId !== null || maxUnlockedLevel < 1}
+                      disabled={boostingId !== null}
                       className="rounded-full bg-slate-200 hover:bg-slate-300 text-slate-700 px-2.5 py-1 text-[11px] font-bold transition disabled:opacity-60 shadow-sm"
                     >
                       {maxUnlockedLevel < 1 ? "🔒 Starter (1 Cr)" : "Starter (1 Cr)"}
@@ -354,7 +412,7 @@ export default function EmployerJobsPage() {
                     <button
                       type="button"
                       onClick={() => onBoost(job.id, 2)}
-                      disabled={boostingId !== null || maxUnlockedLevel < 2}
+                      disabled={boostingId !== null}
                       className="rounded-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 text-[11px] font-bold border border-indigo-200 transition disabled:opacity-60 shadow-sm"
                     >
                       {maxUnlockedLevel < 2
@@ -366,7 +424,7 @@ export default function EmployerJobsPage() {
                     <button
                       type="button"
                       onClick={() => onBoost(job.id, 3)}
-                      disabled={boostingId !== null || maxUnlockedLevel < 3}
+                      disabled={boostingId !== null}
                       className="rounded-full bg-amber-50 hover:bg-amber-100 text-amber-800 px-2.5 py-1 text-[11px] font-bold border border-amber-200 transition disabled:opacity-60 shadow-sm"
                     >
                       {maxUnlockedLevel < 3
@@ -402,6 +460,86 @@ export default function EmployerJobsPage() {
             <button type="button" onClick={() => setMessage("")} className="text-slate-400 hover:text-slate-800 ml-2 font-bold">✕</button>
           </div>
         ) : null}
+
+      {/* Custom Alert/Confirm Modal */}
+      {mounted && modalConfig.isOpen && createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-fade-in animate-in fade-in duration-200">
+          <div 
+            className="relative w-full max-w-md overflow-hidden rounded-3xl bg-white p-6 shadow-2xl ring-1 ring-slate-100 animate-slide-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setModalConfig((prev) => ({ ...prev, isOpen: false }))}
+              className="absolute right-4 top-4 rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="flex flex-col items-center text-center">
+              {/* Icon Container */}
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl shadow-sm">
+                {modalConfig.type === "alert" && (
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 border border-amber-200 animate-pulse">
+                    <AlertTriangle className="h-7 w-7" />
+                  </div>
+                )}
+                {modalConfig.type === "confirm" && (
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 border border-blue-200">
+                    <Coins className="h-7 w-7" />
+                  </div>
+                )}
+                {modalConfig.type === "delete" && (
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 border border-rose-200">
+                    <Trash2 className="h-7 w-7" />
+                  </div>
+                )}
+              </div>
+
+              {/* Title */}
+              <h2 className="text-xl font-black text-slate-900 mb-2">
+                {modalConfig.title}
+              </h2>
+
+              {/* Message */}
+              <p className="text-sm text-slate-600 leading-relaxed mb-6">
+                {modalConfig.message}
+              </p>
+
+              {/* Actions */}
+              <div className="flex w-full gap-3 justify-center">
+                {modalConfig.type !== "alert" && (
+                  <button
+                    type="button"
+                    onClick={() => setModalConfig((prev) => ({ ...prev, isOpen: false }))}
+                    className="flex-1 rounded-full border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
+                  >
+                    {modalConfig.cancelText || "Hủy"}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setModalConfig((prev) => ({ ...prev, isOpen: false }));
+                    modalConfig.onConfirm?.();
+                  }}
+                  className={`flex-1 rounded-full px-5 py-2.5 text-sm font-semibold text-white shadow-md transition ${
+                    modalConfig.type === "delete"
+                      ? "bg-rose-600 hover:bg-rose-700"
+                      : modalConfig.type === "confirm"
+                        ? "bg-blue-600 hover:bg-blue-700"
+                        : "bg-slate-900 hover:bg-slate-800"
+                  }`}
+                >
+                  {modalConfig.confirmText || "Xác nhận"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </section>
   );
 }

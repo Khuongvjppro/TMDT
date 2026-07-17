@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { createJob, getEmployerProfile } from "../../../../lib/api";
 import { useAuth } from "../../../../components/auth-provider";
+import { AlertTriangle, Coins, X } from "lucide-react";
 
 export default function NewJobPage() {
   const { auth, isReady } = useAuth();
@@ -11,9 +13,28 @@ export default function NewJobPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [profileCompanyName, setProfileCompanyName] = useState("");
   const [credits, setCredits] = useState<number | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: "confirm" | "alert";
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm?: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "alert",
+  });
 
   const currentRole = auth?.user.role;
   const canCreate = currentRole === "EMPLOYER" || currentRole === "ADMIN";
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     async function loadProfile() {
@@ -33,19 +54,29 @@ export default function NewJobPage() {
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!auth?.token || !canCreate) {
-      setMessage("Please login with EMPLOYER or ADMIN account.");
+      setModalConfig({
+        isOpen: true,
+        title: "Chưa đăng nhập",
+        message: "Vui lòng đăng nhập với tài khoản Nhà tuyển dụng hoặc Admin.",
+        type: "alert",
+        confirmText: "Đóng",
+      });
       return;
     }
 
     if (currentRole === "EMPLOYER" && credits !== null && credits < 1) {
-      setMessage("Insufficient credits to post a job. Please buy a package first.");
+      setModalConfig({
+        isOpen: true,
+        title: "Không đủ credit",
+        message: "Bạn không đủ credit để đăng tin tuyển dụng. Vui lòng mua thêm gói dịch vụ để tiếp tục.",
+        type: "alert",
+        confirmText: "Đóng",
+      });
       return;
     }
 
-    setIsSubmitting(true);
-    setMessage("");
-
-    const formData = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const formData = new FormData(formElement);
 
     const salaryMinVal = formData.get("salaryMin") ? Number(formData.get("salaryMin")) : undefined;
     const salaryMaxVal = formData.get("salaryMax") ? Number(formData.get("salaryMax")) : undefined;
@@ -61,21 +92,32 @@ export default function NewJobPage() {
       requirements: String(formData.get("requirements") || "").trim(),
     };
 
-    try {
-      await createJob(auth.token, payload);
-      setMessage("Create job success.");
-      // Decrement credits in local state
-      if (credits !== null) {
-        setCredits((prev) => (prev !== null ? Math.max(0, prev - 1) : 0));
+    setModalConfig({
+      isOpen: true,
+      title: "Xác nhận đăng tin",
+      message: "Đăng tin tuyển dụng này sẽ tiêu tốn của bạn 1 credit. Bạn có chắc chắn muốn thực hiện?",
+      type: "confirm",
+      confirmText: "Đồng ý",
+      cancelText: "Hủy bỏ",
+      onConfirm: async () => {
+        setIsSubmitting(true);
+        setMessage("");
+        try {
+          await createJob(auth.token, payload);
+          setMessage("Đăng tin tuyển dụng thành công!");
+          if (credits !== null) {
+            setCredits((prev) => (prev !== null ? Math.max(0, prev - 1) : 0));
+          }
+          formElement.reset();
+        } catch (error) {
+          const nextMessage =
+            error instanceof Error ? error.message : "Đăng tin tuyển dụng thất bại";
+          setMessage(nextMessage);
+        } finally {
+          setIsSubmitting(false);
+        }
       }
-      event.currentTarget.reset();
-    } catch (error) {
-      const nextMessage =
-        error instanceof Error ? error.message : "Create job failed";
-      setMessage(nextMessage);
-    } finally {
-      setIsSubmitting(false);
-    }
+    });
   }
 
   const hasInsufficientCredits = currentRole === "EMPLOYER" && credits !== null && credits < 1;
@@ -331,6 +373,75 @@ export default function NewJobPage() {
             <button type="button" onClick={() => setMessage("")} className="text-slate-400 hover:text-slate-800 ml-2 font-bold">✕</button>
           </div>
         ) : null}
+
+      {/* Custom Alert/Confirm Modal */}
+      {mounted && modalConfig.isOpen && createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-fade-in animate-in fade-in duration-200">
+          <div 
+            className="relative w-full max-w-md overflow-hidden rounded-3xl bg-white p-6 shadow-2xl ring-1 ring-slate-100 animate-slide-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setModalConfig((prev) => ({ ...prev, isOpen: false }))}
+              className="absolute right-4 top-4 rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="flex flex-col items-center text-center">
+              {/* Icon Container */}
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl shadow-sm">
+                {modalConfig.type === "alert" && (
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 border border-amber-200 animate-pulse">
+                    <AlertTriangle className="h-7 w-7" />
+                  </div>
+                )}
+                {modalConfig.type === "confirm" && (
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 border border-blue-200">
+                    <Coins className="h-7 w-7" />
+                  </div>
+                )}
+              </div>
+
+              {/* Title */}
+              <h2 className="text-xl font-black text-slate-900 mb-2">
+                {modalConfig.title}
+              </h2>
+
+              {/* Message */}
+              <p className="text-sm text-slate-600 leading-relaxed mb-6">
+                {modalConfig.message}
+              </p>
+
+              {/* Actions */}
+              <div className="flex w-full gap-3 justify-center">
+                {modalConfig.type !== "alert" && (
+                  <button
+                    type="button"
+                    onClick={() => setModalConfig((prev) => ({ ...prev, isOpen: false }))}
+                    className="flex-1 rounded-full border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
+                  >
+                    {modalConfig.cancelText || "Hủy"}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setModalConfig((prev) => ({ ...prev, isOpen: false }));
+                    modalConfig.onConfirm?.();
+                  }}
+                  className={`flex-1 rounded-full px-5 py-2.5 text-sm font-semibold text-white shadow-md transition bg-blue-600 hover:bg-blue-700`}
+                >
+                  {modalConfig.confirmText || "Xác nhận"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </section>
   );
 }

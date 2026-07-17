@@ -65,6 +65,15 @@ const employerSelect = {
   id: true,
   fullName: true,
   email: true,
+  employerProfile: {
+    select: {
+      companyName: true,
+      companyWebsite: true,
+      companyLocation: true,
+      description: true,
+      reputation: true,
+    },
+  },
 } as const;
 
 function parseJobId(idValue: unknown) {

@@ -28,6 +28,7 @@ function getPackageFeatures(name: string, maxJobPosts: number) {
     return [
       `Publish up to ${maxJobPosts} jobs`,
       "Starter Boost (Level 1) unlocked",
+      "+10 Điểm uy tín (Trust Score)",
       "Standard email support (48h)",
       "Access to applications manager",
     ];
@@ -36,6 +37,7 @@ function getPackageFeatures(name: string, maxJobPosts: number) {
     return [
       `Publish up to ${maxJobPosts} jobs`,
       "Growth Boost (Level 2) unlocked",
+      "+30 Điểm uy tín (Trust Score)",
       "Priority listing style (Purple outline)",
       "24/7 Dedicated priority support",
     ];
@@ -44,12 +46,14 @@ function getPackageFeatures(name: string, maxJobPosts: number) {
     return [
       `Publish up to ${maxJobPosts} jobs`,
       "Scale Boost (Level 3) unlocked",
+      "+100 Điểm uy tín (Trust Score)",
       "Homepage banner featured highlights",
       "Dedicated account manager",
     ];
   }
   return [
     `Publish up to ${maxJobPosts} jobs`,
+    "+20 Điểm uy tín (Trust Score)",
     "Priority listing boost",
     "Dedicated employer support",
   ];
@@ -59,6 +63,7 @@ export default function EmployerBillingPage() {
   const { auth, isReady } = useAuth();
   const [items, setItems] = useState<BillingPackage[]>([]);
   const [credits, setCredits] = useState<number | null>(null);
+  const [reputation, setReputation] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPurchasingId, setIsPurchasingId] = useState<number | null>(null);
   const [isInstantPurchasingId, setIsInstantPurchasingId] = useState<number | null>(null);
@@ -84,6 +89,7 @@ export default function EmployerBillingPage() {
       ]);
       setItems(packagesData.items);
       setCredits(profileData.item.credits ?? 0);
+      setReputation(profileData.item.reputation ?? 0);
     } catch (error) {
       const nextMessage =
         error instanceof Error
@@ -131,7 +137,7 @@ export default function EmployerBillingPage() {
         `Instant purchase success: Added ${data.item.credits} job-post credits to your balance! (Code: ${data.item.transactionCode})`
       );
       setMessageType("success");
-      setCredits((prev) => (prev !== null ? prev + data.item.credits : data.item.credits));
+      await loadBillingDetails();
     } catch (error) {
       const nextMessage =
         error instanceof Error ? error.message : "Instant purchase failed";
@@ -185,8 +191,16 @@ export default function EmployerBillingPage() {
 
         <div className="flex flex-wrap items-center gap-3">
           {credits !== null ? (
-            <span className="rounded-full bg-amber-50 border border-amber-200 px-4 py-2 text-sm font-bold text-amber-800 shadow-sm animate-pulse">
-              Current Balance: {credits} Credits
+            <span className="rounded-full bg-amber-50 border border-amber-200 px-4 py-2 text-sm font-bold text-amber-800 shadow-sm">
+              Số dư: {credits} Credits
+            </span>
+          ) : null}
+          {reputation !== null ? (
+            <span className="rounded-full bg-emerald-50 border border-emerald-200 px-4 py-2 text-sm font-bold text-emerald-800 shadow-sm flex items-center gap-1.5">
+              <svg className="h-4 w-4 text-emerald-600 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+              Điểm uy tín: {reputation}
             </span>
           ) : null}
         </div>

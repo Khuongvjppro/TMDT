@@ -29,6 +29,7 @@ export default function EmployerProfilePage() {
   });
   const [transactions, setTransactions] = useState<EmployerTransaction[]>([]);
   const [credits, setCredits] = useState<number | null>(null);
+  const [reputation, setReputation] = useState<number | null>(null);
 
   const canAccess = auth?.user.role === "EMPLOYER";
 
@@ -86,6 +87,7 @@ export default function EmployerProfilePage() {
         });
 
         setCredits(profileData.item.credits ?? 0);
+        setReputation(profileData.item.reputation ?? 0);
         const successTx = (transactionsData.items || []).filter((tx) => tx.status === "SUCCESS");
         
         const getPackageLevel = (name: string) => {
@@ -629,6 +631,20 @@ export default function EmployerProfilePage() {
               <p className="mt-1.5 text-3xl font-black text-indigo-900 tracking-tight">
                 {credits !== null ? credits : 0}{" "}
                 <span className="text-xs font-bold text-indigo-500">Credits</span>
+              </p>
+            </div>
+
+            {/* Reputation Score */}
+            <div className="mt-3 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100/50 p-4 text-center border border-emerald-100/50 shadow-sm shadow-emerald-100/10">
+              <p className="text-xs font-semibold text-emerald-600 flex items-center justify-center gap-1.5">
+                <svg className="h-3.5 w-3.5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                Điểm tín dụng (Uy tín)
+              </p>
+              <p className="mt-1.5 text-3xl font-black text-emerald-900 tracking-tight">
+                {reputation !== null ? reputation : 0}{" "}
+                <span className="text-xs font-bold text-emerald-600">Điểm</span>
               </p>
             </div>
 

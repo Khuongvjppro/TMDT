@@ -366,17 +366,26 @@ export async function purchaseBillingPackage(req: Request, res: Response) {
     },
   });
 
+  let reputationPoints = 0;
+  if (selectedPackage.name === "Starter") reputationPoints = 10;
+  else if (selectedPackage.name === "Growth") reputationPoints = 30;
+  else if (selectedPackage.name === "Scale") reputationPoints = 100;
+
   await prisma.employerProfile.upsert({
     where: { userId: authUser.userId },
     update: {
       credits: {
         increment: selectedPackage.maxJobPosts,
       },
+      reputation: {
+        increment: reputationPoints,
+      },
     },
     create: {
       userId: authUser.userId,
       companyName: `${authUser.email.split("@")[0]} Company`,
       credits: selectedPackage.maxJobPosts,
+      reputation: reputationPoints,
     },
   });
 

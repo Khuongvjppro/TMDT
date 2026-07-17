@@ -151,7 +151,8 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
       <div className="grid gap-10 lg:grid-cols-[280px_1fr] items-start">
         
         {/* Left Column: Sticky Sidebar (Company & Metadata) */}
-        <aside className="space-y-6 lg:sticky lg:top-8 lg:self-start order-2 lg:order-1">
+        <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start order-2 lg:order-1">
+
           {/* Company Box */}
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-col items-center text-center space-y-4">
@@ -161,6 +162,12 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                 <h2 className="text-lg font-black text-slate-900 leading-tight mt-1">
                   {job.companyName}
                 </h2>
+              </div>
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-[11px] font-bold text-emerald-800 border border-emerald-100 shadow-xs">
+                <svg className="h-3.5 w-3.5 text-emerald-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                <span>Điểm uy tín: {job.employer?.employerProfile?.reputation ?? 0}</span>
               </div>
               <p className="text-xs text-slate-500 leading-relaxed">
                 A verified professional employer active on our talent network.

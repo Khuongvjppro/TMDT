@@ -1,10 +1,9 @@
-import JobCard from "../components/job-card";
-import JobSearchForm from "../components/job-search-form";
-import { fetchJobs } from "../lib/api";
+"use client";
 
-type HomePageProps = {
-  searchParams: Promise<Record<string, string | undefined>>;
-};
+import { useEffect, useState } from "react";
+import JobCard from "../components/job-card";
+import { fetchJobs } from "../lib/api";
+import { Job } from "../types";
 
 const HERO_TAGS = [
   "E-Commerce Careers",
@@ -47,34 +46,49 @@ const BRAND_STORY_POINTS = [
   "Move faster with smart filters",
 ];
 
-function normalizeType(value?: string) {
-  if (!value) return "";
-  return value.trim().toUpperCase().replace(/\s+/g, "_");
-}
+export default function HomePage() {
+  const [q, setQ] = useState("");
+  const [type, setType] = useState("");
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-function includesIgnoreCase(value: string, query?: string) {
-  if (!query) return true;
-  return value.toLowerCase().includes(query.toLowerCase());
-}
+  // Load jobs based on current q and type
+  async function loadJobs(queryQ: string, queryType: string) {
+    setIsLoading(true);
+    try {
+      const data = await fetchJobs({ q: queryQ, type: queryType });
+      setJobs(data.items);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
-export default async function HomePage({ searchParams }: HomePageProps) {
-  const params = await searchParams;
-  const data = await fetchJobs({
-    q: params.q,
-    location: params.location,
-    type: params.type,
-    page: params.page,
-  });
+  // Initial load from URL search params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const initialQ = params.get("q") || "";
+    const initialType = params.get("type") || "";
+    setQ(initialQ);
+    setType(initialType);
+    loadJobs(initialQ, initialType);
+  }, []);
 
-  const normalizedType = normalizeType(params.type);
-  const filteredItems = data.items.filter((job) => {
-    const matchesType = normalizedType ? job.type === normalizedType : true;
-    const matchesLocation = includesIgnoreCase(job.location, params.location);
-    const matchesQuery =
-      includesIgnoreCase(job.title, params.q) ||
-      includesIgnoreCase(job.companyName, params.q);
-    return matchesType && matchesLocation && matchesQuery;
-  });
+  // Debounced search on query or job type change
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadJobs(q, type);
+      
+      const params = new URLSearchParams();
+      if (q) params.set("q", q);
+      if (type) params.set("type", type);
+      const queryString = params.toString();
+      window.history.pushState(null, "", queryString ? `/?${queryString}` : "/");
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [q, type]);
 
   return (
     <section className="space-y-16 relative">
@@ -191,7 +205,50 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       {/* Floating Glassmorphic Search Bar wrapper */}
       <div className="relative z-20 -mt-6">
         <div className="rounded-3xl border border-slate-200/50 bg-white/40 p-2 shadow-2xl backdrop-blur-md">
-          <JobSearchForm />
+          <form
+            onSubmit={(e) => e.preventDefault()}
+            className="grid gap-4 p-2 bg-white rounded-2xl shadow-md border border-slate-100 md:grid-cols-[2fr_1fr_auto]"
+          >
+            {/* Keyword Input */}
+            <div className="relative flex items-center">
+              <input
+                name="q"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Job title, keyword, tech..."
+                className="w-full rounded-xl border border-transparent bg-slate-50 py-3 px-4 text-sm font-semibold text-slate-800 placeholder-slate-400 outline-none transition-all focus:border-brand-500 focus:bg-white"
+              />
+            </div>
+
+            {/* Job Type Dropdown */}
+            <div className="relative flex items-center">
+              <select
+                name="type"
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+                className="w-full rounded-xl border border-transparent bg-slate-50 py-3 px-4 text-sm font-semibold text-slate-800 outline-none appearance-none cursor-pointer transition-all focus:border-brand-500 focus:bg-white"
+              >
+                <option value="">All Job Types</option>
+                <option value="FULL_TIME">Full time</option>
+                <option value="PART_TIME">Part time</option>
+                <option value="INTERN">Intern</option>
+                <option value="FREELANCE">Freelance</option>
+                <option value="REMOTE">Remote</option>
+              </select>
+              <span className="absolute right-4 pointer-events-none text-[10px] text-slate-400">
+                ▼
+              </span>
+            </div>
+
+            {/* Search Button */}
+            <button
+              type="button"
+              onClick={() => loadJobs(q, type)}
+              className="rounded-xl bg-slate-900 px-7 py-3 text-sm font-bold text-white shadow-lg shadow-slate-900/10 transition-all duration-300 hover:bg-brand-600 hover:shadow-brand-500/20 hover:-translate-y-0.5"
+            >
+              Search Jobs
+            </button>
+          </form>
         </div>
       </div>
 
@@ -227,20 +284,33 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             </p>
           </div>
           <span className="rounded-full bg-slate-900 px-4 py-1.5 text-xs font-bold text-white shadow">
-            {filteredItems.length} jobs active
+            {jobs.length} jobs active
           </span>
         </div>
 
-        {filteredItems.length > 0 ? (
+        {isLoading ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredItems.map((job) => (
+            {[1, 2, 3].map((n) => (
+              <div key={n} className="animate-pulse rounded-3xl border border-slate-200 bg-white p-6 h-[250px] flex flex-col justify-between">
+                <div className="space-y-3">
+                  <div className="h-4 bg-slate-200 rounded w-1/4" />
+                  <div className="h-6 bg-slate-200 rounded w-3/4" />
+                  <div className="h-4 bg-slate-200 rounded w-1/2" />
+                </div>
+                <div className="h-10 bg-slate-200 rounded-full w-full" />
+              </div>
+            ))}
+          </div>
+        ) : jobs.length > 0 ? (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 animate-fade-in">
+            {jobs.map((job) => (
               <JobCard key={job.id} job={job} />
             ))}
           </div>
         ) : (
           <div className="rounded-2xl border-2 border-dashed border-slate-200 p-12 text-center">
             <p className="text-slate-500 font-medium">No positions match your search query.</p>
-            <p className="text-xs text-slate-400 mt-1">Try resetting the keyword or location filters.</p>
+            <p className="text-xs text-slate-400 mt-1">Try resetting the keyword or job type filters.</p>
           </div>
         )}
       </section>
@@ -271,7 +341,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           </div>
 
           <div className="grid gap-4">
-            {FEATURED_COMPANIES.map((company, index) => (
+            {FEATURED_COMPANIES.map((company) => (
               <div
                 key={company.name}
                 className="group flex items-center justify-between gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 transition-all duration-300 hover:bg-white hover:border-brand-100 hover:shadow-md"

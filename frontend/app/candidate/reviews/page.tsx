@@ -62,7 +62,17 @@ export default function ReviewsPage() {
               <div className="flex justify-between gap-3">
                 <div className="flex gap-3">
                   <img src={getCompanyLogoUrl(company.companyName)} alt={`${company.companyName} logo`} className="h-12 w-12 rounded-xl border border-slate-200 object-cover" />
-                  <div><h2 className="text-lg font-black">{company.companyName}</h2><p className="text-sm text-slate-500">{company.locations.join(" · ")} · {company.openJobs} open {company.openJobs === 1 ? "role" : "roles"}</p></div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-lg font-black">{company.companyName}</h2>
+                      {company.employerProfile?.reputation ? (
+                        <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-extrabold text-emerald-800 border border-emerald-100 shrink-0">
+                          🛡️ {company.employerProfile.reputation}
+                        </span>
+                      ) : null}
+                    </div>
+                    <p className="text-sm text-slate-500">{company.locations.join(" · ")} · {company.openJobs} open {company.openJobs === 1 ? "role" : "roles"}</p>
+                  </div>
                 </div>
                 <span className="h-fit rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">★ {company.averageRating?.toFixed(1) || "New"} ({company.reviewCount})</span>
               </div>

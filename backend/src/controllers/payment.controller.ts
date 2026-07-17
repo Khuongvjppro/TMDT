@@ -84,13 +84,25 @@ async function processVnpayCallback(params: VnpayParams): Promise<PaymentResult>
           where: { id: transaction.employerId },
           select: { email: true },
         });
+        const pkg = await tx.billingPackage.findUnique({
+          where: { id: transaction.packageId },
+        });
+        let reputationPoints = 0;
+        if (pkg?.name === "Starter") reputationPoints = 10;
+        else if (pkg?.name === "Growth") reputationPoints = 30;
+        else if (pkg?.name === "Scale") reputationPoints = 100;
+
         await tx.employerProfile.upsert({
           where: { userId: transaction.employerId },
-          update: { credits: { increment: transaction.credits } },
+          update: {
+            credits: { increment: transaction.credits },
+            reputation: { increment: reputationPoints },
+          },
           create: {
             userId: transaction.employerId,
             companyName: `${employer?.email.split("@")[0] || "Employer"} Company`,
             credits: transaction.credits,
+            reputation: reputationPoints,
           },
         });
       }

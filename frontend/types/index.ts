@@ -57,6 +57,18 @@ export type Job = {
   employerId: number;
   createdAt: string;
   applicationsCount?: number;
+  employer?: {
+    id: number;
+    fullName: string;
+    email: string;
+    employerProfile?: {
+      companyName: string;
+      companyWebsite?: string | null;
+      companyLocation?: string | null;
+      description?: string | null;
+      reputation?: number;
+    } | null;
+  } | null;
 };
 
 export type JobListResponse = {
@@ -77,6 +89,7 @@ export type EmployerProfile = {
   companyLocation?: string | null;
   description?: string | null;
   credits?: number;
+  reputation?: number;
   maxUnlockedLevel?: number;
   createdAt: string;
   updatedAt: string;

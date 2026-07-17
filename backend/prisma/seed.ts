@@ -148,6 +148,7 @@ async function main() {
       companyLocation: "Ho Chi Minh City",
       description: "NovaCommerce is a leading digital commerce agency specializing in retail automation, headless e-commerce solutions, payment gateways, and conversion rate optimization (CRO) for international retail brands.",
       credits: 100,
+      reputation: 150,
     },
     create: {
       userId: employer.id,
@@ -156,6 +157,7 @@ async function main() {
       companyLocation: "Ho Chi Minh City",
       description: "NovaCommerce is a leading digital commerce agency specializing in retail automation, headless e-commerce solutions, payment gateways, and conversion rate optimization (CRO) for international retail brands.",
       credits: 100,
+      reputation: 150,
     },
   });
 

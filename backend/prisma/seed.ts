@@ -37,6 +37,42 @@ async function main() {
     },
   });
 
+  const employerPartners = await prisma.user.upsert({
+    where: { email: "employer_partners@demo.com" },
+    update: { emailVerifiedAt: new Date() },
+    create: {
+      fullName: "NovaCommerce Partners HR",
+      email: "employer_partners@demo.com",
+      passwordHash: employerPassword,
+      role: UserRole.EMPLOYER,
+      emailVerifiedAt: new Date(),
+    },
+  });
+
+  const employerLogistics = await prisma.user.upsert({
+    where: { email: "employer_logistics@demo.com" },
+    update: { emailVerifiedAt: new Date() },
+    create: {
+      fullName: "RetailHub Logistics HR",
+      email: "employer_logistics@demo.com",
+      passwordHash: employerPassword,
+      role: UserRole.EMPLOYER,
+      emailVerifiedAt: new Date(),
+    },
+  });
+
+  const employerData = await prisma.user.upsert({
+    where: { email: "employer_data@demo.com" },
+    update: { emailVerifiedAt: new Date() },
+    create: {
+      fullName: "CommerceData Inc HR",
+      email: "employer_data@demo.com",
+      passwordHash: employerPassword,
+      role: UserRole.EMPLOYER,
+      emailVerifiedAt: new Date(),
+    },
+  });
+
   const candidate = await prisma.user.upsert({
     where: { email: "candidate@demo.com" },
     update: {
@@ -158,6 +194,69 @@ async function main() {
       description: "NovaCommerce is a leading digital commerce agency specializing in retail automation, headless e-commerce solutions, payment gateways, and conversion rate optimization (CRO) for international retail brands.",
       credits: 100,
       reputation: 150,
+    },
+  });
+
+  await prisma.employerProfile.upsert({
+    where: { userId: employerPartners.id },
+    update: {
+      companyName: "NovaCommerce Partners",
+      companyWebsite: "https://partners.example.com",
+      companyLocation: "Da Nang",
+      description: "NovaCommerce Partners specializes in product development and technical consulting for enterprise e-commerce platforms.",
+      credits: 50,
+      reputation: 80,
+    },
+    create: {
+      userId: employerPartners.id,
+      companyName: "NovaCommerce Partners",
+      companyWebsite: "https://partners.example.com",
+      companyLocation: "Da Nang",
+      description: "NovaCommerce Partners specializes in product development and technical consulting for enterprise e-commerce platforms.",
+      credits: 50,
+      reputation: 80,
+    },
+  });
+
+  await prisma.employerProfile.upsert({
+    where: { userId: employerLogistics.id },
+    update: {
+      companyName: "RetailHub Logistics",
+      companyWebsite: "https://logistics.example.com",
+      companyLocation: "Ho Chi Minh City",
+      description: "RetailHub Logistics provides e-commerce supply chain management and automated order fulfillment services.",
+      credits: 55,
+      reputation: 95,
+    },
+    create: {
+      userId: employerLogistics.id,
+      companyName: "RetailHub Logistics",
+      companyWebsite: "https://logistics.example.com",
+      companyLocation: "Ho Chi Minh City",
+      description: "RetailHub Logistics provides e-commerce supply chain management and automated order fulfillment services.",
+      credits: 55,
+      reputation: 95,
+    },
+  });
+
+  await prisma.employerProfile.upsert({
+    where: { userId: employerData.id },
+    update: {
+      companyName: "CommerceData Inc",
+      companyWebsite: "https://data.example.com",
+      companyLocation: "Ha Noi",
+      description: "CommerceData Inc is a data analytics firm specializing in e-commerce purchase patterns and conversion rate optimization insights.",
+      credits: 40,
+      reputation: 70,
+    },
+    create: {
+      userId: employerData.id,
+      companyName: "CommerceData Inc",
+      companyWebsite: "https://data.example.com",
+      companyLocation: "Ha Noi",
+      description: "CommerceData Inc is a data analytics firm specializing in e-commerce purchase patterns and conversion rate optimization insights.",
+      credits: 40,
+      reputation: 70,
     },
   });
 
@@ -325,10 +424,15 @@ async function main() {
   ];
 
   for (const job of extraJobs) {
+    let empId = employer.id;
+    if (job.companyName === "NovaCommerce Partners") empId = employerPartners.id;
+    else if (job.companyName === "RetailHub Logistics") empId = employerLogistics.id;
+    else if (job.companyName === "CommerceData Inc") empId = employerData.id;
+
     await prisma.job.create({
       data: {
         ...job,
-        employerId: employer.id,
+        employerId: empId,
         status: "APPROVED",
       },
     });

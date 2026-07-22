@@ -58,7 +58,7 @@ export default function ReviewsPage() {
         {companies.map((company) => {
           const review = reviews.find((item) => item.employerId === company.id);
           return (
-            <form key={`${company.id}-${company.companyName}`} onSubmit={(event) => submit(event, company.id)} className="space-y-3 rounded-3xl bg-white p-5 shadow-lg">
+            <form key={`${company.id}-${review?.id ? "rev-" + review.id : "no-rev"}`} onSubmit={(event) => submit(event, company.id)} className="space-y-3 rounded-3xl bg-white p-5 shadow-lg">
               <div className="flex justify-between gap-3">
                 <div className="flex gap-3">
                   <img src={getCompanyLogoUrl(company.companyName)} alt={`${company.companyName} logo`} className="h-12 w-12 rounded-xl border border-slate-200 object-cover" />

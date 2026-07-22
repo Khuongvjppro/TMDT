@@ -101,5 +101,13 @@ export async function sendMessage(req: Request, res: Response) {
     await tx.conversation.update({ where: { id: conversation.id }, data: { updatedAt: new Date() } });
     return created;
   });
+
+  const io = req.app.get("io");
+  if (io) {
+    io.to(`user:${conversation.candidateId}`)
+      .to(`user:${conversation.employerId}`)
+      .emit("new_message", item);
+  }
+
   return res.status(201).json({ item });
 }

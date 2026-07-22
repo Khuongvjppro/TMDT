@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useAuth } from "./auth-provider";
+import { getSavedJobStatus, saveJob, unsaveJob } from "../lib/api";
 
 type Props = {
   jobId: number;
@@ -8,36 +10,64 @@ type Props = {
 };
 
 export default function SaveJobButton({ jobId, variant = "button" }: Props) {
+  const { auth } = useAuth();
   const [isSaved, setIsSaved] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    try {
-      const rawSaved = localStorage.getItem("jobfinder_saved_jobs");
-      const savedIds: number[] = rawSaved ? JSON.parse(rawSaved) : [];
-      setIsSaved(savedIds.includes(jobId));
-    } catch (e) {
-      console.error("Failed to read saved jobs", e);
-    }
-  }, [jobId]);
-
-  function handleToggle() {
-    try {
-      const rawSaved = localStorage.getItem("jobfinder_saved_jobs");
-      let savedIds: number[] = rawSaved ? JSON.parse(rawSaved) : [];
-      const nextSaved = !isSaved;
-
-      if (nextSaved) {
-        if (!savedIds.includes(jobId)) {
-          savedIds.push(jobId);
+    async function checkSavedStatus() {
+      if (auth?.token && auth.user.role === "CANDIDATE") {
+        try {
+          const res = await getSavedJobStatus(auth.token, jobId);
+          setIsSaved(res.saved);
+        } catch (e) {
+          console.error("Failed to check saved status from backend", e);
         }
       } else {
-        savedIds = savedIds.filter((id) => id !== jobId);
+        try {
+          const rawSaved = localStorage.getItem("jobfinder_saved_jobs");
+          const savedIds: number[] = rawSaved ? JSON.parse(rawSaved) : [];
+          setIsSaved(savedIds.includes(jobId));
+        } catch (e) {
+          console.error("Failed to read saved jobs", e);
+        }
       }
+    }
+    checkSavedStatus();
+  }, [jobId, auth?.token, auth?.user?.role]);
 
-      localStorage.setItem("jobfinder_saved_jobs", JSON.stringify(savedIds));
-      setIsSaved(nextSaved);
+  async function handleToggle() {
+    if (loading) return;
+    setLoading(true);
+    try {
+      if (auth?.token && auth.user.role === "CANDIDATE") {
+        if (isSaved) {
+          await unsaveJob(auth.token, jobId);
+          setIsSaved(false);
+        } else {
+          await saveJob(auth.token, jobId);
+          setIsSaved(true);
+        }
+      } else {
+        const rawSaved = localStorage.getItem("jobfinder_saved_jobs");
+        let savedIds: number[] = rawSaved ? JSON.parse(rawSaved) : [];
+        const nextSaved = !isSaved;
+
+        if (nextSaved) {
+          if (!savedIds.includes(jobId)) {
+            savedIds.push(jobId);
+          }
+        } else {
+          savedIds = savedIds.filter((id) => id !== jobId);
+        }
+
+        localStorage.setItem("jobfinder_saved_jobs", JSON.stringify(savedIds));
+        setIsSaved(nextSaved);
+      }
     } catch (e) {
       console.error("Failed to toggle saved job", e);
+    } finally {
+      setLoading(false);
     }
   }
 

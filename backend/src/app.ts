@@ -45,6 +45,7 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(morgan("dev"));
 
+app.use("/uploads", express.static("uploads"));
 app.use("/api", apiRoutes);
 app.use(errorHandler);
 

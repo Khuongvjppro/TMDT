@@ -56,10 +56,10 @@ export default function NewJobPage() {
     if (!auth?.token || !canCreate) {
       setModalConfig({
         isOpen: true,
-        title: "Chưa đăng nhập",
-        message: "Vui lòng đăng nhập với tài khoản Nhà tuyển dụng hoặc Admin.",
+        title: "Unauthorized",
+        message: "Please sign in with an Employer or Admin account.",
         type: "alert",
-        confirmText: "Đóng",
+        confirmText: "Close",
       });
       return;
     }
@@ -67,10 +67,10 @@ export default function NewJobPage() {
     if (currentRole === "EMPLOYER" && credits !== null && credits < 1) {
       setModalConfig({
         isOpen: true,
-        title: "Không đủ credit",
-        message: "Bạn không đủ credit để đăng tin tuyển dụng. Vui lòng mua thêm gói dịch vụ để tiếp tục.",
+        title: "Insufficient Credits",
+        message: "You do not have enough credits to publish a job. Please purchase a package to continue.",
         type: "alert",
-        confirmText: "Đóng",
+        confirmText: "Close",
       });
       return;
     }
@@ -94,24 +94,24 @@ export default function NewJobPage() {
 
     setModalConfig({
       isOpen: true,
-      title: "Xác nhận đăng tin",
-      message: "Đăng tin tuyển dụng này sẽ tiêu tốn của bạn 1 credit. Bạn có chắc chắn muốn thực hiện?",
+      title: "Confirm Post",
+      message: "Publishing this job post will cost 1 credit. Are you sure you want to proceed?",
       type: "confirm",
-      confirmText: "Đồng ý",
-      cancelText: "Hủy bỏ",
+      confirmText: "Confirm",
+      cancelText: "Cancel",
       onConfirm: async () => {
         setIsSubmitting(true);
         setMessage("");
         try {
           await createJob(auth.token, payload);
-          setMessage("Đăng tin tuyển dụng thành công!");
+          setMessage("Successfully published job!");
           if (credits !== null) {
             setCredits((prev) => (prev !== null ? Math.max(0, prev - 1) : 0));
           }
           formElement.reset();
         } catch (error) {
           const nextMessage =
-            error instanceof Error ? error.message : "Đăng tin tuyển dụng thất bại";
+            error instanceof Error ? error.message : "Failed to publish job";
           setMessage(nextMessage);
         } finally {
           setIsSubmitting(false);

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { TransitionLink } from "./transition-link";
 import { usePathname } from "next/navigation";
 import AuthNav from "./auth-nav";
 
@@ -19,15 +19,15 @@ export default function AppHeader() {
         <div className="flex items-center gap-6 justify-start">
           <AuthNav />
           <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-300">
-            <Link href="/" className="hover:text-white transition-colors">
+            <TransitionLink href="/" className="hover:text-white transition-colors">
               Search Jobs
-            </Link>
+            </TransitionLink>
           </div>
         </div>
 
         {/* Center Column: Logo */}
         <div className="flex justify-center">
-          <Link
+          <TransitionLink
             href="/"
             className="flex items-center gap-2 text-xl font-extrabold tracking-tight text-white md:text-2xl"
           >
@@ -37,21 +37,21 @@ export default function AppHeader() {
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-base font-black text-slate-900">
               JF
             </span>
-          </Link>
+          </TransitionLink>
         </div>
 
         {/* Right Column: Company Links */}
         <div className="flex justify-end">
           <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-300">
-            <Link href="/about" className="hover:text-white transition-colors">
+            <TransitionLink href="/about" className="hover:text-white transition-colors">
               About Us
-            </Link>
-            <Link href="/contact" className="hover:text-white transition-colors">
+            </TransitionLink>
+            <TransitionLink href="/contact" className="hover:text-white transition-colors">
               Contact Support
-            </Link>
-            <Link href="/terms-privacy" className="hover:text-white transition-colors text-nowrap">
+            </TransitionLink>
+            <TransitionLink href="/terms-privacy" className="hover:text-white transition-colors text-nowrap">
               Terms & Privacy
-            </Link>
+            </TransitionLink>
           </div>
         </div>
       </div>

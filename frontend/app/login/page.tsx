@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import { TransitionLink } from "../../components/transition-link";
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useTransitionRouter } from "../../components/transition-provider";
 import { Eye, EyeOff } from "lucide-react";
 import { login } from "../../lib/api";
 import { useAuth } from "../../components/auth-provider";
@@ -12,7 +12,7 @@ type LoginField = "email" | "password";
 type MessageType = "error" | "success";
 
 export default function LoginPage() {
-  const router = useRouter();
+  const router = useTransitionRouter();
   const { setAuthState } = useAuth();
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<MessageType | null>(null);
@@ -43,7 +43,6 @@ export default function LoginPage() {
               ? "/admin/users"
               : "/";
       router.push(landingPage);
-      router.refresh();
     } catch (error) {
       const rawMessage =
         error instanceof Error ? error.message : "Sign in failed";
@@ -126,12 +125,12 @@ export default function LoginPage() {
               >
                 Password
               </label>
-              <Link
+              <TransitionLink
                 href="/forgot-password"
                 className="text-xs font-semibold text-[#0a66c2] hover:underline"
               >
                 Forgot password?
-              </Link>
+              </TransitionLink>
             </div>
             <div className="relative">
               <input
@@ -223,12 +222,12 @@ export default function LoginPage() {
 
         <p className="mt-6 text-center text-sm text-slate-600">
           Don't have an account?{" "}
-          <Link
+          <TransitionLink
             href="/register"
             className="font-semibold text-[#0a66c2] hover:underline"
           >
             Create account
-          </Link>
+          </TransitionLink>
         </p>
 
         {message ? (

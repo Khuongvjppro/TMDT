@@ -167,7 +167,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                 <svg className="h-3.5 w-3.5 text-emerald-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                 </svg>
-                <span>Điểm uy tín: {job.employer?.employerProfile?.reputation ?? 0}</span>
+                <span>Reputation: {job.employer?.employerProfile?.reputation ?? 0}</span>
               </div>
               <p className="text-xs text-slate-500 leading-relaxed">
                 A verified professional employer active on our talent network.

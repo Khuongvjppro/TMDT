@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { TransitionLink } from "../../../components/transition-link";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { deleteJob, getEmployerProfile, listEmployerJobs, setJobActive, boostJob } from "../../../lib/api";
@@ -48,10 +48,10 @@ export default function EmployerJobsPage() {
     if (targetLevel > maxUnlockedLevel) {
       setModalConfig({
         isOpen: true,
-        title: "Tính năng chưa được mở khóa",
-        message: "Tính năng đẩy tin cấp độ này chưa được mở khóa. Bạn cần mua gói dịch vụ tương ứng (hoặc cao hơn) để mở khóa!",
+        title: "Feature Locked",
+        message: "This boost level is locked. You need to purchase the corresponding billing package to unlock it!",
         type: "alert",
-        confirmText: "Đóng",
+        confirmText: "Close",
       });
       return;
     }
@@ -60,27 +60,27 @@ export default function EmployerJobsPage() {
     if (credits !== null && credits < cost) {
       setModalConfig({
         isOpen: true,
-        title: "Không đủ credit",
-        message: `Bạn không đủ credit để đẩy ưu tiên tin tuyển dụng này lên cấp độ ${
+        title: "Insufficient Credits",
+        message: `You do not have enough credits to boost this job to ${
           targetLevel === 3 ? "Scale (Premium)" : targetLevel === 2 ? "Growth (Priority)" : "Starter (Basic Boost)"
-        }. Số credit hiện tại của bạn là ${credits}, cần thêm ${cost - credits} credit.`,
+        }. Your current credits: ${credits}, required: ${cost} (need ${cost - credits} more).`,
         type: "alert",
-        confirmText: "Đóng",
+        confirmText: "Close",
       });
       return;
     }
 
-    const confirmMsg = `Bạn có chắc chắn muốn dùng ${cost} credit để đẩy ưu tiên tin tuyển dụng này lên cấp độ ${
+    const confirmMsg = `Are you sure you want to use ${cost} ${cost === 1 ? "credit" : "credits"} to boost this job to ${
       targetLevel === 3 ? "Scale (Premium)" : targetLevel === 2 ? "Growth (Priority)" : "Starter (Basic Boost)"
     }?`;
 
     setModalConfig({
       isOpen: true,
-      title: "Xác nhận đẩy ưu tiên",
+      title: "Confirm Boost",
       message: confirmMsg,
       type: "confirm",
-      confirmText: "Đồng ý",
-      cancelText: "Hủy bỏ",
+      confirmText: "Confirm",
+      cancelText: "Cancel",
       onConfirm: async () => {
         setBoostingId(jobId);
         setMessage("");
@@ -92,10 +92,10 @@ export default function EmployerJobsPage() {
             ),
           );
           setCredits((prev) => (prev !== null ? Math.max(0, prev - cost) : 0));
-          setMessage(`Đẩy ưu tiên thành công cho tin tuyển dụng #${jobId}!`);
+          setMessage(`Successfully boosted job #${jobId}!`);
         } catch (error) {
           const nextMessage =
-            error instanceof Error ? error.message : "Đẩy ưu tiên thất bại";
+            error instanceof Error ? error.message : "Failed to boost job";
           setMessage(nextMessage);
         } finally {
           setBoostingId(null);
@@ -137,21 +137,21 @@ export default function EmployerJobsPage() {
     if (!auth?.token) return;
     setModalConfig({
       isOpen: true,
-      title: "Xác nhận xóa tin tuyển dụng",
-      message: `Bạn có chắc chắn muốn xóa tin tuyển dụng #${jobId}? Hành động này không thể hoàn tác và toàn bộ dữ liệu ứng tuyển liên quan cũng sẽ bị xóa.`,
+      title: "Confirm Delete",
+      message: `Are you sure you want to delete job #${jobId}? This action cannot be undone and all associated applications will also be deleted.`,
       type: "delete",
-      confirmText: "Xóa tin",
-      cancelText: "Hủy bỏ",
+      confirmText: "Delete",
+      cancelText: "Cancel",
       onConfirm: async () => {
         setDeletingId(jobId);
         setMessage("");
         try {
           await deleteJob(auth.token, jobId);
           setItems((prev) => prev.filter((item) => item.id !== jobId));
-          setMessage(`Đã xóa tin tuyển dụng #${jobId}`);
+          setMessage(`Deleted job #${jobId}`);
         } catch (error) {
           const nextMessage =
-            error instanceof Error ? error.message : "Xóa tin tuyển dụng thất bại";
+            error instanceof Error ? error.message : "Failed to delete job";
           setMessage(nextMessage);
         } finally {
           setDeletingId(null);
@@ -228,20 +228,23 @@ export default function EmployerJobsPage() {
               Credits: {credits}
             </span>
           ) : null}
-          <button
-            type="button"
-            onClick={loadData}
-            disabled={isLoading}
-            className="rounded-full border border-slate-200 px-5 py-2 text-sm font-semibold text-slate-700 transition hover:border-brand-200 hover:bg-brand-50 disabled:opacity-60"
-          >
-            {isLoading ? "Refreshing..." : "Refresh Jobs"}
-          </button>
-          <Link
+          <span className={`rounded-full border px-4 py-2 text-sm font-bold shadow-sm ${
+            maxUnlockedLevel === 3
+              ? "bg-amber-100 border-amber-300 text-amber-800"
+              : maxUnlockedLevel === 2
+                ? "bg-indigo-100 border-indigo-300 text-indigo-800"
+                : maxUnlockedLevel === 1
+                  ? "bg-slate-100 border-slate-300 text-slate-800"
+                  : "bg-slate-50 border-slate-200 text-slate-500"
+          }`}>
+            Plan: {maxUnlockedLevel === 3 ? "Scale" : maxUnlockedLevel === 2 ? "Growth" : maxUnlockedLevel === 1 ? "Starter" : "None"}
+          </span>
+          <TransitionLink
             href="/employer/jobs/new"
             className="rounded-full bg-brand-600 px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-brand-700"
           >
             Create New Job
-          </Link>
+          </TransitionLink>
         </div>
       </header>
 
@@ -354,13 +357,13 @@ export default function EmployerJobsPage() {
 
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4 pl-2">
               <div className="flex flex-wrap gap-2">
-                <Link
+                <TransitionLink
                   href={`/employer/jobs/${job.id}/edit`}
                   className="rounded-full border border-slate-300 px-4 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-brand-200 hover:bg-brand-50"
                 >
                   Edit
-                </Link>
-                <Link
+                </TransitionLink>
+                <TransitionLink
                   href={`/employer/jobs/${job.id}/applications`}
                   className="rounded-full border border-slate-300 px-4 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-brand-200 hover:bg-brand-50"
                 >
@@ -372,7 +375,7 @@ export default function EmployerJobsPage() {
                       </span>
                     ) : null}
                   </span>
-                </Link>
+                </TransitionLink>
                 <button
                   type="button"
                   onClick={() => onToggleActive(job.id, !job.isActive)}
@@ -397,7 +400,7 @@ export default function EmployerJobsPage() {
 
               {job.isActive && job.boostLevel < 3 ? (
                 <div className="flex flex-wrap items-center gap-1.5 rounded-full border border-dashed border-slate-300 bg-slate-50/50 px-3 py-1">
-                  <span className="text-[11px] font-semibold text-slate-500 mr-1">Đẩy ưu tiên:</span>
+                  <span className="text-[11px] font-semibold text-slate-500 mr-1">Boost:</span>
                   {job.boostLevel < 1 ? (
                     <button
                       type="button"

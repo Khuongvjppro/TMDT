@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { TransitionLink } from "./transition-link";
+import { usePathname } from "next/navigation";
+import { useTransitionRouter } from "./transition-provider";
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuth } from "./auth-provider";
@@ -47,7 +48,7 @@ function navItemClass(isActive: boolean) {
 
 export default function AuthNav() {
   const { auth, isReady, clearAuthState } = useAuth();
-  const router = useRouter();
+  const router = useTransitionRouter();
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
@@ -122,7 +123,7 @@ export default function AuthNav() {
       ) : null}
 
       {isReady && !auth ? (
-        <Link
+        <TransitionLink
           className={
             pathname === "/login"
               ? "rounded-full bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-brand-700"
@@ -131,7 +132,7 @@ export default function AuthNav() {
           href="/login"
         >
           Login
-        </Link>
+        </TransitionLink>
       ) : null}
 
       {mounted && auth ? createPortal(
@@ -172,7 +173,7 @@ export default function AuthNav() {
             </div>
 
             <div className="mt-5 space-y-2">
-              <Link
+              <TransitionLink
                 href="/"
                 onClick={() => setIsSidebarOpen(false)}
                 className={navItemClass(pathname === "/")}
@@ -188,10 +189,10 @@ export default function AuthNav() {
                   <path d="M5 10.5V20h14v-9.5" />
                 </svg>
                 Home
-              </Link>
+              </TransitionLink>
 
               {navItems.map((item) => (
-                <Link
+                <TransitionLink
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsSidebarOpen(false)}
@@ -208,7 +209,7 @@ export default function AuthNav() {
                       </span>
                     ) : null}
                   </span>
-                </Link>
+                </TransitionLink>
               ))}
             </div>
 

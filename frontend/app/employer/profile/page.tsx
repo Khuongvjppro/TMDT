@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { getEmployerProfile, updateEmployerProfile, listEmployerTransactions } from "../../../lib/api";
 import { useAuth } from "../../../components/auth-provider";
 import { EmployerTransaction } from "../../../types";
-import Link from "next/link";
+import { TransitionLink } from "../../../components/transition-link";
 import { Award, Clock, CheckCircle2, ArrowRight, Building2, Globe, MapPin, FileText, Save, TrendingUp, Users, Briefcase, CalendarDays, User, Map, Mail, Phone, Link2 } from "lucide-react";
 
 export default function EmployerProfilePage() {
@@ -236,13 +236,13 @@ export default function EmployerProfilePage() {
           <section className="rounded-3xl border border-slate-100 bg-white/70 p-6 shadow-sm backdrop-blur-sm transition hover:shadow-md">
             <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-500 flex items-center gap-2">
               <Building2 className="h-4 w-4 text-brand-500" />
-              Thông tin chung
+              General Information
             </h2>
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               <label className="space-y-2">
                 <span className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
                   <Building2 className="h-3.5 w-3.5 text-slate-400" />
-                  Tên công ty
+                  Company Name
                 </span>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -250,7 +250,7 @@ export default function EmployerProfilePage() {
                   </div>
                   <input
                     name="companyName"
-                    placeholder="Tên công ty"
+                    placeholder="Company Name"
                     className="w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10 focus:shadow-sm"
                     required
                     value={form.companyName}
@@ -268,7 +268,7 @@ export default function EmployerProfilePage() {
               <label className="space-y-2">
                 <span className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
                   <Globe className="h-3.5 w-3.5 text-slate-400" />
-                  Website công ty
+                  Company Website
                 </span>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -294,7 +294,7 @@ export default function EmployerProfilePage() {
               <label className="space-y-2 md:col-span-2">
                 <span className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
                   <MapPin className="h-3.5 w-3.5 text-slate-400" />
-                  Địa chỉ
+                  Location
                 </span>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -302,7 +302,7 @@ export default function EmployerProfilePage() {
                   </div>
                   <input
                     name="companyLocation"
-                    placeholder="e.g. Quận 1, TP. Hồ Chí Minh"
+                    placeholder="e.g. District 1, Ho Chi Minh City"
                     className="w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10 focus:shadow-sm"
                     value={form.companyLocation}
                     onChange={(event) =>
@@ -322,13 +322,13 @@ export default function EmployerProfilePage() {
           <section className="rounded-3xl border border-slate-100 bg-white/70 p-6 shadow-sm backdrop-blur-sm transition hover:shadow-md">
             <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-500 flex items-center gap-2">
               <Briefcase className="h-4 w-4 text-brand-500" />
-              Chi tiết doanh nghiệp
+              Business Details
             </h2>
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               <label className="space-y-2">
                 <span className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
                   <Users className="h-3.5 w-3.5 text-slate-400" />
-                  Quy mô nhân sự
+                  Company Size
                 </span>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -346,13 +346,13 @@ export default function EmployerProfilePage() {
                     }
                     disabled={isLoading || isSaving}
                   >
-                    <option value="">Chọn quy mô</option>
-                    <option value="1-10 nhân viên">1-10 nhân viên</option>
-                    <option value="11-50 nhân viên">11-50 nhân viên</option>
-                    <option value="51-200 nhân viên">51-200 nhân viên</option>
-                    <option value="201-500 nhân viên">201-500 nhân viên</option>
-                    <option value="501-1000 nhân viên">501-1000 nhân viên</option>
-                    <option value="1000+ nhân viên">1000+ nhân viên</option>
+                    <option value="">Select size</option>
+                    <option value="1-10 employees">1-10 employees</option>
+                    <option value="11-50 employees">11-50 employees</option>
+                    <option value="51-200 employees">51-200 employees</option>
+                    <option value="201-500 employees">201-500 employees</option>
+                    <option value="501-1000 employees">501-1000 employees</option>
+                    <option value="1000+ employees">1000+ employees</option>
                   </select>
                 </div>
               </label>
@@ -360,7 +360,7 @@ export default function EmployerProfilePage() {
               <label className="space-y-2">
                 <span className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
                   <Briefcase className="h-3.5 w-3.5 text-slate-400" />
-                  Lĩnh vực hoạt động
+                  Industry
                 </span>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -368,7 +368,7 @@ export default function EmployerProfilePage() {
                   </div>
                   <input
                     name="industry"
-                    placeholder="e.g. Công nghệ, Thương mại điện tử"
+                    placeholder="e.g. Technology, E-commerce"
                     className="w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10 focus:shadow-sm"
                     value={form.industry}
                     onChange={(event) =>
@@ -385,7 +385,7 @@ export default function EmployerProfilePage() {
               <label className="space-y-2">
                 <span className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
                   <CalendarDays className="h-3.5 w-3.5 text-slate-400" />
-                  Năm thành lập
+                  Founded Year
                 </span>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -411,7 +411,7 @@ export default function EmployerProfilePage() {
               <label className="space-y-2">
                 <span className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
                   <User className="h-3.5 w-3.5 text-slate-400" />
-                  Người sáng lập / CEO
+                  Founder / CEO
                 </span>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -419,7 +419,7 @@ export default function EmployerProfilePage() {
                   </div>
                   <input
                     name="founder"
-                    placeholder="Họ tên người sáng lập"
+                    placeholder="Founder / CEO name"
                     className="w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10 focus:shadow-sm"
                     value={form.founder}
                     onChange={(event) =>
@@ -436,7 +436,7 @@ export default function EmployerProfilePage() {
               <label className="space-y-2 md:col-span-2">
                 <span className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
                   <Map className="h-3.5 w-3.5 text-slate-400" />
-                  Trụ sở chính
+                  Headquarters
                 </span>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -444,7 +444,7 @@ export default function EmployerProfilePage() {
                   </div>
                   <input
                     name="headquarters"
-                    placeholder="Địa chỉ trụ sở chính"
+                    placeholder="Headquarters address"
                     className="w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10 focus:shadow-sm"
                     value={form.headquarters}
                     onChange={(event) =>
@@ -464,13 +464,13 @@ export default function EmployerProfilePage() {
           <section className="rounded-3xl border border-slate-100 bg-white/70 p-6 shadow-sm backdrop-blur-sm transition hover:shadow-md">
             <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-500 flex items-center gap-2">
               <Mail className="h-4 w-4 text-brand-500" />
-              Thông tin liên hệ & Mạng xã hội
+              Contact Information & Socials
             </h2>
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               <label className="space-y-2">
                 <span className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
                   <Mail className="h-3.5 w-3.5 text-slate-400" />
-                  Email liên hệ
+                  Contact Email
                 </span>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -496,7 +496,7 @@ export default function EmployerProfilePage() {
               <label className="space-y-2">
                 <span className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
                   <Phone className="h-3.5 w-3.5 text-slate-400" />
-                  Số điện thoại liên hệ
+                  Contact Phone
                 </span>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -522,7 +522,7 @@ export default function EmployerProfilePage() {
               <label className="space-y-2">
                 <span className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
                   <Link2 className="h-3.5 w-3.5 text-slate-400" />
-                  Trang Facebook
+                  Facebook Page
                 </span>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -547,7 +547,7 @@ export default function EmployerProfilePage() {
               <label className="space-y-2">
                 <span className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
                   <Link2 className="h-3.5 w-3.5 text-slate-400" />
-                  Trang LinkedIn
+                  LinkedIn Page
                 </span>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -575,15 +575,15 @@ export default function EmployerProfilePage() {
           <section className="rounded-3xl border border-slate-100 bg-white/70 p-6 shadow-sm backdrop-blur-sm transition hover:shadow-md">
             <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-500 flex items-center gap-2">
               <FileText className="h-4 w-4 text-brand-500" />
-              Mô tả chi tiết doanh nghiệp
+              Detailed Company Description
             </h2>
             <label className="mt-4 block space-y-2">
               <span className="text-xs font-semibold text-slate-600">
-                Mô tả chi tiết công ty (Sứ mệnh, tầm nhìn, văn hóa làm việc...)
+                Detailed description (Mission, vision, work culture...)
               </span>
               <textarea
                 name="mainDescription"
-                placeholder="Nhập mô tả chi tiết..."
+                placeholder="Enter detailed description..."
                 className="h-44 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10 focus:shadow-sm resize-none"
                 value={form.mainDescription}
                 onChange={(event) =>
@@ -604,10 +604,10 @@ export default function EmployerProfilePage() {
               className="rounded-full bg-gradient-to-r from-brand-600 to-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:from-brand-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-brand-500/10 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:pointer-events-none flex items-center gap-2"
             >
               <Save className="h-4 w-4" />
-              {isSaving ? "Saving..." : "Lưu Hồ Sơ"}
+              {isSaving ? "Saving..." : "Save Profile"}
             </button>
             <p className="text-xs text-slate-400 italic">
-              Mẹo: Hồ sơ đầy đủ thông tin giúp nâng cao độ uy tín của doanh nghiệp đối với ứng viên.
+              Tip: A complete profile helps enhance the company's reputation with candidates.
             </p>
           </div>
         </div>
@@ -618,7 +618,7 @@ export default function EmployerProfilePage() {
             <div className="flex items-center border-b border-slate-100 pb-3">
               <h3 className="flex items-center gap-2 text-sm font-bold text-slate-900">
                 <Award className="h-4 w-4 text-brand-600" />
-                Gói dịch vụ đã mua
+                Active Package
               </h3>
             </div>
 
@@ -626,7 +626,7 @@ export default function EmployerProfilePage() {
             <div className="mt-4 rounded-2xl bg-gradient-to-br from-indigo-50 to-indigo-100/50 p-4 text-center border border-indigo-100/50 shadow-sm shadow-indigo-100/10">
               <p className="text-xs font-semibold text-indigo-500 flex items-center justify-center gap-1.5">
                 <TrendingUp className="h-3.5 w-3.5" />
-                Số dư bài đăng tuyển
+                Job Posting Balance
               </p>
               <p className="mt-1.5 text-3xl font-black text-indigo-900 tracking-tight">
                 {credits !== null ? credits : 0}{" "}
@@ -640,11 +640,11 @@ export default function EmployerProfilePage() {
                 <svg className="h-3.5 w-3.5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                 </svg>
-                Điểm tín dụng (Uy tín)
+                Reputation Points
               </p>
               <p className="mt-1.5 text-3xl font-black text-emerald-900 tracking-tight">
                 {reputation !== null ? reputation : 0}{" "}
-                <span className="text-xs font-bold text-emerald-600">Điểm</span>
+                <span className="text-xs font-bold text-emerald-600">Points</span>
               </p>
             </div>
 
@@ -652,14 +652,14 @@ export default function EmployerProfilePage() {
             <div className="mt-4 space-y-3">
               {transactions.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-slate-200 p-5 text-center">
-                  <p className="text-xs text-slate-400">Bạn chưa mua gói dịch vụ nào.</p>
-                  <Link
+                  <p className="text-xs text-slate-400">You have not purchased any packages yet.</p>
+                  <TransitionLink
                     href="/employer/billing"
                     className="mt-3.5 inline-flex items-center justify-center gap-1.5 rounded-full bg-brand-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-brand-700 w-full"
                   >
-                    Mua gói ngay
+                    Buy Package Now
                     <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
+                  </TransitionLink>
                 </div>
               ) : (
                 transactions.map((tx) => {
@@ -692,46 +692,46 @@ export default function EmployerProfilePage() {
                         {isExpired ? (
                           <span className="flex items-center gap-1 text-[10px] font-medium text-slate-400">
                             <Clock className="h-3 w-3" />
-                            Hết hạn
+                            Expired
                           </span>
                         ) : (
                           <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100">
                             <CheckCircle2 className="h-3 w-3" />
-                            Đang chạy
+                            Active
                           </span>
                         )}
                       </div>
 
                       <div className="mt-3 flex items-baseline justify-between">
                         <span className="text-xs font-semibold text-slate-500">
-                          {tx.package.maxJobPosts} tin đăng
+                          {tx.package.maxJobPosts} job posts
                         </span>
                         <span className="text-xs font-extrabold text-slate-900">
                           {new Intl.NumberFormat("vi-VN", {
                             style: "currency",
                             currency: "VND",
                             maximumFractionDigits: 0,
-                          }).format(tx.amountCents)}
+                          }).format(tx.amountCents).replace("₫", "đ")}
                         </span>
                       </div>
 
                       <div className="mt-4 space-y-1.5 border-t border-slate-100 pt-3 text-[10px] text-slate-500">
                         <div className="flex justify-between">
-                          <span>Ngày mua:</span>
+                          <span>Purchase Date:</span>
                           <span className="font-semibold text-slate-600">
-                            {startDate.toLocaleDateString("vi-VN")}
+                            {startDate.toLocaleDateString("en-US")}
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Ngày hết hạn:</span>
+                          <span>Expiry Date:</span>
                           <span className="font-semibold text-slate-600">
-                            {endDate.toLocaleDateString("vi-VN")}
+                            {endDate.toLocaleDateString("en-US")}
                           </span>
                         </div>
                         {!isExpired && daysLeft > 0 && (
                           <div className="mt-3 flex items-center justify-between font-bold text-indigo-600 bg-indigo-50/50 px-2.5 py-1.5 rounded-xl border border-indigo-100/30">
-                            <span>Còn lại:</span>
-                            <span>{daysLeft} ngày</span>
+                            <span>Remaining:</span>
+                            <span>{daysLeft} days</span>
                           </div>
                         )}
                       </div>

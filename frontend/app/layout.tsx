@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "../components/auth-provider";
+import { TransitionProvider } from "../components/transition-provider";
 import AppHeader from "../components/app-header";
 import AppFooter from "../components/app-footer";
 
@@ -18,11 +19,13 @@ export default function RootLayout({
     <html lang="en">
       <body className="flex flex-col min-h-screen">
         <AuthProvider>
-          <AppHeader />
-          <main className="flex-grow mx-auto w-full max-w-6xl px-4 pt-3 pb-8">
-            {children}
-          </main>
-          <AppFooter />
+          <TransitionProvider>
+            <AppHeader />
+            <main className="flex-grow mx-auto w-full max-w-6xl px-4 pt-3 pb-8">
+              {children}
+            </main>
+            <AppFooter />
+          </TransitionProvider>
         </AuthProvider>
       </body>
     </html>

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { TransitionLink } from "./transition-link";
 import { usePathname } from "next/navigation";
 
 export default function AppFooter() {
@@ -17,7 +17,7 @@ export default function AppFooter() {
         <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
           {/* Logo & Description */}
           <div className="space-y-4">
-            <Link
+            <TransitionLink
               href="/"
               className="flex items-center gap-2 text-xl font-extrabold tracking-tight text-white"
             >
@@ -27,7 +27,7 @@ export default function AppFooter() {
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-base font-black text-slate-900">
                 JF
               </span>
-            </Link>
+            </TransitionLink>
             <p className="text-xs leading-relaxed text-slate-400">
               Connecting talented candidates with top companies. Simplify your job search and hiring process with JobFinder.
             </p>
@@ -38,19 +38,19 @@ export default function AppFooter() {
             <h3 className="text-sm font-bold text-white">For Candidates</h3>
             <ul className="mt-4 space-y-2 text-xs text-slate-400">
               <li>
-                <Link href="/" className="hover:text-white transition">
+                <TransitionLink href="/" className="hover:text-white transition">
                   Browse Jobs
-                </Link>
+                </TransitionLink>
               </li>
               <li>
-                <Link href="/login" className="hover:text-white transition">
+                <TransitionLink href="/login" className="hover:text-white transition">
                   Candidate Login
-                </Link>
+                </TransitionLink>
               </li>
               <li>
-                <Link href="/register" className="hover:text-white transition">
+                <TransitionLink href="/register" className="hover:text-white transition">
                   Register Profile
-                </Link>
+                </TransitionLink>
               </li>
             </ul>
           </div>
@@ -60,19 +60,19 @@ export default function AppFooter() {
             <h3 className="text-sm font-bold text-white">For Employers</h3>
             <ul className="mt-4 space-y-2 text-xs text-slate-400">
               <li>
-                <Link href="/employer/jobs/new" className="hover:text-white transition">
+                <TransitionLink href="/employer/jobs/new" className="hover:text-white transition">
                   Post a Job
-                </Link>
+                </TransitionLink>
               </li>
               <li>
-                <Link href="/login" className="hover:text-white transition">
+                <TransitionLink href="/login" className="hover:text-white transition">
                   Employer Dashboard
-                </Link>
+                </TransitionLink>
               </li>
               <li>
-                <Link href="/login" className="hover:text-white transition">
+                <TransitionLink href="/login" className="hover:text-white transition">
                   Buy Packages
-                </Link>
+                </TransitionLink>
               </li>
             </ul>
           </div>
@@ -82,19 +82,19 @@ export default function AppFooter() {
             <h3 className="text-sm font-bold text-white">Company</h3>
             <ul className="mt-4 space-y-2 text-xs text-slate-400">
               <li>
-                <Link href="/about" className="hover:text-white transition">
+                <TransitionLink href="/about" className="hover:text-white transition">
                   About Us
-                </Link>
+                </TransitionLink>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-white transition">
+                <TransitionLink href="/contact" className="hover:text-white transition">
                   Contact Support
-                </Link>
+                </TransitionLink>
               </li>
               <li>
-                <Link href="/terms-privacy" className="hover:text-white transition">
+                <TransitionLink href="/terms-privacy" className="hover:text-white transition">
                   Terms & Privacy
-                </Link>
+                </TransitionLink>
               </li>
             </ul>
           </div>
